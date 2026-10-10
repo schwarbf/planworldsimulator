@@ -65,7 +65,43 @@ def test_doing_nothing_is_not_better_than_the_baseline(difficulty):
 
 def test_doing_nothing_is_worse_than_the_baseline_on_easy():
     easy = Env.DIFFICULTIES[0]
-    assert _mean(easy, noop=True) < _mean(easy), _table()
+    baseline, nothing = _mean(easy), _mean(easy, noop=True)
+    if abs(baseline - nothing) < 1e-6:
+        why = (
+            f"Doing nothing and the baseline score exactly the same ({baseline:.2f}): the "
+            "baseline's actions have no effect on the result, or baseline_action() is the "
+            "same as the empty action. Make baseline_action() return a real action that "
+            "raises the result, and make sure every action changes the world in "
+            "rules.py (an action that is stored but never used there does nothing)."
+        )
+    else:
+        why = f"The baseline ({baseline:.2f}) must beat doing nothing ({nothing:.2f})."
+    assert nothing < baseline, f"{why}\n{_table()}"
+
+
+def test_actions_change_the_outcome(difficulty):
+    """Random actions must lead somewhere other than doing nothing, or actions are dead."""
+    env = Env(difficulty)
+    differing = 0
+    for seed in range(5):
+        env.reset(seed=seed)
+        env.action_space.seed(seed)
+        done = False
+        while not done:
+            _, _, terminated, truncated, _ = env.step(env.action_space.sample())
+            done = terminated or truncated
+        random_result = env.result()
+        env.reset(seed=seed)
+        done = False
+        while not done:
+            _, _, terminated, truncated, _ = env.step(env.encode_actions([]))
+            done = terminated or truncated
+        differing += abs(random_result - env.result()) > 1e-9
+    assert differing, (
+        f"On {difficulty}, random actions give exactly the same result as doing nothing "
+        "on every seed: the actions have no effect. Use every action's arguments in "
+        "rules.py so that it changes costs, capacity, demand or stock."
+    )
 
 
 def test_scores_are_between_0_and_1_whatever_the_policy(difficulty):
