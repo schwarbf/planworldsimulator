@@ -1,0 +1,160 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4KCAKP6THCR0KAWHYNF649X",
+  "session_id": "765262ff-e225-4979-abd6-8227d6d01ea7",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T17:03:48.667724Z",
+  "branch": "feat/terminal-intro-actions",
+  "checkpoints_count": 11,
+  "save_step_count": 12,
+  "files_touched": [
+    "justfile",
+    "pixi.lock",
+    "pixi.toml",
+    "src/worlds-template/ui/src/shared/controls/AgentCursor.tsx",
+    "src/worlds/bike-factory/server/api.py",
+    "src/worlds/bike-factory/sim/helpers.py",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/_metadata.json",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-EZWSRKYN.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-EZWSRKYN.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-GFWMZNU4.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-GFWMZNU4.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/package.json",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom_client.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom_client.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-dev-runtime.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-dev-runtime.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-runtime.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-runtime.js.map",
+    "src/worlds/bike-factory/ui/src/App.tsx",
+    "src/worlds/bike-factory/ui/src/api.ts",
+    "src/worlds/bike-factory/ui/src/harness.ts",
+    "src/worlds/bike-factory/ui/src/shared/controls/AgentCursor.tsx",
+    "src/worlds/bike-factory/ui/src/shared/controls/Narrator.tsx",
+    "src/worlds/bike-factory/ui/src/shared/kit/README.md",
+    "src/worlds/bike-factory/ui/vite.config.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "4dcfb8974a93",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 878,
+    "cache_creation_tokens": 502414,
+    "cache_read_tokens": 152107857,
+    "output_tokens": 246664,
+    "api_call_count": 427,
+    "subagent_tokens": {
+      "input_tokens": 0,
+      "cache_creation_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "api_call_count": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 87
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T17:03:48.520855Z",
+    "agent_lines": 26061,
+    "agent_removed": 92,
+    "human_added": 69,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 26130,
+    "total_lines_changed": 26224,
+    "agent_percentage": 99.72925564368518,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 538,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 538,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 11,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 12,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26053,
+      "agent_lines_removed": 117
+    },
+    {
+      "checkpoint_number": 13,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 26077,
+      "agent_lines_removed": 123
+    }
+  ]
+}

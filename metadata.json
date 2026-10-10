@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4KCAKP6THCR0KAWHYNF649X",
+  "strategy": "manual-commit",
+  "branch": "feat/terminal-intro-actions",
+  "checkpoints_count": 11,
+  "files_touched": [
+    "justfile",
+    "pixi.lock",
+    "pixi.toml",
+    "src/worlds-template/ui/src/shared/controls/AgentCursor.tsx",
+    "src/worlds/bike-factory/server/api.py",
+    "src/worlds/bike-factory/sim/helpers.py",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/_metadata.json",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-EZWSRKYN.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-EZWSRKYN.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-GFWMZNU4.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/chunk-GFWMZNU4.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/package.json",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom_client.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react-dom_client.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-dev-runtime.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-dev-runtime.js.map",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-runtime.js",
+    "src/worlds/bike-factory/ui/.vite-cache/deps/react_jsx-runtime.js.map",
+    "src/worlds/bike-factory/ui/src/App.tsx",
+    "src/worlds/bike-factory/ui/src/api.ts",
+    "src/worlds/bike-factory/ui/src/harness.ts",
+    "src/worlds/bike-factory/ui/src/shared/controls/AgentCursor.tsx",
+    "src/worlds/bike-factory/ui/src/shared/controls/Narrator.tsx",
+    "src/worlds/bike-factory/ui/src/shared/kit/README.md",
+    "src/worlds/bike-factory/ui/vite.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 878,
+    "cache_creation_tokens": 502414,
+    "cache_read_tokens": 152107857,
+    "output_tokens": 246664,
+    "api_call_count": 427,
+    "subagent_tokens": {
+      "input_tokens": 0,
+      "cache_creation_tokens": 0,
+      "cache_read_tokens": 0,
+      "output_tokens": 0,
+      "api_call_count": 0
+    }
+  }
+}
