@@ -28,7 +28,6 @@ def _request(world: World) -> GenerationRequest:
         title=world.title,
         prompt=world.prompt,
         seed=world.seed,
-        difficulty=world.difficulty,
     )
 
 
@@ -47,7 +46,6 @@ async def create_world(body: WorldCreate, request: Request) -> World:
         title=_title(body.prompt),
         prompt=body.prompt.strip(),
         seed=body.seed if body.seed is not None else secrets.randbelow(10_000),
-        difficulty=body.difficulty,
         status="queued",
     )
     async with request.app.state.sessions() as session:

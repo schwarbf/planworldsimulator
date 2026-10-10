@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import Protocol
 
 STEPS = ("storyline", "copy_template", "fill_template", "tests")
+# Every generated world ships with all of these; the level is chosen when playing.
+LEVELS = (1, 2, 3, 4)
 
 
 @dataclass(frozen=True)
@@ -24,7 +26,6 @@ class GenerationRequest:
     title: str
     prompt: str
     seed: int
-    difficulty: int
 
 
 class Generator(Protocol):
@@ -53,7 +54,7 @@ class FakeGenerator:
         storyline = (
             f"{request.title}. A hidden-dynamics planning world generated from: "
             f"“{request.prompt.strip()}” (seed {request.seed}, "
-            f"difficulty L{request.difficulty})."
+            f"{len(LEVELS)} difficulty levels)."
         )
         yield GenerationEvent("storyline", "done", "Storyline ready", storyline)
 
@@ -79,7 +80,7 @@ class FakeGenerator:
                     "title": request.title,
                     "prompt": request.prompt,
                     "seed": request.seed,
-                    "difficulty": request.difficulty,
+                    "levels": list(LEVELS),
                     "storyline": storyline,
                 },
                 indent=2,

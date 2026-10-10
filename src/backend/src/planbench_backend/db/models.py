@@ -19,7 +19,6 @@ class World(Base):
     title: Mapped[str] = mapped_column(String(200))
     prompt: Mapped[str] = mapped_column(Text)
     seed: Mapped[int] = mapped_column(Integer)
-    difficulty: Mapped[int] = mapped_column(Integer)
     # queued | generating | ready | failed
     status: Mapped[str] = mapped_column(String(16), default="queued")
     storyline: Mapped[str | None] = mapped_column(Text, nullable=True)

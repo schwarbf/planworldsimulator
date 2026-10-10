@@ -2,11 +2,12 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from planbench_backend.generator import LEVELS
+
 
 class WorldCreate(BaseModel):
     prompt: str = Field(min_length=3, max_length=4000)
     seed: int | None = Field(default=None, ge=0)
-    difficulty: int = Field(default=2, ge=1, le=4)
 
 
 class WorldOut(BaseModel):
@@ -16,7 +17,7 @@ class WorldOut(BaseModel):
     title: str
     prompt: str
     seed: int
-    difficulty: int
+    levels: list[int] = list(LEVELS)
     status: str
     storyline: str | None
     path: str | None

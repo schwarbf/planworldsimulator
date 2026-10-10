@@ -17,11 +17,11 @@ async def test_create_world_generates_and_becomes_ready(
     client: httpx.AsyncClient,
 ) -> None:
     created = await client.post(
-        "/worlds", json={"prompt": "A nuclear plant under heat waves", "difficulty": 3}
+        "/worlds", json={"prompt": "A nuclear plant under heat waves"}
     )
     assert created.status_code == 201
     world_id = created.json()["id"]
-    assert created.json()["difficulty"] == 3
+    assert created.json()["levels"] == [1, 2, 3, 4]
 
     await _wait(client)
 
@@ -45,6 +45,8 @@ async def test_generated_world_folder_is_created(client: httpx.AsyncClient) -> N
         (client.app.state.settings.worlds_dir / world_id / "world.json").read_text()  # type: ignore[attr-defined]
     )
     assert meta["id"] == world_id
+    assert meta["levels"] == [1, 2, 3, 4]
+    assert "difficulty" not in meta
 
 
 async def test_list_worlds_newest_first(client: httpx.AsyncClient) -> None:
