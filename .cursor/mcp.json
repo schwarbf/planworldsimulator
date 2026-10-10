@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "entire-brain": {
+      "command": "entire",
+      "args": ["brain", "mcp"]
+    },
+    "entire-docs": {
+      "url": "https://docs.entire.io/mcp"
+    }
+  }
+}
