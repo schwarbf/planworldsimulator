@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K0HDVE34XWJVAXVWMKPKD6",
+  "strategy": "manual-commit",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/generator.py",
+    "src/backend/src/planworldsimulator_backend/generator/__init__.py",
+    "src/backend/src/planworldsimulator_backend/generator/base.py",
+    "src/backend/src/planworldsimulator_backend/generator/fake.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/worlds-template/pixi.toml",
+    "src/worlds-template/tests/backend/test_contract.py",
+    "src/worlds-template/ui/.gitignore",
+    "src/worlds-template/ui/src/World.contract.test.tsx",
+    "src/worlds-template/ui/src/vite-env.d.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 22125,
+    "cache_read_tokens": 2256310,
+    "output_tokens": 12453,
+    "api_call_count": 10
+  }
+}
