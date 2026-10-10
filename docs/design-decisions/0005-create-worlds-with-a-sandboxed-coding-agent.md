@@ -1,7 +1,7 @@
 # Create worlds with a sandboxed coding agent
 
 **Date:** 2026-10-10
-**Status:** proposed
+**Status:** accepted; implemented except where "As built" below says otherwise
 
 ## Context
 
@@ -357,6 +357,40 @@ vs. you in the same world.
 
 Order: A first; B, C, D, E in parallel (different files); then F, G, H, I; then
 J and K. Cut line for the demo: A–K.
+
+## As built
+
+What differs from the plan above, and what is still open.
+
+- **Model:** `google/gemini-3.5-flash`. In the spike `gemini-3.8-flash` was about 6× slower on the
+  same design prompt (about 90 s against 14 s), which cannot fit 5 minutes. Switch with
+  `PLANWORLDSIMULATOR_GENERATOR_MODEL`.
+- **Steps:** `check_exists`, `copy_template`, `design`, `sim` and `ui` (in parallel), `tests`,
+  `smoke`, `publish`. The copy comes before the design because the agent writes into the folder.
+- **Design is data:** the agent writes `design.json`, validated by `WorldSpec`
+  (`generator/spec.py`); an invalid file gets up to two correction rounds. From it the pipeline
+  writes `design.md` and `ui/src/WorldState.ts` (the typed state contract), which the agent may
+  not edit. The server state is checked against it at every level (except the shared `queued`).
+- **Branches and resume:** the simulator and the web view are written, checked and repaired
+  independently, then cross-checked. Hash-verified checkpoints let a retry resume; attempts and
+  timings are stored (migration 0005).
+- **Score target is calibrated,** not guessed: `calibrated_target()` makes the naive baseline
+  score about 0.5 on easy. Generated worlds only have to make the baseline profitable and the
+  higher levels harder. Hard may defeat the baseline.
+- **Gates added during testing:** `test_contract.py` (the design's sites, actions and episode
+  length per level, and MCP argument types), clear failure messages for the leak and playability
+  gates, a seed test that explains itself.
+- **Agent runs** are `opencode run` subprocesses, not `opencode serve`; the agent may only write
+  its allow-listed files, and process groups are killed at the deadline.
+- **Names:** a name can be used once (`409` with `X-Existing-World`); duplicates end as `exists`.
+- **Local use:** `just world-setup`, `just generate`, `just api-local`, `just web-local`. The
+  Docker image has no OpenCode or world environment, so the real generator runs on the host.
+- **Measured:** a lemonade-stand world was published in 134 s with all gates green. Harder
+  prompts needed more repair rounds and sometimes did not finish in 5 minutes; fixes for the
+  causes found (broken JSON, the `queued` field, an over-hard baseline gate) were not re-run
+  against real prompts.
+- **Not built:** the screenshot-critique `polish` step, thumbnails, Docker support for the real
+  generator, and a recorded success rate over several prompts.
 
 ## Consequences
 
