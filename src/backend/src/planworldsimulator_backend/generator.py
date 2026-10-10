@@ -8,7 +8,7 @@ from typing import Protocol
 
 STEPS = ("storyline", "copy_template", "fill_template", "tests")
 # Every generated world ships with all of these; the level is chosen when playing.
-LEVELS = (1, 2, 3, 4)
+LEVELS = (1, 2, 3)
 
 
 @dataclass(frozen=True)

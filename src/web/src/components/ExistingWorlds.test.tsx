@@ -11,7 +11,7 @@ function world(overrides: Partial<World>): World {
     title: "Bakery",
     prompt: "A bakery",
     seed: 7,
-    levels: [1, 2, 3, 4],
+    levels: [1, 2, 3],
     status: "ready",
     storyline: "Plan the flour orders.",
     path: null,
@@ -43,7 +43,7 @@ function renderWorlds() {
 
 afterEach(() => vi.restoreAllMocks());
 
-test("every ready world can be played at each of its four levels", async () => {
+test("every ready world can be played at each of its three levels", async () => {
   respondWith(() => ({
     items: [world({ id: "fission-ops", title: "Fission Ops", featured: true })],
     total: 1,
@@ -52,7 +52,7 @@ test("every ready world can be played at each of its four levels", async () => {
 
   const group = await screen.findByRole("group", { name: "Play Fission Ops" });
   const links = within(group).getAllByRole("link");
-  expect(links.map((l) => l.textContent)).toEqual(["L1", "L2", "L3", "L4"]);
+  expect(links.map((l) => l.textContent)).toEqual(["Easy", "Medium", "Hard"]);
   expect(links[2]).toHaveAttribute("href", "/api/play/fission-ops/?level=3");
   expect(links[2]).toHaveAttribute("target", "_blank");
   expect(links[2]).toHaveAttribute("rel", expect.stringContaining("noopener"));

@@ -69,7 +69,7 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
       <p className="mt-5 max-w-2xl text-lg text-muted">
         Write what the world is about in plain language. PlanWorldSimulator
         generates the simulator, the agent interface and a playable website,
-        with four difficulty levels built in.
+        with three difficulty levels built in.
       </p>
 
       <form

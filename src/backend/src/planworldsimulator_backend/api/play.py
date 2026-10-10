@@ -69,7 +69,7 @@ async def play(
     world_id: str,
     path: str,
     request: Request,
-    level: int | None = Query(default=None, ge=1, le=4),
+    level: int | None = Query(default=None, ge=1, le=3),
 ) -> Response:
     """Open a world. Starts it on demand and proxies to its own server.
 

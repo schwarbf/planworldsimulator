@@ -61,6 +61,9 @@ async def test_play_rejects_unknown_unready_and_bad_levels(
     assert (
         await client.get(f"/play/{world_id}/", params={"level": 9})
     ).status_code == 422
+    assert (
+        await client.get(f"/play/{world_id}/", params={"level": 4})
+    ).status_code == 422
 
     monkeypatch.setattr(app_of(client).state.runner, "submit", lambda _r: None)
     queued = (

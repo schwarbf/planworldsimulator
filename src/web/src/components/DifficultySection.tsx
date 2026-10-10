@@ -1,15 +1,15 @@
 import { Section } from "./Section";
 
-const LEVELS = ["Easy", "Medium", "Hard", "Expert"];
+const LEVELS = ["Easy", "Medium", "Hard"];
 
 const ROWS: [string, string[]][] = [
-  ["Sites", ["3", "8", "12", "20"]],
-  ["Hidden rules", ["1", "3", "5", "8"]],
-  ["Shocks", ["none", "rare", "frequent", "chained"]],
-  ["Demand", ["steady", "seasonal", "+ trend", "regime shifts"]],
-  ["Lead times", ["fixed", "± 1 wk", "± 3 wk", "random + fails"]],
-  ["Visibility", ["full map", "fog of war", "+ delayed data", "+ lost sales"]],
-  ["Goal", ["profit", "+ service", "+ cash cap", "multi-objective"]],
+  ["Sites", ["2", "3", "4"]],
+  ["Hidden rules", ["none", "1–2", "3 or more"]],
+  ["Shocks", ["none", "rare", "frequent"]],
+  ["Demand", ["steady", "seasonal + weather", "all factors + noise"]],
+  ["Lead times", ["fixed", "± 1 wk", "random"]],
+  ["Visibility", ["full map", "fog of war", "+ delayed data"]],
+  ["Goal", ["profit", "+ service", "multi-objective"]],
 ];
 
 export function DifficultyTable() {
@@ -60,14 +60,14 @@ export function DifficultySection() {
       label="Difficulty"
       title={
         <>
-          Four levels in <em>every</em> world.
+          Three levels in <em>every</em> world.
         </>
       }
     >
       <div className="grid gap-10 lg:grid-cols-[minmax(0,22rem)_1fr]">
         <p className="leading-relaxed text-muted">
           You never pick a difficulty when you generate a world. Each world
-          ships with all four, and the level is chosen when it is played. The
+          ships with all three, and the level is chosen when it is played. The
           same story gets more sites, more hidden rules and less visibility as
           you go up, so results stay comparable across levels.
         </p>

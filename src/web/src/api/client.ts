@@ -63,6 +63,9 @@ export const api = {
     request<World>(`/worlds/${id}/retry`, { method: "POST" }),
 };
 
+/** Display names of the difficulty levels, indexed by level - 1. */
+export const LEVEL_NAMES = ["Easy", "Medium", "Hard"];
+
 /** Public link that starts the world on demand and opens it at a level. */
 export function playUrl(worldId: string, level: number): string {
   return `/api/play/${worldId}/?level=${level}`;

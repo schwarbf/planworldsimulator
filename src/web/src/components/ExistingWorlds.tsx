@@ -98,7 +98,7 @@ export function ExistingWorlds() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <p className="max-w-xl text-muted">
           Anyone can generate a world, and every finished world is public. Pick
-          one and play it at any of its four difficulty levels.
+          one and play it at any of its three difficulty levels.
         </p>
         <input
           type="search"

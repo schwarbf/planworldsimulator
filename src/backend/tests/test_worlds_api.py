@@ -45,7 +45,7 @@ async def test_create_world_generates_and_becomes_ready(
     client: httpx.AsyncClient,
 ) -> None:
     created = await create(client, "Heat waves")
-    assert created["levels"] == [1, 2, 3, 4]
+    assert created["levels"] == [1, 2, 3]
 
     await wait(client)
 
@@ -69,7 +69,7 @@ async def test_generated_world_folder_is_created(client: httpx.AsyncClient) -> N
         ).read_text()
     )
     assert meta["id"] == created["id"]
-    assert meta["levels"] == [1, 2, 3, 4]
+    assert meta["levels"] == [1, 2, 3]
     assert "difficulty" not in meta
 
 
