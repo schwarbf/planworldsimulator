@@ -1,5 +1,6 @@
 import asyncio
 import json
+import re
 import secrets
 from collections.abc import AsyncIterator
 
@@ -16,10 +17,9 @@ router = APIRouter(prefix="/worlds", tags=["worlds"])
 TERMINAL = {"ready", "failed"}
 
 
-def _title(prompt: str) -> str:
-    words = prompt.strip().split()
-    title = " ".join(words[:6])
-    return title if len(words) <= 6 else f"{title}…"
+def _slug(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:24].strip("-")
+    return slug or "world"
 
 
 def _request(world: World) -> GenerationRequest:
@@ -42,8 +42,8 @@ async def _get_world(request: Request, world_id: str) -> World:
 @router.post("", response_model=WorldOut, status_code=201)
 async def create_world(body: WorldCreate, request: Request) -> World:
     world = World(
-        id=f"w-{secrets.token_hex(4)}",
-        title=_title(body.prompt),
+        id=f"{_slug(body.name)}-{secrets.token_hex(3)}",
+        title=body.name,
         prompt=body.prompt.strip(),
         seed=body.seed if body.seed is not None else secrets.randbelow(10_000),
         status="queued",

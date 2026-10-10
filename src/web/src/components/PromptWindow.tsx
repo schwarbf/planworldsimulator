@@ -1,24 +1,31 @@
 import { type FormEvent, useState } from "react";
 
 import { api, type World } from "../api/client";
-import { promptForTheme, THEMES } from "../data/showcase";
+import { SHOWCASE } from "../data/showcase";
 import { cx } from "./ui";
 
-interface Props {
+export interface Draft {
+  name: string;
   prompt: string;
-  onPromptChange: (prompt: string) => void;
+}
+
+interface Props {
+  draft: Draft;
+  onDraftChange: (draft: Draft) => void;
   onCreated: (world: World) => void;
 }
 
 const GRID = "var(--color-line)";
 
-export function PromptWindow({ prompt, onPromptChange, onCreated }: Props) {
+export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
+  const { name, prompt } = draft;
   const [seed, setSeed] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canSubmit = prompt.trim().length >= 3 && !busy;
-  const activeTheme = THEMES.find((t) => promptForTheme(t) === prompt);
+  const canSubmit =
+    name.trim().length >= 2 && prompt.trim().length >= 3 && !busy;
+  const activeTheme = SHOWCASE.find((w) => w.prompt === prompt)?.name;
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -26,6 +33,7 @@ export function PromptWindow({ prompt, onPromptChange, onCreated }: Props) {
     setError(null);
     try {
       const world = await api.createWorld({
+        name: name.trim(),
         prompt: prompt.trim(),
         seed: seed === "" ? undefined : Number(seed),
       });
@@ -68,10 +76,21 @@ export function PromptWindow({ prompt, onPromptChange, onCreated }: Props) {
         onSubmit={submit}
         className="mt-8 flex min-h-80 flex-1 flex-col overflow-hidden rounded-xl border border-ink bg-card shadow-card"
       >
+        <label className="flex items-baseline gap-4 border-b border-line px-5 pt-5 pb-3 sm:px-7">
+          <span className="font-mono text-xs text-muted uppercase">Name</span>
+          <input
+            aria-label="World name"
+            value={name}
+            maxLength={60}
+            onChange={(e) => onDraftChange({ ...draft, name: e.target.value })}
+            placeholder="e.g. Fission Ops"
+            className="min-w-0 flex-1 bg-transparent font-display text-3xl outline-none placeholder:text-muted/60 sm:text-4xl"
+          />
+        </label>
         <textarea
           aria-label="Describe your benchmark"
           value={prompt}
-          onChange={(e) => onPromptChange(e.target.value)}
+          onChange={(e) => onDraftChange({ ...draft, prompt: e.target.value })}
           placeholder="A bakery chain that must plan flour orders while a hidden supplier strike looms…"
           className="min-h-48 flex-1 resize-none bg-transparent p-5 text-xl leading-relaxed outline-none placeholder:text-muted/70 sm:p-7 sm:text-2xl"
         />
@@ -80,17 +99,19 @@ export function PromptWindow({ prompt, onPromptChange, onCreated }: Props) {
             <span className="font-mono text-xs text-muted uppercase">
               Start from
             </span>
-            {THEMES.map((theme) => (
+            {SHOWCASE.map((world) => (
               <button
-                key={theme}
+                key={world.name}
                 type="button"
-                onClick={() => onPromptChange(promptForTheme(theme))}
+                onClick={() =>
+                  onDraftChange({ name: world.name, prompt: world.prompt })
+                }
                 className={cx(
                   "underline-offset-4 hover:underline",
-                  theme === activeTheme && "font-semibold underline",
+                  world.name === activeTheme && "font-semibold underline",
                 )}
               >
-                {theme}
+                {world.name}
               </button>
             ))}
           </div>

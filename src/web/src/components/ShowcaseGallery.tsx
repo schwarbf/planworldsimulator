@@ -1,11 +1,8 @@
 import { SHOWCASE } from "../data/showcase";
+import type { Draft } from "./PromptWindow";
 import { Section } from "./Section";
 
-export function ShowcaseGallery({
-  onUse,
-}: {
-  onUse: (prompt: string) => void;
-}) {
+export function ShowcaseGallery({ onUse }: { onUse: (draft: Draft) => void }) {
   return (
     <Section
       id="examples"
@@ -31,7 +28,9 @@ export function ShowcaseGallery({
               </div>
               <button
                 type="button"
-                onClick={() => onUse(world.prompt)}
+                onClick={() =>
+                  onUse({ name: world.name, prompt: world.prompt })
+                }
                 className="shrink-0 pt-2 text-sm font-semibold underline-offset-4 hover:underline"
               >
                 Use this prompt →

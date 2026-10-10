@@ -77,7 +77,7 @@ class FakeGenerator:
             json.dumps(
                 {
                     "id": request.world_id,
-                    "title": request.title,
+                    "name": request.title,
                     "prompt": request.prompt,
                     "seed": request.seed,
                     "levels": list(LEVELS),

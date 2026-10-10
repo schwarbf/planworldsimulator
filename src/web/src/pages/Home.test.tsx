@@ -42,6 +42,7 @@ test("'Use this prompt' copies a showcase prompt into the generator", async () =
   const buttons = screen.getAllByRole("button", { name: /use this prompt/i });
   await userEvent.click(buttons[1]);
 
+  expect(screen.getByLabelText("World name")).toHaveValue("Bike Factory");
   const box = screen.getByLabelText<HTMLTextAreaElement>(
     /describe your benchmark/i,
   );

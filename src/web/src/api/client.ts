@@ -24,6 +24,7 @@ export interface WorldEvent {
 }
 
 export interface CreateWorld {
+  name: string;
   prompt: string;
   seed?: number;
 }
