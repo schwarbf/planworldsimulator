@@ -47,7 +47,7 @@ export interface ControlsModel {
 export type QueuedAction = { action: string } & Record<string, unknown>;
 
 /** Current score, from `state.score` (added by the base server). */
-export interface ScoreInfo { score: number; baseline: number; formula?: string }
+export interface ScoreInfo { score: number; baseline: number; formula?: string; week?: number }
 
 /** Called by controls; App forwards it to the world server. */
 export type OnAction = (id: string, args?: Record<string, unknown>) => void;

@@ -22,6 +22,12 @@ class AgentConfig:
     api_key_env: str | None = None
     base_url: str | None = None
     settings: dict[str, Any] = field(default_factory=dict)
+    label: str | None = None  # display name in the world UI
+    color: str | None = None  # cursor colour in the world UI
+
+    @property
+    def display(self) -> str:
+        return self.label or self.name
 
 
 def load_agents(path: Path = AGENTS_FILE) -> dict[str, AgentConfig]:

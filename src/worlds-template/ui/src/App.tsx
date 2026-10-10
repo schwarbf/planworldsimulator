@@ -1,6 +1,9 @@
 // Page layout around the world view. Same in every world; do not edit per world.
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { sendAction, unqueue, useWorldState } from "./api";
+import { agentLook, stopAgent, useAgents, type Play } from "./harness";
+import { AgentBanner, FrozenLock } from "./shared/controls/AgentBanner";
+import { AgentCursor } from "./shared/controls/AgentCursor";
 import { ActionDock } from "./shared/controls/ActionDock";
 import { AgentPanel } from "./shared/controls/AgentPanel";
 import { Brand } from "./shared/controls/Brand";
@@ -17,6 +20,8 @@ import { mockState, toControls, WorldView } from "./World";
 // The SVG world is the heaviest part; redraw it only when its props change.
 const MemoWorldView = memo(WorldView);
 const ERROR_MS = 3000;
+const NOBODY: Play = { mode: "you", agent: null };
+const ignore: OnAction = () => {};
 
 export default function App() {
   const [state, refresh] = useWorldState(mockState);
@@ -28,6 +33,12 @@ export default function App() {
   const model = useMemo(() => toControls(state, selectedId), [state, selectedId]);
   const queued = (state as { queued?: QueuedAction[] }).queued ?? [];
   const score = (state as { score?: ScoreInfo }).score;
+
+  // Agent playing (decision 0007): who plays, the harness's agents, frozen controls.
+  const play = (state as { play?: Play }).play ?? NOBODY;
+  const playing = play.mode === "agent";
+  const { agents, offline } = useAgents();
+  const look = agentLook(agents, play.agent);
 
   useEffect(() => setPending(null), [model.dock.active]);
   useEffect(() => {
@@ -61,6 +72,14 @@ export default function App() {
     await refresh();
   }, [refresh]);
 
+  const onAgentChanged = useCallback((err?: string) => {
+    if (err) setError(err);
+    void refresh();
+  }, [refresh]);
+  const takeOver = useCallback(() => {
+    void stopAgent().then((sent) => onAgentChanged(sent.ok ? undefined : sent.error));
+  }, [onAgentChanged]);
+
   const dock = useMemo(() => ({ ...model.dock, active: pending ?? model.dock.active }), [model.dock, pending]);
 
   return (
@@ -79,17 +98,23 @@ export default function App() {
       <div className="app__world">
         <MemoWorldView state={state} selectedId={selectedId} onSelect={setSelectedId} />
       </div>
-      <div className="app__left">
-        {model.inspector && <Inspector key={model.inspector.title} model={model.inspector} onAction={onAction} />}
+      <div className={`app__left${playing ? " frozen" : ""}`}>
+        {playing && <FrozenLock />}
+        {model.inspector && <Inspector key={model.inspector.title} model={model.inspector} onAction={playing ? ignore : onAction} />}
         <Queue queued={queued} onRemove={(k) => void onRemove(k)} />
         <Discoveries discoveries={model.discoveries} />
       </div>
       <div className="app__right">
         <Goal goal={model.goal} score={score} />
-        <AgentPanel agent={model.agent} onAction={onAction} />
+        <AgentPanel agent={model.agent} play={play} agents={agents} offline={offline} week={score?.week ?? 1} onChanged={onAgentChanged} />
       </div>
-      <div className="app__dock"><ActionDock dock={dock} onAction={onDock} /></div>
+      <div className={`app__dock${playing ? " frozen" : ""}`}>
+        {playing && <FrozenLock />}
+        <ActionDock dock={dock} onAction={playing ? ignore : onDock} />
+      </div>
       <div className="app__narrator"><Narrator /></div>
+      {playing && <AgentBanner look={look} timeLabel={model.topBar.timeLabel} onStop={takeOver} />}
+      <AgentCursor look={look} active={playing} onTarget={setSelectedId} />
     </div>
   );
 }

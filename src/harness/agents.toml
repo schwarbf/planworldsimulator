@@ -3,13 +3,18 @@
 #   base_url     optional endpoint, e.g. a local or hosted OpenAI-compatible server
 #   api_key_env  environment variable that holds the key
 #   settings     optional Pydantic AI model settings, pinned for fair comparison
+#   label, color optional name and cursor colour in the world UI (harness serve)
 
 [gemini-flash]
+label = "Gemini Flash"
+color = "#7b61ff"
 model = "google:gemini-3.8-flash"
 api_key_env = "GEMINI_API_KEY"
 settings = { temperature = 0.0, thinking = "low" }
 
 [gemini-pro]
+label = "Gemini Pro"
+color = "#14a3a3"
 model = "google:gemini-3.1-pro-preview"
 api_key_env = "GEMINI_API_KEY"
 settings = { temperature = 0.0, thinking = "low" }

@@ -114,7 +114,7 @@ export function WorldView({ state, onSelect }: { state: State; selectedId: strin
         <Tree x={grid.at(1, 2)[0]} y={grid.at(1, 2)[1]} />
         <Tree x={grid.at(2, 5)[0]} y={grid.at(2, 5)[1]} />
         <g className="clickable" onClick={() => onSelect("shop")}>
-          <Building x={x} y={y} {...SHOP} />
+          <Building x={x} y={y} {...SHOP} target="shop" />
         </g>
         <Tree x={grid.at(5, 4)[0]} y={grid.at(5, 4)[1]} />
       </IsoIsland>

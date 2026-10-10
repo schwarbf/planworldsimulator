@@ -2617,6 +2617,8 @@ packages:
 - pypi: src/harness
   name: planworldsimulator-harness
   requires_dist:
+  - fastapi
   - httpx
   - pydantic-ai-slim[google,openai,mcp]
+  - uvicorn
   requires_python: '>=3.13,<3.14'

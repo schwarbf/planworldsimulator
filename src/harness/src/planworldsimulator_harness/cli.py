@@ -1,4 +1,5 @@
-"""`harness play <url>`, `harness bench <suite>`, `harness report <run-dir>`."""
+"""`harness play <url>`, `harness bench <suite>`, `harness report <run-dir>`,
+`harness serve` (start agents from the world UI)."""
 
 import argparse
 import asyncio
@@ -12,6 +13,12 @@ from planworldsimulator_harness.benchmarks.report import report
 from planworldsimulator_harness.budget import Budget
 from planworldsimulator_harness.config import DEFAULT_AGENT
 from planworldsimulator_harness.episode import run_episode
+from planworldsimulator_harness.serve import (
+    DEFAULT_PACE,
+    DEFAULT_PORT,
+    Runner,
+    create_app,
+)
 
 
 def main() -> None:
@@ -30,6 +37,14 @@ def main() -> None:
     bench.add_argument("--agent", help="run only this agent of the suite")
     rep = sub.add_parser("report", help="markdown table for a finished run")
     rep.add_argument("run_dirs", type=Path, nargs="+", help="one or more run dirs")
+    serve = sub.add_parser("serve", help="start/stop agents from the world UI")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=DEFAULT_PORT)
+    serve.add_argument(
+        "--pace", type=float, default=DEFAULT_PACE, help="seconds per tool call"
+    )
+    serve.add_argument("--tokens", type=int, default=Budget.tokens)
+    serve.add_argument("--seconds", type=float, default=Budget.seconds)
     args = parser.parse_args()
 
     if args.command == "play":
@@ -42,6 +57,11 @@ def main() -> None:
     elif args.command == "bench":
         run_dir = asyncio.run(run_suite(load_suite(args.suite, args.agent)))
         print(f"\n{report(run_dir)}\nResults: {run_dir}")
+    elif args.command == "serve":
+        import uvicorn
+
+        runner = Runner(Budget(args.tokens, args.seconds), pace=args.pace)
+        uvicorn.run(create_app(runner), host=args.host, port=args.port)
     else:
         print(report(*args.run_dirs))
 

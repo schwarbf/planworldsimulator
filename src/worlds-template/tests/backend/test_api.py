@@ -54,6 +54,7 @@ class TestRest:
         client.post("/api/reset", json={"seed": 1, "difficulty": DIFFICULTY})
         assert client.post("/api/action", json={"id": "play", "args": {}}).json()["week"] == 2
         assert client.post("/api/action", json={"id": "mode", "args": {"mode": "agent"}}).json()["mode"] == "agent"
+        assert client.post("/api/action", json={"id": "mode", "args": {"mode": "you"}}).json()["mode"] == "you"
         seed = client.post("/api/action", json={"id": "new_world", "args": {}}).json()["seed"]
         assert client.get("/api/state").json()["world"]["seed"] == str(seed)
 
@@ -67,3 +68,35 @@ class TestEvents:
             while event["seq"] <= last:
                 event = ws.receive_json()
             assert event["kind"] == "advance"
+
+
+class TestAgentMode:
+    """While the harness plays (mode "agent"), the UI watches but cannot act."""
+
+    def test_ui_is_locked_while_agent_plays(self, client):
+        from server.api import game
+
+        client.post("/api/reset", json={"seed": 3, "difficulty": DIFFICULTY})
+        r = client.post("/api/action", json={"id": "mode", "args": {"mode": "agent", "agent": "gemini-flash"}})
+        assert r.json() == {"mode": "agent", "agent": "gemini-flash"}
+        try:
+            assert client.get("/api/state").json()["play"] == {"mode": "agent", "agent": "gemini-flash"}
+            week = client.get("/api/state").json()["week"]
+            for path, body in [
+                ("/api/action", {"id": game.env.actions[0], "args": {}}),
+                ("/api/action", {"id": "play", "args": {}}),
+                ("/api/advance", {"steps": 1}),
+                ("/api/unqueue", {"index": 0}),
+                ("/api/reset", {"seed": 4}),
+            ]:
+                r = client.post(path, json=body)
+                assert r.status_code == 409, path
+                assert "gemini-flash is playing" in r.json()["detail"]
+            assert client.get("/api/state").json()["week"] == week
+            # The agent itself still plays through the Game (MCP calls).
+            game.advance(1, source="agent")
+            assert client.get("/api/state").json()["week"] == week + 1
+        finally:
+            client.post("/api/action", json={"id": "mode", "args": {"mode": "you"}})
+        assert client.get("/api/state").json()["play"] == {"mode": "you", "agent": None}
+        assert client.post("/api/advance").status_code == 200

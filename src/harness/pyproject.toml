@@ -4,8 +4,10 @@ version = "0.1.0"
 description = "PlanWorldSimulator agent harness: plays a world through its MCP server."
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "fastapi",
     "httpx",
     "pydantic-ai-slim[google,openai,mcp]",
+    "uvicorn",
 ]
 
 [project.scripts]

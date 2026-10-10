@@ -37,7 +37,8 @@ class Game:
         self.env_cls: Any = world()
         self.events: list[dict[str, Any]] = []
         self.scores: list[float] = []  # final scores of earlier episodes
-        self.mode = "you"
+        self.mode = "you"  # "agent" while the harness plays: UI routes are rejected
+        self.agent: str | None = None  # name of the agent that plays
         self._seq = 0
         self._lock = threading.RLock()
         self._subs: set[tuple[asyncio.AbstractEventLoop, asyncio.Queue]] = set()
@@ -80,7 +81,8 @@ class Game:
                 if args.get("mode") not in ("you", "agent"):
                     raise ValueError("mode must be 'you' or 'agent'")
                 self.mode = args["mode"]
-                return {"mode": self.mode}
+                self.agent = str(args.get("agent") or "agent") if self.mode == "agent" else None
+                return {"mode": self.mode, "agent": self.agent}
             if self.env.score()["done"]:
                 raise ValueError("the episode is over; reset to play again")
             clean = self.env.check_action(verb, args)
@@ -174,6 +176,7 @@ class Game:
             ui = self.env.ui_state(ctx)
             ui["queued"] = ctx["queued"]  # base contract: the UI queue panel reads this
             ui["score"] = {**sc, "baseline": self.baseline}  # base contract: the Goal card reads this
+            ui["play"] = {"mode": self.mode, "agent": self.agent}  # base contract: who plays (agent view)
             return to_jsonable(ui)
 
     # ---------- events ----------
@@ -228,6 +231,12 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="PlanWorld server", lifespan=lifespan)
 
 
+def _player_only() -> None:
+    """While an agent plays (mode "agent"), the UI may watch but not act."""
+    if game.mode == "agent":
+        raise HTTPException(status_code=409, detail=f"{game.agent} is playing; stop it to take over")
+
+
 def _bad_request(fn, *args):
     try:
         return fn(*args)
@@ -251,6 +260,8 @@ async def get_score() -> dict[str, Any]:
 async def post_action(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
     if not isinstance(body.get("id"), str):
         raise HTTPException(status_code=400, detail="body needs {id, args}")
+    if body["id"] != "mode":  # the harness hands control over with mode
+        _player_only()
     return _bad_request(game.act, body["id"], body.get("args") or {}, "ui")
 
 
@@ -258,16 +269,19 @@ async def post_action(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
 async def post_unqueue(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
     if not isinstance(body.get("index"), int):
         raise HTTPException(status_code=400, detail="body needs {index}")
+    _player_only()
     return _bad_request(game.unqueue, body["index"], "ui")
 
 
 @app.post("/api/advance")
 async def post_advance(body: dict[str, Any] | None = Body(None)) -> dict[str, Any]:
+    _player_only()
     return _bad_request(game.advance, int((body or {}).get("steps", 1)), "ui")
 
 
 @app.post("/api/reset")
 async def post_reset(body: dict[str, Any] | None = Body(None)) -> dict[str, Any]:
+    _player_only()
     body = body or {}
     return _bad_request(game.reset, body.get("seed"), body.get("difficulty"), "ui")
 

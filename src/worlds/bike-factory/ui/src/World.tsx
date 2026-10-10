@@ -280,7 +280,7 @@ export function WorldView({ state, selectedId, onSelect }: { state: State; selec
       depth: s.i + s.j + 0.2,
       node: (
         <g key={s.id} className="clickable" onClick={() => onSelect(s.id)}>
-          <Building x={x} y={y} {...LOOK[s.id]} />
+          <Building x={x} y={y} {...LOOK[s.id]} target={s.id} />
         </g>
       ),
     });
@@ -304,6 +304,7 @@ export function WorldView({ state, selectedId, onSelect }: { state: State; selec
         alert={s.outOfStock}
         selected={s.id === selected}
         onClick={() => onSelect(s.id)}
+        target={s.id}
       />
     );
   });

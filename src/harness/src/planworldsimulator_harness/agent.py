@@ -1,6 +1,8 @@
 """Generic agent: system prompt, world MCP as tools, budget line, history trimming."""
 
+import asyncio
 import time
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -25,6 +27,10 @@ Your budget for the whole episode: {budget}.
 If the budget runs out, you stop and the remaining steps run with no actions."""
 
 START_PROMPT = "Play this world. Start with brief()."
+CONTINUE_PROMPT = (
+    "Continue playing this world from week {week}; earlier weeks were played "
+    "by someone else. Start with brief() and observe()."
+)
 
 
 @dataclass
@@ -58,14 +64,34 @@ def trim_history(messages: list[ModelMessage]) -> list[ModelMessage]:
     return [messages[0], *messages[cut:]]
 
 
+def paced(seconds: float) -> Callable[..., Awaitable[Any]]:
+    """MCP tool-call hook that waits ``seconds`` before each call (UI runs only)."""
+
+    async def call(
+        ctx: RunContext[Any],
+        call_tool: Callable[[str, dict[str, Any]], Awaitable[Any]],
+        name: str,
+        args: dict[str, Any],
+    ) -> Any:
+        await asyncio.sleep(seconds)
+        return await call_tool(name, args)
+
+    return call
+
+
 def build_agent(
-    model: Model, mcp_url: str, settings: dict[str, Any] | None = None
+    model: Model,
+    mcp_url: str,
+    settings: dict[str, Any] | None = None,
+    pace: float = 0.0,
 ) -> Agent[Deps, str]:
+    """``pace``: seconds to wait before each tool call, so a person can follow."""
+    hook = paced(pace) if pace > 0 else None
     return Agent(
         model,
         deps_type=Deps,
         instructions=_instructions,
-        toolsets=[MCPToolset(mcp_url)],
+        toolsets=[MCPToolset(mcp_url, process_tool_call=hook)],
         model_settings=settings or None,  # type: ignore[arg-type]
         capabilities=[ProcessHistory(trim_history)],
     )

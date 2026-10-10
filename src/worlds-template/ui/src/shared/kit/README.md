@@ -11,6 +11,9 @@ See `src/World.tsx` (Bike Factory) for a full example.
 - Put the `<svg>` inside `<Stage width height overlay>`; place `Hud` pills in
   `overlay` with `toPercent(x, y, width, height)` so they line up with the SVG.
 - Colours are hex strings; faces are shaded automatically.
+- **Agent cursor:** give each actionable object its id as `target` (on `Hud` and/or
+  `Building`; rendered as `data-target="map:<id>"`). When the agent acts with an
+  argument equal to that id (e.g. `order(site="warehouse")`), the cursor moves there.
 
 ## iso.ts
 
@@ -29,7 +32,7 @@ See `src/World.tsx` (Bike Factory) for a full example.
 | `Stage` | `width, height, overlay?` | Frame for the SVG + HTML overlay at a fixed aspect ratio. |
 | `IsoIsland` | `grid, tileKind?(i, j)` | Floating slab with tiles; kinds `grass`, `path`, `water`, `none`. Children draw on top. |
 | `IsoBox` | `x, y, w, d, h, color, top?, z0?, stroke?` | `w` along down-right, `d` along down-left. Left face = color, right 0.8, top 1.3. |
-| `Building` | `x, y, w, d, h, color, roof?, gable?, chimney?, windows? = true, z0?` | Windows on both faces; `roof` colour = flat roof box, with `gable` = gable roof. `buildingTop(props)` = drawn height (for Hud placement). |
+| `Building` | `x, y, w, d, h, color, roof?, gable?, chimney?, windows? = true, z0?, target?` | Windows on both faces; `roof` colour = flat roof box, with `gable` = gable roof. `buildingTop(props)` = drawn height (for Hud placement). |
 | `Tree` | `x, y, color?, scale?` | Round crown. |
 | `Person` | `x, y, color?, skin?, scale?` | Worker with yellow hard hat. |
 | `Vehicle` | `x, y, kind = truck \| car \| ship, color?, dir = u \| v, reverse?, scale?` | Animate by wrapping it at `0,0` in a `<g>` with `<animateMotion path=…>`. |
