@@ -140,3 +140,7 @@ I quickly looked at the first drafts, I think it should be like "muted" but stil
 ---
 
 so muted I mean visually, but it should be loud when it first opens (so it reads aloud, no first click until one hears the voice). Yes save those decision to the brain and also in our decision files.
+
+---
+
+yes write 0007, then commit and merge everything - after that we would start with implementation. Come back before you start - do you think two subagents could work on both features in parallel?
