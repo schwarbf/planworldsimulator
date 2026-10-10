@@ -30,6 +30,7 @@ export default function App() {
   // Dock verb shown as active right away, before the server confirms it.
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [narratorOpen, setNarratorOpen] = useState(false);
   const model = useMemo(() => toControls(state, selectedId), [state, selectedId]);
   const queued = (state as { queued?: QueuedAction[] }).queued ?? [];
   const score = (state as { score?: ScoreInfo }).score;
@@ -83,7 +84,7 @@ export default function App() {
   const dock = useMemo(() => ({ ...model.dock, active: pending ?? model.dock.active }), [model.dock, pending]);
 
   return (
-    <div className="app">
+    <div className={`app${narratorOpen ? " app--narrator-open" : ""}`}>
       <div className="app__glow" />
       <div className="app__brand"><Brand brand={model.brand} /></div>
       <div className="app__top">
@@ -112,7 +113,7 @@ export default function App() {
         {playing && <FrozenLock />}
         <ActionDock dock={dock} onAction={playing ? ignore : onDock} />
       </div>
-      <div className="app__narrator"><Narrator /></div>
+      <div className="app__narrator"><Narrator collapse={playing} onOpen={setNarratorOpen} /></div>
       {playing && <AgentBanner look={look} timeLabel={model.topBar.timeLabel} onStop={takeOver} />}
       <AgentCursor look={look} active={playing} onTarget={setSelectedId} />
     </div>

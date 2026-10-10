@@ -142,3 +142,31 @@ async def test_pace_spaces_tool_calls(world_url):
     )
     assert result.tool_calls == len(SCRIPT)
     assert result.seconds >= 0.1 * len(SCRIPT)
+
+
+async def test_pace_can_change_while_the_agent_plays(world_url, tmp_path):
+    async with WorldClient(world_url) as world:
+        await world.reset(7, "medium")
+    r = runner(tmp_path, endless(), pace=0.5)
+    app = create_app(r)
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://h") as http:
+        await http.post("/run", json={"world_url": world_url, "agent": "scripted"})
+        await asyncio.sleep(0.2)
+        before = r.runs[world_url.rstrip("/")]
+        set_ = await http.post("/pace", json={"world_url": world_url, "seconds": 0.0})
+        assert set_.json()["pace"] == 0.0
+        await asyncio.sleep(0.6)  # at 0.5 s per call, ~1 call; at 0 s, many
+        async with WorldClient(world_url) as world:
+            calls = [e for e in await world.events() if e["source"] == "agent"]
+        assert len(calls) > 5
+        status = (await http.get("/status", params={"world_url": world_url})).json()
+        assert status["pace"] == 0.0
+        assert before.task is r.runs[world_url.rstrip("/")].task  # same run, no restart
+        assert (
+            await http.post("/pace", json={"world_url": world_url})
+        ).status_code == 400
+        assert (
+            await http.post("/pace", json={"world_url": world_url, "seconds": 99})
+        ).json()["pace"] == 5.0
+        await http.post("/stop", json={"world_url": world_url})

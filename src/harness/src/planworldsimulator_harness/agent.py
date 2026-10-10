@@ -64,8 +64,15 @@ def trim_history(messages: list[ModelMessage]) -> list[ModelMessage]:
     return [messages[0], *messages[cut:]]
 
 
-def paced(seconds: float) -> Callable[..., Awaitable[Any]]:
-    """MCP tool-call hook that waits ``seconds`` before each call (UI runs only)."""
+Pace = float | Callable[[], float]
+
+
+def paced(seconds: Pace) -> Callable[..., Awaitable[Any]]:
+    """MCP tool-call hook that waits before each call (UI runs only).
+
+    ``seconds`` may be a function, read before every call, so the pace can change
+    while the agent plays (the UI speed slider).
+    """
 
     async def call(
         ctx: RunContext[Any],
@@ -73,7 +80,9 @@ def paced(seconds: float) -> Callable[..., Awaitable[Any]]:
         name: str,
         args: dict[str, Any],
     ) -> Any:
-        await asyncio.sleep(seconds)
+        wait = seconds() if callable(seconds) else seconds
+        if wait > 0:
+            await asyncio.sleep(wait)
         return await call_tool(name, args)
 
     return call
@@ -83,10 +92,10 @@ def build_agent(
     model: Model,
     mcp_url: str,
     settings: dict[str, Any] | None = None,
-    pace: float = 0.0,
+    pace: Pace = 0.0,
 ) -> Agent[Deps, str]:
     """``pace``: seconds to wait before each tool call, so a person can follow."""
-    hook = paced(pace) if pace > 0 else None
+    hook = paced(pace) if callable(pace) or pace > 0 else None
     return Agent(
         model,
         deps_type=Deps,

@@ -17,7 +17,12 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).p
  * while it plays, so the intro also works muted, without audio, or while the
  * browser blocks autoplay (then audio starts on the first click or key press).
  */
-export function Narrator() {
+export function Narrator({ collapse = false, onOpen }: {
+  /** Shrink to the small pill (e.g. while an agent plays), so the Agent panel has room. */
+  collapse?: boolean;
+  /** Tells the layout whether the full card is shown. */
+  onOpen?: (open: boolean) => void;
+} = {}) {
   const [intro, setIntro] = useState<Narration | null>(null);
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -91,6 +96,13 @@ export function Narrator() {
     const timer = setTimeout(() => setOpen(false), COLLAPSE_MS);
     return () => clearTimeout(timer);
   }, [done, playing]);
+
+  useEffect(() => {
+    if (collapse) setOpen(false);
+  }, [collapse]);
+
+  const shown = open && intro !== null;
+  useEffect(() => onOpen?.(shown), [shown, onOpen]);
 
   // Autoplay blocked: start the audio, in sync with the captions, on the first interaction.
   useEffect(() => {
