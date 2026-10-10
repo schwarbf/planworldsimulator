@@ -13,3 +13,19 @@ I think we see it now and connected, can you quickly give me a table of each fea
 ---
 
 they said we should use for all the implementations entire "continuous memory" and brain so we would get full points in this regard.
+
+---
+
+flo said he did already push something to main to enable something - can you quickly check
+
+---
+
+yes delete them and pull main
+
+---
+
+bot steps done, do I need to commit something to the repo to use this?
+
+---
+
+yes please commit it and right away merge - so they see in the repo that we used it
