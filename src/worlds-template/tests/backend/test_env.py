@@ -53,5 +53,20 @@ class TestDeterminism:
         e1, e2 = Env(difficulty), Env(difficulty)
         o1, _ = e1.reset(seed=1)
         o2, _ = e2.reset(seed=2)
-        assert e1.observation_space == e2.observation_space and e1.action_space == e2.action_space
-        assert any(not np.array_equal(o1[k], o2[k]) for k in o1)
+        assert e1.observation_space == e2.observation_space
+        assert e1.action_space == e2.action_space
+        # The seed must draw values (demand, prices, lead times, positions...): the
+        # first observation or the first weeks of the baseline policy must differ.
+        trace1, trace2 = [o1], [o2]
+        for _ in range(6):
+            trace1.append(e1.step(e1.baseline_action())[0])
+            trace2.append(e2.step(e2.baseline_action())[0])
+        differs = any(
+            not np.array_equal(a[k], b[k]) for a, b in zip(trace1, trace2) for k in a
+        )
+        assert differs, (
+            f"seeds 1 and 2 give identical observations on {difficulty} for the first "
+            "weeks. Draw values from self.np_random (the seeded generator that "
+            "reset(seed=...) sets up) in reset()/initial_state(), for example the base "
+            "demand, prices or starting stock, and put them into the observation."
+        )

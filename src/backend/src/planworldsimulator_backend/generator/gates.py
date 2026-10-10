@@ -106,24 +106,39 @@ async def run_backend_gate(
     )
 
 
-async def run_ui_gates(world_dir: Path, timeout: float = 90) -> list[GateResult]:
-    """Type check, then Vitest (needs the state samples that the backend gate dumps)."""
-    ui = world_dir / "ui"
-    env = _env(world_dir)
-    typecheck = await _run(
-        "ui typecheck", ["npx", "--no-install", "tsc", "-b"], ui, env, timeout, "ui"
+async def run_typecheck(world_dir: Path, timeout: float = 90) -> GateResult:
+    return await _run(
+        "ui typecheck",
+        ["npx", "--no-install", "tsc", "-b"],
+        world_dir / "ui",
+        _env(world_dir),
+        timeout,
+        "ui",
     )
-    tests = await _run(
-        "ui tests", ["npx", "--no-install", "vitest", "run"], ui, env, timeout, "ui"
+
+
+async def run_ui_tests(world_dir: Path, timeout: float = 90) -> GateResult:
+    """Vitest; needs the state samples that the backend gate dumps."""
+    return await _run(
+        "ui tests",
+        ["npx", "--no-install", "vitest", "run"],
+        world_dir / "ui",
+        _env(world_dir),
+        timeout,
+        "ui",
     )
-    return [typecheck, tests]
 
 
 async def run_gates(world_dir: Path, python: Path) -> GateReport:
-    backend = await run_backend_gate(world_dir, python)
-    # The UI contract test reads the samples written by the backend gate.
-    ui = await run_ui_gates(world_dir) if backend.ok else []
-    return GateReport([backend, *ui])
+    # The type check does not depend on the backend, so they run side by side; the UI
+    # contract test reads the state samples written by the backend gate.
+    backend, typecheck = await asyncio.gather(
+        run_backend_gate(world_dir, python), run_typecheck(world_dir)
+    )
+    results = [backend, typecheck]
+    if backend.ok:
+        results.append(await run_ui_tests(world_dir))
+    return GateReport(results)
 
 
 async def build_ui(world_dir: Path, timeout: float = 90) -> GateResult:

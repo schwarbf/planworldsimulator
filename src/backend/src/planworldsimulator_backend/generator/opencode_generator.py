@@ -174,6 +174,7 @@ class OpenCodeGenerator:
             description=request.prompt,
             design=design_text,
             kit_readme=prompts.read(world_dir, "ui/src/shared/kit/README.md"),
+            types=prompts.fenced(world_dir, "ui/src/shared/types.ts"),
             placeholder=prompts.fenced(world_dir, "ui/src/World.tsx"),
         )
         fill_timeout = deadline.slice(FILL_SECONDS, "fill")

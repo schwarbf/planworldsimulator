@@ -17,6 +17,10 @@ $design
 - It must look good: fill the stage, balanced composition, readable HUD labels that do not overlap, consistent colours.
 - TypeScript strict; no new dependencies; imports only from `./shared/...`. No other files.
 
+## Shared types (the contract of `toControls`; use only these names, especially the icons in `IconName`)
+
+$types
+
 ## Kit documentation
 
 $kit_readme

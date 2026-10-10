@@ -1,6 +1,6 @@
 """Generate one world from the command line, without the website or the database.
 
-    pixi run python -m planworldsimulator_backend.generate "Lemonade Stand" "A lemonade stand ..."
+    pixi run python -m planworldsimulator_backend.generate "Lemonade" "A stand ..."
 
 Uses the settings from the environment (PLANWORLDSIMULATOR_*, GEMINI_API_KEY).
 """
@@ -29,20 +29,26 @@ async def main(name: str, prompt: str, seed: int | None) -> int:
         seed=seed if seed is not None else secrets.randbelow(10_000),
     )
     started = time.monotonic()
-    print(f"world {request.world_id} (budget {settings.generation_deadline_seconds:.0f}s)")
+    print(
+        f"world {request.world_id} (budget {settings.generation_deadline_seconds:.0f}s)"
+    )
     try:
         async for event in OpenCodeGenerator(settings, _no_owner).run(request):
             at = time.monotonic() - started
-            print(f"{at:6.1f}s  {event.step:<14} {event.state:<8} {event.message}")
+            line = f"{event.step:<14} {event.state:<8} {event.message}"
+            print(f"{at:6.1f}s  {line}")
     except Exception as exc:
         print(f"{time.monotonic() - started:6.1f}s  FAILED: {exc}")
         return 1
-    print(f"done in {time.monotonic() - started:.0f}s: {settings.worlds_dir / request.world_id}")
+    path = settings.worlds_dir / request.world_id
+    print(f"done in {time.monotonic() - started:.0f}s: {path}")
     return 0
 
 
 def cli() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(
+        description="Generate one world from the command line."
+    )
     parser.add_argument("name")
     parser.add_argument("prompt")
     parser.add_argument("--seed", type=int)
