@@ -1,0 +1,5 @@
+An agent is currently working on making the deploy pipeline ready, how can we best screen record a demo for showing the voice component, the manual action selection component and the agent navigation component (I think this only needs the world stack (without Flos Frontend components)). Should we use Macbook Native recording capabilities or how can we make sure that the voice shows up?
+
+---
+
+how can I start a macOS Screen Capture and macOS Audio Capture?
