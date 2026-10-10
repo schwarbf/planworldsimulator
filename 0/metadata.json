@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JZDGQMBEY4RG1BN079EX7H",
+  "session_id": "5d8d31be-3c40-40b6-a359-c1d8fbdb4a06",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T13:18:13.455701Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".gitignore",
+    "src/backend/src/planworldsimulator_backend/api/play.py",
+    "src/backend/src/planworldsimulator_backend/generator.py",
+    "src/backend/tests/test_play.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/web/src/api/client.ts",
+    "src/web/src/components/DifficultySection.test.tsx",
+    "src/web/src/components/DifficultySection.tsx",
+    "src/web/src/components/ExistingWorlds.test.tsx",
+    "src/web/src/components/ExistingWorlds.tsx",
+    "src/web/src/components/PlayLevels.tsx",
+    "src/web/src/components/PromptWindow.tsx",
+    "src/web/src/data/showcase.ts",
+    "src/web/src/pages/Home.test.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "a34778d50248",
+  "checkpoint_transcript_start": 286,
+  "transcript_lines_at_start": 286,
+  "compact_transcript_start": 44,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 11190,
+    "cache_read_tokens": 1101092,
+    "output_tokens": 4878,
+    "api_call_count": 7
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T13:18:13.419743Z",
+    "agent_lines": 69,
+    "agent_removed": 24,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 69,
+    "total_lines_changed": 93,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}

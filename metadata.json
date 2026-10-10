@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JZDGQMBEY4RG1BN079EX7H",
+  "strategy": "manual-commit",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".gitignore",
+    "src/backend/src/planworldsimulator_backend/api/play.py",
+    "src/backend/src/planworldsimulator_backend/generator.py",
+    "src/backend/tests/test_play.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/web/src/api/client.ts",
+    "src/web/src/components/DifficultySection.test.tsx",
+    "src/web/src/components/DifficultySection.tsx",
+    "src/web/src/components/ExistingWorlds.test.tsx",
+    "src/web/src/components/ExistingWorlds.tsx",
+    "src/web/src/components/PlayLevels.tsx",
+    "src/web/src/components/PromptWindow.tsx",
+    "src/web/src/data/showcase.ts",
+    "src/web/src/pages/Home.test.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 11190,
+    "cache_read_tokens": 1101092,
+    "output_tokens": 4878,
+    "api_call_count": 7
+  }
+}
