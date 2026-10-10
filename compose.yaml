@@ -20,8 +20,11 @@ services:
         required: false
     environment:
       PLANWORLDSIMULATOR_STEP_DELAY_SECONDS: ${PLANWORLDSIMULATOR_STEP_DELAY_SECONDS:-1.0}
+      # nginx in front of the API sets X-Forwarded-For for per-visitor limits.
+      PLANWORLDSIMULATOR_TRUST_FORWARDED_FOR: "true"
     ports:
-      - "8000:8000"
+      # Loopback only: the API trusts the proxy header, so it must not be public.
+      - "127.0.0.1:8000:8000"
     healthcheck:
       test:
         - CMD
