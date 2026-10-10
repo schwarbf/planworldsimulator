@@ -1,0 +1,17 @@
+yes go ahead with the smoke benchmark
+
+---
+
+can you put it into a subagent so we can work on other topics / refine other topics in the mean time
+
+---
+
+So after this implementation, what is left?
+
+---
+
+Alright so smaller points - other thing I noticed in the front end that when I want to click through actions its super laggy (so sometimes it does not even switch the button at all). Why is that. Can we plan some performance checks on the UI and try to improve the performance of everything (of course world independent, so every environment will profit from that)
+
+---
+
+what do you mean by "The action itself runs from the Inspector or the map." ? So we would submit it somewhere else - why do we have actions which run inbetween timesteps, don't all actions run only after the play button=
