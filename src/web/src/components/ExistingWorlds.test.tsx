@@ -11,15 +11,17 @@ function world(overrides: Partial<World>): World {
     title: "Bakery",
     prompt: "A bakery",
     seed: 7,
-    levels: [1, 2, 3, 4],
+    levels: [1, 2, 3],
     status: "ready",
     storyline: "Plan the flour orders.",
     path: null,
+    duplicate_of: null,
     running: false,
     port: null,
     featured: false,
     play_count: 0,
     mine: false,
+    has_thumbnail: false,
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
     ...overrides,
@@ -43,7 +45,7 @@ function renderWorlds() {
 
 afterEach(() => vi.restoreAllMocks());
 
-test("every ready world can be played at each of its four levels", async () => {
+test("every ready world can be played at each of its three levels", async () => {
   respondWith(() => ({
     items: [world({ id: "fission-ops", title: "Fission Ops", featured: true })],
     total: 1,
@@ -52,7 +54,7 @@ test("every ready world can be played at each of its four levels", async () => {
 
   const group = await screen.findByRole("group", { name: "Play Fission Ops" });
   const links = within(group).getAllByRole("link");
-  expect(links.map((l) => l.textContent)).toEqual(["L1", "L2", "L3", "L4"]);
+  expect(links.map((l) => l.textContent)).toEqual(["Easy", "Medium", "Hard"]);
   expect(links[2]).toHaveAttribute("href", "/api/play/fission-ops/?level=3");
   expect(links[2]).toHaveAttribute("target", "_blank");
   expect(links[2]).toHaveAttribute("rel", expect.stringContaining("noopener"));
@@ -122,4 +124,15 @@ test("'Load more' fetches a larger page while more worlds exist", async () => {
   expect(
     fetchMock.mock.calls.some(([u]) => String(u).includes("limit=24")),
   ).toBe(true);
+});
+
+test("a world with a thumbnail shows it on its card", async () => {
+  respondWith(() => ({
+    items: [world({ id: "pictured", title: "Pictured", has_thumbnail: true })],
+    total: 1,
+  }));
+  renderWorlds();
+
+  const image = await screen.findByAltText("Pictured world preview");
+  expect(image).toHaveAttribute("src", "/api/worlds/pictured/thumbnail");
 });

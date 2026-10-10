@@ -14,7 +14,7 @@ import numpy as np
 from gymnasium import spaces
 
 from sim import rules as R
-from sim.helpers import obs_to_json, register_world
+from sim.helpers import calibrated_target, obs_to_json, register_world
 
 
 class ExampleEnv(gym.Env):
@@ -42,13 +42,14 @@ class ExampleEnv(gym.Env):
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
-        self.w = R.initial_state(self.np_random, self.difficulty)  # seed only draws values
+        self.w = R.initial_state(self.np_random, self.DIFFICULTIES.index(self.difficulty) + 1)  # seed only draws values
         return self._obs(), {}
 
     def step(self, action: dict[str, Any]):
         assert self.w is not None, "call reset() first"
         reward = R.step_world(self.np_random, self.w, int(action["invest"]))
-        return self._obs(), float(reward), self.w.week >= R.WEEKS, False, {"discovered": [], "story": None}
+        discovered = [f.found for f in self.w.new_found]
+        return self._obs(), float(reward), self.w.week >= R.WEEKS, False, {"discovered": discovered, "story": None}
 
     def _obs(self) -> dict[str, Any]:
         w = self.w
@@ -75,13 +76,21 @@ class ExampleEnv(gym.Env):
     def observe(self, site: str | None = None) -> dict[str, Any]:
         return obs_to_json(self._obs(), self.site_ids)
 
+    def result(self) -> float:
+        """Raw outcome (here profit); ``score()`` is this divided by the calibrated target."""
+        assert self.w is not None
+        return self.w.cash - R.START_CASH
+
+    def target(self) -> float:
+        """The profit that scores 1.0; derived from the baseline, never hand-tuned."""
+        return calibrated_target(type(self))
+
     def score(self) -> dict[str, Any]:
         w = self.w
         assert w is not None
         profit = w.cash - R.START_CASH
-        return {"score": round(float(np.clip(profit / R.TARGET, 0, 1)), 4), "profit": round(profit),
-                "week": min(w.week + 1, R.WEEKS), "done": w.week >= R.WEEKS,
-                "formula": f"profit vs CHF {R.TARGET:,.0f}"}
+        return {"score": round(float(np.clip(profit / self.target(), 0, 1)), 4), "profit": round(profit),
+                "week": min(w.week + 1, R.WEEKS), "done": w.week >= R.WEEKS, "formula": f"profit vs CHF {self.target():,.0f}"}
 
     def ui_state(self, ctx: dict[str, Any]) -> dict[str, Any]:
         """Same shape as `mockState` in ui/src/World.tsx."""
@@ -96,9 +105,9 @@ class ExampleEnv(gym.Env):
             "capacity": int(w.capacity),
             "demand": int(w.demand),
             "profit": sc["profit"],
-            "target": R.TARGET,
+            "target": round(self.target()),
             "story": ctx.get("story"),
-            "discoveries": {"total": 0, "found": ctx.get("discoveries", []), "hidden": []},
+            "discoveries": w.model.discoveries(w.found),
             "agent": ctx.get("agent", {}),
             "active": ctx.get("active"),
             "queued": ctx.get("queued", []),

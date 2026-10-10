@@ -9,10 +9,12 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from sim import demand_config
+from sim.demand import DemandModel, Factor
+
 WEEKS = 12
 MAX_INVEST = 10
 START_CASH = 1000.0
-TARGET = 2000.0
 BIG = 1e9
 PRICE, INVEST_COST = 10.0, 50.0
 
@@ -23,10 +25,18 @@ class WorldState:
     cash: float
     capacity: float
     demand: float
+    model: DemandModel
+    found: set[str]  # demand factors whose effect has been seen
+    new_found: list[Factor]  # found in the last step
+    decay: float  # share of the capacity that wears out each week; rises with the level
 
 
-def initial_state(rng: np.random.Generator, difficulty: str) -> WorldState:
-    return WorldState(week=0, cash=START_CASH, capacity=10.0, demand=float(rng.integers(20, 40)))
+def initial_state(rng: np.random.Generator, level: int) -> WorldState:
+    """``level`` is 1 (easy) … 3 (hard); the seed only draws values (here: the base demand)."""
+    model = demand_config.build(base=float(rng.integers(20, 40)), level=level)
+    demand, _ = model.detail({"week": 0}, rng)
+    decay = (0.0, 0.05, 0.1)[level - 1]
+    return WorldState(0, START_CASH, 10.0, demand, model, set(), [], decay)
 
 
 def step_world(rng: np.random.Generator, w: WorldState, invest: int) -> float:
@@ -34,7 +44,10 @@ def step_world(rng: np.random.Generator, w: WorldState, invest: int) -> float:
     w.capacity += 2 * invest
     sold = min(w.demand, w.capacity)
     profit = sold * PRICE - invest * INVEST_COST
+    w.capacity *= 1.0 - w.decay
     w.cash += profit
-    w.demand = max(0.0, w.demand + float(rng.normal(0, 3)))
     w.week += 1
+    w.demand, mults = w.model.detail({"week": w.week}, rng)
+    w.new_found = w.model.newly_found(mults, w.found)
+    w.found |= {f.name for f in w.new_found}
     return profit

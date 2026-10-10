@@ -12,6 +12,16 @@ const POLL_MS = 3000;
 function WorldCard({ world }: { world: World }) {
   return (
     <article className="flex flex-col gap-3 rounded-lg border border-line bg-card p-5">
+      {world.has_thumbnail && (
+        <Link to={`/worlds/${world.id}`}>
+          <img
+            src={`/api/worlds/${world.id}/thumbnail`}
+            alt={`${world.title} world preview`}
+            className="aspect-[8/5] w-full rounded-md border border-line object-cover"
+            loading="lazy"
+          />
+        </Link>
+      )}
       <div className="flex items-center gap-2">
         {world.featured && (
           <span className="rounded-full bg-violet-soft px-2.5 py-1 font-mono text-[11px] text-violet uppercase">
@@ -98,7 +108,7 @@ export function ExistingWorlds() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <p className="max-w-xl text-muted">
           Anyone can generate a world, and every finished world is public. Pick
-          one and play it at any of its four difficulty levels.
+          one and play it at any of its three difficulty levels.
         </p>
         <input
           type="search"

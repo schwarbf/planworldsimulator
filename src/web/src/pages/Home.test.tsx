@@ -27,7 +27,7 @@ test("shows the hero, the showcase and an empty worlds list", async () => {
   ).toBeInTheDocument();
   expect(screen.getByAltText(/fission ops control room/i)).toBeInTheDocument();
   expect(
-    screen.getByRole("heading", { name: /four levels in every world/i }),
+    screen.getByRole("heading", { name: /three levels in every world/i }),
   ).toBeInTheDocument();
   expect(await screen.findByText(/no worlds yet/i)).toBeInTheDocument();
   expect(

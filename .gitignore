@@ -224,6 +224,7 @@ src/worlds/*
 !src/worlds/.gitkeep
 !src/worlds/bike-factory/
 data/
+!src/web/src/data/
 node_modules/
 src/web/dist/
 .env

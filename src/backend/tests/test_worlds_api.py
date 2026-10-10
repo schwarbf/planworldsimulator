@@ -1,6 +1,7 @@
 import json
 
 import httpx
+from planworldsimulator_backend.generator import STEPS
 
 PROMPT = "A nuclear plant under heat waves"
 
@@ -45,7 +46,7 @@ async def test_create_world_generates_and_becomes_ready(
     client: httpx.AsyncClient,
 ) -> None:
     created = await create(client, "Heat waves")
-    assert created["levels"] == [1, 2, 3, 4]
+    assert created["levels"] == [1, 2, 3]
 
     await wait(client)
 
@@ -55,7 +56,7 @@ async def test_create_world_generates_and_becomes_ready(
 
     events = (await client.get(f"/worlds/{created['id']}/events")).json()
     steps = [e["step"] for e in events if e["state"] == "done"]
-    assert steps == ["storyline", "copy_template", "fill_template", "tests"]
+    assert steps == list(STEPS)
 
 
 async def test_generated_world_folder_is_created(client: httpx.AsyncClient) -> None:
@@ -69,7 +70,7 @@ async def test_generated_world_folder_is_created(client: httpx.AsyncClient) -> N
         ).read_text()
     )
     assert meta["id"] == created["id"]
-    assert meta["levels"] == [1, 2, 3, 4]
+    assert meta["levels"] == [1, 2, 3]
     assert "difficulty" not in meta
 
 
@@ -101,9 +102,19 @@ async def test_names_without_letters_still_get_an_id(client: httpx.AsyncClient) 
     assert (await create(client, "!!"))["id"].startswith("world-")
 
 
-async def test_same_name_gets_distinct_ids(client: httpx.AsyncClient) -> None:
-    ids = {(await create(client, "Twin"))["id"] for _ in range(3)}
-    assert len(ids) == 3
+async def test_a_name_can_only_be_used_once(client: httpx.AsyncClient) -> None:
+    first = await create(client, "Twin")
+    for again in ("Twin", "  twin ", "TWIN!"):
+        response = await client.post("/worlds", json={"name": again, "prompt": PROMPT})
+        assert response.status_code == 409
+        assert response.headers["x-existing-world"] == first["id"]
+
+
+async def test_a_failed_world_does_not_hold_its_name(client: httpx.AsyncClient) -> None:
+    first = await create(client, "Retry me")
+    await wait(client)
+    await set_status(client, first["id"], "failed")
+    assert (await create(client, "Retry me"))["id"] != first["id"]
 
 
 async def test_unknown_world_is_404(client: httpx.AsyncClient) -> None:
@@ -272,3 +283,74 @@ async def test_being_turned_away_for_capacity_costs_no_allowance(
         await set_status(client, second.json()["id"], "ready")
         third = await client.post("/worlds", json={"name": "Third", "prompt": PROMPT})
         assert third.status_code == 429
+
+
+async def test_retry_has_new_attempt_and_current_events_only(client):
+    world = await create(client)
+    await wait(client)
+    first = (await client.get(f"/worlds/{world['id']}/events")).json()
+    await set_status(client, world["id"], "failed")
+    retried = (await client.post(f"/worlds/{world['id']}/retry")).json()
+    assert retried["generation_attempt"] == 2
+    await wait(client)
+    current = (await client.get(f"/worlds/{world['id']}/events")).json()
+    assert all(e["attempt"] == 2 for e in current)
+    assert {e["id"] for e in current}.isdisjoint(e["id"] for e in first)
+    assert "metrics" not in current[0]
+
+
+async def test_stream_resumes_from_last_event_id(client):
+    world = await create(client)
+    await wait(client)
+    events = (await client.get(f"/worlds/{world['id']}/events")).json()
+    cursor = events[-2]["id"]
+    response = await client.get(
+        f"/worlds/{world['id']}/stream", headers={"Last-Event-ID": str(cursor)}
+    )
+    assert f"id: {events[-1]['id']}\n" in response.text
+    assert f"id: {cursor}\n" not in response.text
+    assert "event: done" in response.text
+
+
+async def test_retry_respects_capacity(make_client, monkeypatch):
+    async with make_client(max_generating=1) as client:
+        world = await create(client, "Retry")
+        await wait(client)
+        await set_status(client, world["id"], "failed")
+        monkeypatch.setattr(app_of(client).state.runner, "submit", lambda _r: None)
+        await create(client, "Busy")
+        response = await client.post(f"/worlds/{world['id']}/retry")
+        assert response.status_code == 503
+        current = (await client.get(f"/worlds/{world['id']}")).json()
+        assert current["status"] == "failed"
+        assert current["generation_attempt"] == 1
+
+
+async def test_startup_recovers_interrupted_generation(make_client, monkeypatch):
+    async with make_client() as client:
+        monkeypatch.setattr(app_of(client).state.runner, "submit", lambda _r: None)
+        world = await create(client)
+    async with make_client() as client:
+        recovered = (await client.get(f"/worlds/{world['id']}")).json()
+        assert recovered["status"] == "failed"
+        events = (await client.get(f"/worlds/{world['id']}/events")).json()
+        assert "interrupted" in events[-1]["message"]
+
+
+async def test_thumbnail_is_served_when_the_world_has_one(
+    client: httpx.AsyncClient,
+) -> None:
+    world = await create(client, "Pictured")
+    await wait(client)
+    assert world["has_thumbnail"] is False
+    assert (await client.get(f"/worlds/{world['id']}/thumbnail")).status_code == 404
+
+    path = (await client.get(f"/worlds/{world['id']}")).json()["path"]
+    from pathlib import Path
+
+    (Path(path) / "thumbnail.png").write_bytes(b"\x89PNG fake")
+    shown = (await client.get(f"/worlds/{world['id']}")).json()
+    assert shown["has_thumbnail"] is True
+    picture = await client.get(f"/worlds/{world['id']}/thumbnail")
+    assert picture.status_code == 200
+    assert picture.headers["content-type"] == "image/png"

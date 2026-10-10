@@ -43,3 +43,15 @@ See `src/World.tsx` (Bike Factory) for a full example.
 
 Use CSS class `pulse` on any element to make it blink (alerts), and `clickable`
 on a `<g>` for a pointer cursor.
+
+## Look checklist
+
+The `polish` step checks screenshots of every level against this list.
+
+- The island fills the stage; no large empty corners and nothing outside the frame.
+- At least 8 kit objects (buildings, trees, people, vehicles, fog, weather), not only boxes.
+- Each site has a `Hud` pill, and no two pills overlap at any level.
+- One palette from `design.md`: three or four hues plus neutrals, the same in every level.
+- Something always moves: `Flow` lines, a `Vehicle` with `animateMotion`, `Weather`, or `pulse` on alerts.
+- Levels differ visibly: more sites at higher levels, `Fog` over unexplored ground.
+- Painter's order is respected, so nothing is drawn behind the ground or a taller neighbour.

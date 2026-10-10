@@ -145,7 +145,9 @@ export function AgentCursor({ look, active, onTarget }: { look: AgentLook; activ
 
     const connect = () => {
       const proto = location.protocol === "https:" ? "wss" : "ws";
-      ws = new WebSocket(`${proto}://${location.host}/api/events`);
+      const url = new URL("api/events", window.location.href);
+      url.protocol = `${proto}:`;
+      ws = new WebSocket(url);
       ws.onmessage = (msg) => {
         const e = JSON.parse(String(msg.data)) as WorldEvent;
         if (e.seq <= lastSeq) return; // history sent on connect
@@ -154,12 +156,28 @@ export function AgentCursor({ look, active, onTarget }: { look: AgentLook; activ
         queue.current.push(e);
         void drain();
       };
-      ws.onclose = () => { if (alive) timer = setTimeout(start, RECONNECT_MS); };
+      ws.onclose = () => { if (alive) timer = setTimeout(poll, RECONNECT_MS); };
+    };
+
+    const poll = async () => {
+      try {
+        const res = await fetch(`api/events?after=${lastSeq}`);
+        if (res.ok) {
+          const events = (await res.json()) as WorldEvent[];
+          for (const e of events) {
+            if (e.seq <= lastSeq) continue;
+            lastSeq = e.seq;
+            if (e.source === "agent") queue.current.push(e);
+          }
+          void drain();
+        }
+      } catch { /* Retry while the world server is unavailable. */ }
+      if (alive) timer = setTimeout(poll, RECONNECT_MS);
     };
 
     const start = async () => {
       try {
-        const res = await fetch("/api/events");
+        const res = await fetch("api/events");
         const log = res.ok ? ((await res.json()) as WorldEvent[]) : [];
         lastSeq = log.reduce((m, e) => Math.max(m, e.seq), 0);
       } catch {

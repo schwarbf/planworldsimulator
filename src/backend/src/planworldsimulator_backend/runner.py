@@ -1,6 +1,9 @@
 import asyncio
+import json
 import logging
+import time
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from planworldsimulator_backend.db.models import World, WorldEvent
@@ -17,6 +20,26 @@ class GenerationRunner:
         self.generator = generator
         self._tasks: set[asyncio.Task] = set()
 
+    async def recover_interrupted(self) -> None:
+        async with self.sessions() as session:
+            worlds = await session.scalars(
+                select(World).where(World.status.in_(("queued", "generating")))
+            )
+            for world in worlds:
+                world.status = "failed"
+                session.add(
+                    WorldEvent(
+                        world_id=world.id,
+                        attempt=world.generation_attempt,
+                        step="error",
+                        state="failed",
+                        message=(
+                            "Generation was interrupted. Retry to resume saved work."
+                        ),
+                    )
+                )
+            await session.commit()
+
     def submit(self, request: GenerationRequest) -> None:
         task = asyncio.create_task(self._run(request))
         self._tasks.add(task)
@@ -27,6 +50,7 @@ class GenerationRunner:
             await asyncio.gather(*self._tasks, return_exceptions=True)
 
     async def _run(self, request: GenerationRequest) -> None:
+        started = time.monotonic()
         await self._update(request.world_id, status="generating")
         try:
             async for event in self.generator.run(request):
@@ -34,6 +58,11 @@ class GenerationRunner:
                     session.add(
                         WorldEvent(
                             world_id=request.world_id,
+                            attempt=request.attempt,
+                            elapsed_seconds=time.monotonic() - started,
+                            metrics=json.dumps(event.metrics)
+                            if event.metrics
+                            else None,
                             step=event.step,
                             state=event.state,
                             message=event.message,
@@ -41,6 +70,8 @@ class GenerationRunner:
                     )
                     world = await session.get(World, request.world_id)
                     if world is not None:
+                        if event.duplicate_of is not None:
+                            world.duplicate_of = event.duplicate_of
                         if event.storyline is not None:
                             world.storyline = event.storyline
                         if event.path is not None:
@@ -52,6 +83,8 @@ class GenerationRunner:
                 session.add(
                     WorldEvent(
                         world_id=request.world_id,
+                        attempt=request.attempt,
+                        elapsed_seconds=time.monotonic() - started,
                         step="error",
                         state="failed",
                         message=str(exc),
@@ -60,7 +93,12 @@ class GenerationRunner:
                 await session.commit()
             await self._update(request.world_id, status="failed")
             return
-        await self._update(request.world_id, status="ready")
+        await self._update(request.world_id, status=await self._final_status(request))
+
+    async def _final_status(self, request: GenerationRequest) -> str:
+        async with self.sessions() as session:
+            world = await session.get(World, request.world_id)
+            return "exists" if world is not None and world.duplicate_of else "ready"
 
     async def _update(self, world_id: str, **fields: object) -> None:
         async with self.sessions() as session:

@@ -1,4 +1,4 @@
-import { playUrl, type World } from "../api/client";
+import { LEVEL_NAMES, playUrl, type World } from "../api/client";
 
 /** One link per difficulty level. Opening one starts the world on demand. */
 export function PlayLevels({ world }: { world: World }) {
@@ -20,7 +20,7 @@ export function PlayLevels({ world }: { world: World }) {
           aria-label={`Play ${world.title} at level ${level}`}
           className="rounded-md border border-ink px-3 py-1.5 text-sm font-semibold transition-colors hover:bg-ink hover:text-white"
         >
-          L{level}
+          {LEVEL_NAMES[level - 1] ?? `L${level}`}
         </a>
       ))}
     </div>

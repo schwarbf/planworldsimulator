@@ -20,4 +20,7 @@ httpx = ">=0.27"
 serve = "uvicorn server.api:app --host 127.0.0.1 --port 8000 --timeout-graceful-shutdown 2"
 ui = { cmd = "test -d node_modules || npm install; npx vite --port 5173 --strictPort", cwd = "ui" }
 test = "python -m pytest tests/backend"
+build-ui = { cmd = "test -d node_modules || npm ci; npm run build", cwd = "ui" }
+contract = "python -m pytest tests/backend/test_contract.py -q"  # dumps UI state samples for the UI tests
+test-ui = { cmd = "test -d node_modules || npm ci; npx vitest run", cwd = "ui", depends-on = ["contract"] }
 dev = "process-compose up --no-server"  # no control port, so several worlds can run at once

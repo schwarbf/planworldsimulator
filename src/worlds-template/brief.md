@@ -8,7 +8,7 @@ You run a small shop for 12 weeks.
 
 ## Goal
 
-Make CHF 2,000 profit.
+Make as much profit as you can. Your score (0 to 1) is your profit relative to a target, which `score()` reports.
 
 ## Actions
 
