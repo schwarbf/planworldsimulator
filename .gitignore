@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# PlanWorldSimulator
+src/worlds/*
+!src/worlds/.gitkeep
+data/
+node_modules/
+src/web/dist/
+.env
+!.env.example

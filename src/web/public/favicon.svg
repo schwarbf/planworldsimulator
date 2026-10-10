@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="PlanWorldSimulator">
+  <rect x="0" y="0" width="14" height="14" rx="3" fill="#1b1f3b"/>
+  <rect x="17" y="0" width="14" height="14" rx="3" fill="#ff6b4a"/>
+  <rect x="34" y="0" width="14" height="14" rx="3" fill="#ff6b4a"/>
+  <rect x="0" y="17" width="14" height="14" rx="3" fill="#1b1f3b"/>
+  <rect x="17" y="17" width="14" height="14" rx="3" fill="#ff6b4a"/>
+  <rect x="34" y="17" width="14" height="14" rx="3" fill="#1b1f3b"/>
+  <rect x="0" y="34" width="14" height="14" rx="3" fill="#ff6b4a"/>
+  <rect x="17" y="34" width="14" height="14" rx="3" fill="#ff6b4a"/>
+  <rect x="34" y="34" width="14" height="14" rx="3" fill="#1b1f3b"/>
+</svg>

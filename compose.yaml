@@ -1,0 +1,57 @@
+name: planworldsimulator
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: src/web/Dockerfile
+    ports:
+      # 8080 and 8000 are taken on many machines (process-compose, Django, ...).
+      - "${PLANWORLDSIMULATOR_WEB_PORT:-8480}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PLANWORLDSIMULATOR_STEP_DELAY_SECONDS: ${PLANWORLDSIMULATOR_STEP_DELAY_SECONDS:-1.0}
+      # nginx in front of the API sets X-Forwarded-For for per-visitor limits.
+      PLANWORLDSIMULATOR_TRUST_FORWARDED_FOR: "true"
+    ports:
+      # Loopback only: the API trusts the proxy header, so it must not be public.
+      - "127.0.0.1:${PLANWORLDSIMULATOR_API_PORT:-8400}:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - data:/data
+      - ./src/worlds:/worlds
+      - ./src/worlds-template:/worlds-template:ro
+    # To use Postgres instead of SQLite, uncomment the db service below and set
+    # PLANWORLDSIMULATOR_DATABASE_URL=postgresql+asyncpg://planworldsimulator:planworldsimulator@db/planworldsimulator
+    # (add asyncpg to src/backend/pyproject.toml).
+
+  # db:
+  #   image: postgres:17-alpine
+  #   environment:
+  #     POSTGRES_USER: planworldsimulator
+  #     POSTGRES_PASSWORD: planworldsimulator
+  #     POSTGRES_DB: planworldsimulator
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+
+volumes:
+  data:
+  # pgdata:

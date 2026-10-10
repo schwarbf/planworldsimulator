@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./tokens.css";
+@import "./site.css";
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+}
