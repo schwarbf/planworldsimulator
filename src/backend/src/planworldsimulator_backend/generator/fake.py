@@ -76,6 +76,7 @@ class FakeGenerator:
 
         for step, started, done in (
             ("tests", "Running tests", "All checks passed"),
+            ("polish", "Looking at the world", "The world looks good"),
             ("smoke", "Booting the world", "The world starts"),
             ("publish", "Publishing", "Published"),
         ):

@@ -181,7 +181,7 @@ async def test_pipeline_publishes_a_world_that_passes_every_gate(
     done = [e.step for e in events if e.state == "done"]
     assert done[:3] == ["check_exists", "copy_template", "design"]
     assert set(done[3:5]) == {"sim", "ui"}
-    assert done[5:] == ["tests", "smoke", "publish"]
+    assert done[5:] == ["tests", "polish", "smoke", "publish"]
     storylines = [e.storyline for e in events if e.step == "design" and e.storyline]
     assert storylines and storylines[0].startswith("A tiny shop")
     world = tmp_path / "worlds" / "shop-abc123"

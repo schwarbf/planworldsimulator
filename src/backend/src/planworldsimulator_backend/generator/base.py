@@ -9,6 +9,7 @@ STEPS = (
     "sim",
     "ui",
     "tests",
+    "polish",
     "smoke",
     "publish",
 )

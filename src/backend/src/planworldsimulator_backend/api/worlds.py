@@ -3,9 +3,10 @@ import json
 import re
 import secrets
 from collections.abc import AsyncIterator
+from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlalchemy import func, or_, select
 
 from planworldsimulator_backend.api.deps import (
@@ -26,6 +27,7 @@ from planworldsimulator_backend.schemas import (
 
 router = APIRouter(prefix="/worlds", tags=["worlds"])
 
+THUMBNAIL = "thumbnail.png"
 TERMINAL = {"ready", "failed", "exists"}
 
 
@@ -55,6 +57,7 @@ async def _get_world(request: Request, world_id: str) -> World:
 def _out(world: World, me: str | None) -> WorldOut:
     out = WorldOut.model_validate(world)
     out.mine = me is not None and world.creator_hash == me
+    out.has_thumbnail = bool(world.path) and (Path(world.path) / THUMBNAIL).is_file()
     return out
 
 
@@ -158,6 +161,15 @@ async def list_worlds(
 @router.get("/{world_id}", response_model=WorldOut)
 async def get_world(world_id: str, request: Request) -> WorldOut:
     return _out(await _get_world(request, world_id), current_creator(request))
+
+
+@router.get("/{world_id}/thumbnail")
+async def get_thumbnail(world_id: str, request: Request) -> FileResponse:
+    world = await _get_world(request, world_id)
+    picture = Path(world.path) / THUMBNAIL if world.path else None
+    if picture is None or not picture.is_file():
+        raise HTTPException(status_code=404, detail="No thumbnail")
+    return FileResponse(picture, media_type="image/png")
 
 
 @router.get("/{world_id}/events", response_model=list[EventOut])

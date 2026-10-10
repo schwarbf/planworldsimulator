@@ -26,6 +26,10 @@ from planworldsimulator_backend.generator.opencode_runner import (
     AgentEvent,
     run_agent,
 )
+from planworldsimulator_backend.generator.screenshots import (
+    ScreenshotUnavailable,
+    capture_levels,
+)
 from planworldsimulator_backend.generator.spec import BASE_STATE, WorldSpec
 
 log = logging.getLogger(__name__)
@@ -34,6 +38,8 @@ DESIGN_SECONDS = 60
 FILL_SECONDS = 150
 FIX_SECONDS = 60
 DESIGN_REPAIRS = 2
+POLISH_SECONDS = 60
+POLISH_MIN_LEFT = 75  # skip the look check when less time than this remains
 MIN_FIX_SECONDS = 25
 FINAL_RESERVE_SECONDS = 20
 SAMPLES = tuple(
@@ -41,6 +47,19 @@ SAMPLES = tuple(
     for level in ("easy", "medium", "hard")
     for point in ("start", "week3", "end")
 )
+
+
+async def save_thumbnail(world_dir, python) -> None:
+    """The level 1 picture for the catalogue; the world is fine without it."""
+    try:
+        shots = await capture_levels(
+            world_dir, python, world_dir / ".opencode" / "shots", levels=(1,)
+        )
+        (world_dir / "thumbnail.png").write_bytes(shots[0].read_bytes())
+    except (ScreenshotUnavailable, RuntimeError, OSError):
+        log.info("no thumbnail for %s", world_dir.name)
+    finally:
+        shutil.rmtree(world_dir / ".opencode", ignore_errors=True)
 
 
 class GenerationFailed(Exception):
@@ -219,7 +238,7 @@ class OpenCodeGenerator:
 
         sessions: dict[str, str | None] = {}
 
-        async def call(name, prompt, writable, cap, repair=False):
+        async def call(name, prompt, writable, cap, repair=False, attachments=()):
             result = await run_agent(
                 prompt,
                 cwd=world_dir,
@@ -227,6 +246,7 @@ class OpenCodeGenerator:
                 timeout=deadline.slice(cap, name, FINAL_RESERVE_SECONDS),
                 max_tool_calls=s.max_tool_calls,
                 session_id=sessions.get(name) if repair else None,
+                files=attachments,
                 on_event=progress(name),
             )
             sessions[name] = result.session_id
@@ -466,6 +486,66 @@ class OpenCodeGenerator:
                 await repair(track, failed)
                 results = []
 
+        looked = False
+
+        async def polish():
+            """One look check: screenshots in, a better World.tsx out (or no change)."""
+            nonlocal looked
+            if looked:
+                return
+            looked = True
+            if deadline.left() < POLISH_MIN_LEFT:
+                step("polish", "done", "Skipped the look check (not enough time)")
+                return
+            step("polish", "started", "Looking at the world")
+            shots_dir = world_dir / ".opencode" / "shots"
+            try:
+                shots = await capture_levels(
+                    world_dir, python, shots_dir, timeout=deadline.slice(30, "polish")
+                )
+            except (ScreenshotUnavailable, RuntimeError) as exc:
+                step("polish", "done", f"Skipped the look check ({exc})")
+                return
+            view = world_dir / files["ui"][0]
+            original = view.read_text()
+            kit = prompts.read(world_dir, "ui/src/shared/kit/README.md")
+            await call(
+                "ui",
+                prompts.render(
+                    "polish",
+                    title=request.title,
+                    checklist=prompts.section(kit, "Look checklist"),
+                    visual=json.dumps(spec.visual.model_dump(), indent=2),
+                    kit_readme=kit,
+                    world=original,
+                ),
+                files["ui"],
+                POLISH_SECONDS,
+                repair=True,
+                attachments=tuple(shots),
+            )
+            guard()
+            if view.read_text() == original:
+                step("polish", "done", "The world already looks good")
+                return
+            step("polish", "started", "Checking the improved world view")
+            checks = await validate_ui()
+            checks.append(
+                await gates.run_ui_tests(
+                    world_dir,
+                    timeout=deadline.slice(90, "UI tests", FINAL_RESERVE_SECONDS),
+                )
+            )
+            if all(r.ok for r in checks):
+                checkpoint.save("ui", files["ui"])
+                step("polish", "done", "Improved the world view")
+                return
+            view.write_text(original)  # the change broke something: keep the first view
+            await validate_ui()
+            step(
+                "polish", "done", "Kept the first world view (the change failed checks)"
+            )
+
         sim_results, ui_results = await together(branch("sim"), branch("ui"))
         # Cross-branch checks require both validated artifacts.
         while True:
@@ -479,6 +559,7 @@ class OpenCodeGenerator:
                 ui_results = await branch("ui")
                 continue
             step("tests", "done", "All behavior and rendering checks passed")
+            await polish()
             step("smoke", "started", "Booting and checking the world")
             smoke = await gates.smoke(
                 world_dir, python, len(LEVELS), timeout=deadline.slice(30, "smoke")
@@ -497,6 +578,7 @@ class OpenCodeGenerator:
                 f"Unexpected files in the world: {', '.join(stray[:5])}"
             )
         workspace.remove_reference(world_dir)
+        await save_thumbnail(world_dir, python)
         report = gates.GateReport(sim_results + ui_results + [ui_tests, smoke])
         (world_dir / "world.json").write_text(
             json.dumps(

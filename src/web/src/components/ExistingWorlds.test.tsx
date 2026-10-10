@@ -21,6 +21,7 @@ function world(overrides: Partial<World>): World {
     featured: false,
     play_count: 0,
     mine: false,
+    has_thumbnail: false,
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",
     ...overrides,
@@ -123,4 +124,15 @@ test("'Load more' fetches a larger page while more worlds exist", async () => {
   expect(
     fetchMock.mock.calls.some(([u]) => String(u).includes("limit=24")),
   ).toBe(true);
+});
+
+test("a world with a thumbnail shows it on its card", async () => {
+  respondWith(() => ({
+    items: [world({ id: "pictured", title: "Pictured", has_thumbnail: true })],
+    total: 1,
+  }));
+  renderWorlds();
+
+  const image = await screen.findByAltText("Pictured world preview");
+  expect(image).toHaveAttribute("src", "/api/worlds/pictured/thumbnail");
 });

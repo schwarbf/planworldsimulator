@@ -19,6 +19,7 @@ export interface World {
   play_count: number;
   /** True when this browser created the world. */
   mine: boolean;
+  has_thumbnail: boolean;
   created_at: string;
   updated_at: string;
 }

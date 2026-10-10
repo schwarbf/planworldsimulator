@@ -37,6 +37,7 @@ class WorldOut(BaseModel):
     featured: bool
     play_count: int
     mine: bool = False
+    has_thumbnail: bool = False
     created_at: datetime
     updated_at: datetime
 

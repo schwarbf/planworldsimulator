@@ -116,6 +116,7 @@ async def run_agent(
     timeout: float,
     max_tool_calls: int = 60,
     session_id: str | None = None,
+    files: tuple[Path, ...] = (),
     on_event: Callable[[AgentEvent], None] | None = None,
 ) -> AgentResult:
     """Send `prompt` to OpenCode in `cwd` and wait for it to finish (or the timeout)."""
@@ -133,7 +134,13 @@ async def run_agent(
         command += ["--variant", config.variant]
     if session_id:
         command += ["--session", session_id]
-    command.append(prompt)
+    if files:
+        # `--file` takes a list, so it goes last (it would swallow the prompt).
+        command = [command[0], command[1], prompt, *command[2:]]
+        for file in files:
+            command += ["--file", str(file)]
+    else:
+        command.append(prompt)
 
     result = AgentResult(session_id=session_id)
     started = time.monotonic()

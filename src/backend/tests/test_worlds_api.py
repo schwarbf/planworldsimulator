@@ -335,3 +335,22 @@ async def test_startup_recovers_interrupted_generation(make_client, monkeypatch)
         assert recovered["status"] == "failed"
         events = (await client.get(f"/worlds/{world['id']}/events")).json()
         assert "interrupted" in events[-1]["message"]
+
+
+async def test_thumbnail_is_served_when_the_world_has_one(
+    client: httpx.AsyncClient,
+) -> None:
+    world = await create(client, "Pictured")
+    await wait(client)
+    assert world["has_thumbnail"] is False
+    assert (await client.get(f"/worlds/{world['id']}/thumbnail")).status_code == 404
+
+    path = (await client.get(f"/worlds/{world['id']}")).json()["path"]
+    from pathlib import Path
+
+    (Path(path) / "thumbnail.png").write_bytes(b"\x89PNG fake")
+    shown = (await client.get(f"/worlds/{world['id']}")).json()
+    assert shown["has_thumbnail"] is True
+    picture = await client.get(f"/worlds/{world['id']}/thumbnail")
+    assert picture.status_code == 200
+    assert picture.headers["content-type"] == "image/png"

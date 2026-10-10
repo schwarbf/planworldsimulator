@@ -37,6 +37,7 @@ function world(overrides: Partial<World> = {}): World {
     featured: false,
     play_count: 0,
     mine: true,
+    has_thumbnail: false,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     ...overrides,

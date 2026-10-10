@@ -12,6 +12,16 @@ const POLL_MS = 3000;
 function WorldCard({ world }: { world: World }) {
   return (
     <article className="flex flex-col gap-3 rounded-lg border border-line bg-card p-5">
+      {world.has_thumbnail && (
+        <Link to={`/worlds/${world.id}`}>
+          <img
+            src={`/api/worlds/${world.id}/thumbnail`}
+            alt={`${world.title} world preview`}
+            className="aspect-[8/5] w-full rounded-md border border-line object-cover"
+            loading="lazy"
+          />
+        </Link>
+      )}
       <div className="flex items-center gap-2">
         {world.featured && (
           <span className="rounded-full bg-violet-soft px-2.5 py-1 font-mono text-[11px] text-violet uppercase">
