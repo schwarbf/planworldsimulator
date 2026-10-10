@@ -181,7 +181,7 @@ function inspectorFor(state: State, site: Site): InspectorModel {
       { id: "expand", label: `Expand · ${chf(isWarehouse ? 12000 : 8000)}`, sub: "+20% capacity, +8% holding cost", icon: "expand", variant: "soft" },
       canAutomate
         ? { id: "automate", label: "Automate · hire agent", sub: "Agent takes over ordering here", icon: "auto", variant: "violet" }
-        : { id: "automate", label: "Automate", sub: "Not available for suppliers", icon: "auto", variant: "locked" },
+        : { id: "automate", label: "Automate", sub: site.type === "supplier" ? "Not available for suppliers" : "Locked in this world", icon: "auto", variant: "locked" },
     ],
   };
 }

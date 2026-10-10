@@ -1,0 +1,10 @@
+version: "0.5"
+processes:
+  server:
+    command: pixi run serve
+    readiness_probe:
+      http_get: { host: 127.0.0.1, port: 8000, path: /api/state }
+  ui:
+    command: pixi run ui
+    depends_on:
+      server: { condition: process_healthy }
