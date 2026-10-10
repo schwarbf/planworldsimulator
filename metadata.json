@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K55BWRKANDKF8X7315B21N",
   "strategy": "manual-commit",
   "branch": "feat/world-creation-agent",
-  "checkpoints_count": 2,
+  "checkpoints_count": 4,
   "files_touched": [
     "src/backend/src/planworldsimulator_backend/generator/fake.py"
   ],
@@ -14,6 +14,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": ""
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 10753,
+    "cache_read_tokens": 4698875,
+    "output_tokens": 5775,
+    "api_call_count": 10
+  }
 }
