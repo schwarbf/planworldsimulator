@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K3M22XHSN0EM7HKDSGFY25",
+  "session_id": "4fe34fe7-8886-4590-9116-c41d85c08c5d",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:31:40.897431Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/generator/processes.py",
+    "src/backend/tests/fake_opencode.py",
+    "src/backend/tests/test_generator.py",
+    "src/web/src/api/client.ts",
+    "src/web/src/components/ui.tsx",
+    "src/web/src/pages/WorldDetail.tsx"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high",
+  "turn_id": "da7ae6471e9b",
+  "checkpoint_transcript_start": 27,
+  "transcript_lines_at_start": 27,
+  "compact_transcript_start": 3,
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T14:31:40.893812Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 542,
+    "human_modified": 27,
+    "human_removed": 0,
+    "total_committed": 542,
+    "total_lines_changed": 569,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
