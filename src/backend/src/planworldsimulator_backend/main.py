@@ -2,9 +2,11 @@ import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+import httpx
 import uvicorn
 from fastapi import FastAPI
 
+from planworldsimulator_backend.api.play import router as play_router
 from planworldsimulator_backend.api.worlds import router as worlds_router
 from planworldsimulator_backend.config import Settings
 from planworldsimulator_backend.db.session import (
@@ -12,8 +14,11 @@ from planworldsimulator_backend.db.session import (
     make_session_factory,
     run_migrations,
 )
+from planworldsimulator_backend.featured import seed_featured
 from planworldsimulator_backend.generator import FakeGenerator
 from planworldsimulator_backend.launcher import FakeLauncher
+from planworldsimulator_backend.limits import SlidingWindowLimiter
+from planworldsimulator_backend.reaper import reap_loop
 from planworldsimulator_backend.runner import GenerationRunner
 
 
@@ -34,8 +39,24 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.sessions = sessions
         app.state.runner = GenerationRunner(sessions, generator)
         app.state.launcher = FakeLauncher()
+        app.state.create_limiter = SlidingWindowLimiter(
+            settings.create_limit_per_hour, 3600
+        )
+        app.state.http = httpx.AsyncClient(timeout=30)
+        if settings.seed_featured:
+            await seed_featured(sessions)
+        reaper = asyncio.create_task(
+            reap_loop(
+                sessions,
+                app.state.launcher,
+                settings.idle_stop_seconds,
+                settings.reap_interval_seconds,
+            )
+        )
         yield
+        reaper.cancel()
         await app.state.runner.wait_idle()
+        await app.state.http.aclose()
         await engine.dispose()
 
     app = FastAPI(title="PlanWorldSimulator", lifespan=lifespan)
@@ -45,6 +66,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         return {"status": "ok"}
 
     app.include_router(worlds_router)
+    app.include_router(play_router)
     return app
 
 

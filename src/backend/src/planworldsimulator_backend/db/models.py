@@ -24,6 +24,13 @@ class World(Base):
     storyline: Mapped[str | None] = mapped_column(Text, nullable=True)
     path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     running: Mapped[bool] = mapped_column(default=False)
+    featured: Mapped[bool] = mapped_column(default=False)
+    play_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_played_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+    # SHA-256 of the anonymous creator cookie; never exposed.
+    creator_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     port: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow

@@ -32,8 +32,16 @@ class WorldOut(BaseModel):
     path: str | None
     running: bool
     port: int | None
+    featured: bool
+    play_count: int
+    mine: bool = False
     created_at: datetime
     updated_at: datetime
+
+
+class WorldPage(BaseModel):
+    items: list[WorldOut]
+    total: int
 
 
 class EventOut(BaseModel):

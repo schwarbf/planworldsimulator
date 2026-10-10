@@ -4,13 +4,24 @@ import re
 import secrets
 from collections.abc import AsyncIterator
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Query, Request, Response
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 
+from planworldsimulator_backend.api.deps import (
+    CREATOR_COOKIE,
+    client_ip,
+    current_creator,
+    hash_token,
+)
 from planworldsimulator_backend.db.models import World, WorldEvent
 from planworldsimulator_backend.generator import GenerationRequest
-from planworldsimulator_backend.schemas import EventOut, WorldCreate, WorldOut
+from planworldsimulator_backend.schemas import (
+    EventOut,
+    WorldCreate,
+    WorldOut,
+    WorldPage,
+)
 
 router = APIRouter(prefix="/worlds", tags=["worlds"])
 
@@ -39,32 +50,103 @@ async def _get_world(request: Request, world_id: str) -> World:
     return world
 
 
+def _out(world: World, me: str | None) -> WorldOut:
+    out = WorldOut.model_validate(world)
+    out.mine = me is not None and world.creator_hash == me
+    return out
+
+
 @router.post("", response_model=WorldOut, status_code=201)
-async def create_world(body: WorldCreate, request: Request) -> World:
+async def create_world(
+    body: WorldCreate, request: Request, response: Response
+) -> WorldOut:
+    state = request.app.state
+    settings = state.settings
+
+    token = request.cookies.get(CREATOR_COOKIE)
+    new_token = token is None
+    if token is None:
+        token = secrets.token_urlsafe(24)
+
     world = World(
         id=f"{_slug(body.name)}-{secrets.token_hex(3)}",
         title=body.name,
         prompt=body.prompt.strip(),
         seed=body.seed if body.seed is not None else secrets.randbelow(10_000),
         status="queued",
+        creator_hash=hash_token(token),
     )
-    async with request.app.state.sessions() as session:
+    async with state.sessions() as session:
+        busy = await session.scalar(
+            select(func.count())
+            .select_from(World)
+            .where(World.status.in_(("queued", "generating")))
+        )
+        # Turned away for capacity? That must not use up the visitor's allowance.
+        if (busy or 0) >= settings.max_generating:
+            raise HTTPException(
+                status_code=503,
+                detail="Too many worlds are being generated right now. "
+                "Try again in a minute.",
+                headers={"Retry-After": "60"},
+            )
+        wait = state.create_limiter.hit(client_ip(request))
+        if wait is not None:
+            raise HTTPException(
+                status_code=429,
+                detail="You are generating worlds too fast. Try again later.",
+                headers={"Retry-After": str(wait)},
+            )
         session.add(world)
         await session.commit()
-    request.app.state.runner.submit(_request(world))
-    return world
+    state.runner.submit(_request(world))
+
+    if new_token:
+        response.set_cookie(
+            CREATOR_COOKIE,
+            token,
+            max_age=365 * 24 * 3600,
+            httponly=True,
+            samesite="lax",
+            secure=settings.cookie_secure,
+        )
+    return _out(world, hash_token(token))
 
 
-@router.get("", response_model=list[WorldOut])
-async def list_worlds(request: Request) -> list[World]:
+@router.get("", response_model=WorldPage)
+async def list_worlds(
+    request: Request,
+    q: str | None = Query(default=None, max_length=60),
+    limit: int = Query(default=12, ge=1, le=50),
+    offset: int = Query(default=0, ge=0),
+) -> WorldPage:
+    """The public catalogue. Failed worlds are only listed for their creator."""
+    me = current_creator(request)
+    visible = World.status != "failed"
+    if me is not None:
+        visible = or_(visible, World.creator_hash == me)
+    filters = [visible]
+    if q and q.strip():
+        filters.append(World.title.ilike(f"%{q.strip()}%"))
+
     async with request.app.state.sessions() as session:
-        result = await session.scalars(select(World).order_by(World.created_at.desc()))
-        return list(result)
+        total = await session.scalar(
+            select(func.count()).select_from(World).where(*filters)
+        )
+        rows = await session.scalars(
+            select(World)
+            .where(*filters)
+            .order_by(World.featured.desc(), World.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        items = [_out(world, me) for world in rows]
+    return WorldPage(items=items, total=total or 0)
 
 
 @router.get("/{world_id}", response_model=WorldOut)
-async def get_world(world_id: str, request: Request) -> World:
-    return await _get_world(request, world_id)
+async def get_world(world_id: str, request: Request) -> WorldOut:
+    return _out(await _get_world(request, world_id), current_creator(request))
 
 
 @router.get("/{world_id}/events", response_model=list[EventOut])
@@ -116,8 +198,11 @@ async def stream_events(world_id: str, request: Request) -> StreamingResponse:
 
 
 @router.post("/{world_id}/retry", response_model=WorldOut)
-async def retry_world(world_id: str, request: Request) -> World:
+async def retry_world(world_id: str, request: Request) -> WorldOut:
+    me = current_creator(request)
     world = await _get_world(request, world_id)
+    if me is None or world.creator_hash != me:
+        raise HTTPException(status_code=403, detail="Only the creator can retry")
     if world.status != "failed":
         raise HTTPException(status_code=409, detail="Only failed worlds can be retried")
     async with request.app.state.sessions() as session:
@@ -126,31 +211,4 @@ async def retry_world(world_id: str, request: Request) -> World:
         world.status = "queued"
         await session.commit()
     request.app.state.runner.submit(_request(world))
-    return world
-
-
-@router.post("/{world_id}/start", response_model=WorldOut)
-async def start_world(world_id: str, request: Request) -> World:
-    world = await _get_world(request, world_id)
-    if world.status != "ready":
-        raise HTTPException(status_code=409, detail="World is not ready")
-    port = await request.app.state.launcher.start(world_id, world.path)
-    async with request.app.state.sessions() as session:
-        world = await session.get(World, world_id)
-        assert world is not None
-        world.running = True
-        world.port = port
-        await session.commit()
-    return world
-
-
-@router.post("/{world_id}/stop", response_model=WorldOut)
-async def stop_world(world_id: str, request: Request) -> World:
-    await _get_world(request, world_id)
-    await request.app.state.launcher.stop(world_id)
-    async with request.app.state.sessions() as session:
-        world = await session.get(World, world_id)
-        assert world is not None
-        world.running = False
-        await session.commit()
-    return world
+    return _out(world, me)
