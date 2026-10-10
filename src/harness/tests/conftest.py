@@ -1,24 +1,18 @@
-import socket
 import subprocess
 import time
 from pathlib import Path
 
 import httpx
 import pytest
+from planworldsimulator_harness.benchmarks.servers import free_port
 
 WORLD = Path(__file__).resolve().parents[2] / "worlds" / "bike-factory"
-
-
-def _free_port() -> int:
-    with socket.socket() as s:
-        s.bind(("127.0.0.1", 0))
-        return s.getsockname()[1]
 
 
 @pytest.fixture(scope="session")
 def world_url():
     """A real bike-factory server, run from its own pixi env."""
-    port = _free_port()
+    port = free_port()
     cmd = [
         "pixi",
         "run",
