@@ -1,0 +1,24 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K4X5CK2WJ23230FN9W8JEW",
+  "strategy": "manual-commit",
+  "branch": "feat/gradium-narrator",
+  "checkpoints_count": 5,
+  "files_touched": null,
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 368,
+    "cache_creation_tokens": 252994,
+    "cache_read_tokens": 34779666,
+    "output_tokens": 105779,
+    "api_call_count": 174
+  }
+}
