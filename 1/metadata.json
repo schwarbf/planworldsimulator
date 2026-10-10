@@ -1,0 +1,77 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K5FDBVMMWN5YAEYRNQX8DW",
+  "session_id": "5d8d31be-3c40-40b6-a359-c1d8fbdb4a06",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T15:04:06.393441Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "cf362afeabbc",
+  "checkpoint_transcript_start": 1737,
+  "transcript_lines_at_start": 1737,
+  "compact_transcript_start": 287,
+  "token_usage": {
+    "input_tokens": 6,
+    "cache_creation_tokens": 6485,
+    "cache_read_tokens": 1457206,
+    "output_tokens": 1413,
+    "api_call_count": 3
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_014bX4vmx8CbmD3CdbuENQRQ",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "create-commits"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "034f783ab3d7",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 1484,
+        "end": 1485,
+        "entry_ids": [
+          "226897e2-2d86-4540-8adc-bd8cbf50ba6b"
+        ],
+        "tool_use_id": "toolu_014bX4vmx8CbmD3CdbuENQRQ"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_014bX4vmx8CbmD3CdbuENQRQ"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: create-commits",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 19
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 318,
+      "agent_lines_removed": 0
+    }
+  ]
+}
