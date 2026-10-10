@@ -18,11 +18,14 @@ template, fill template, tests) and writes a world folder, but does no LLM work.
 ## Run it
 
 ```sh
-docker compose up --build   # or: just up
+just up      # build, start in the background, wait until healthy
+just down    # stop (database and generated worlds are kept)
 ```
 
-Open http://localhost:8080. For live reload, run `just dev` (site on
-http://localhost:5173). Copy `.env.example` to `.env` to change defaults.
+Open http://localhost:8080. Other commands: `just build`, `just logs [service]`,
+`just ps`, `just reset` (also deletes the database volume) and `just dev` (live
+reload, site on http://localhost:5173). Copy `.env.example` to `.env` to change
+defaults.
 
 ## Develop
 

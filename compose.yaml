@@ -6,7 +6,8 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
 
   api:
     build:
@@ -19,6 +20,15 @@ services:
       PLANBENCH_STEP_DELAY_SECONDS: ${PLANBENCH_STEP_DELAY_SECONDS:-1.0}
     ports:
       - "8000:8000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"
+      interval: 5s
+      timeout: 3s
+      retries: 10
     volumes:
       - data:/data
       - ./src/worlds:/worlds
