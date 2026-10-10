@@ -333,7 +333,7 @@ def test_auto_mode_needs_a_key_the_binary_and_the_environment(tmp_path: Path) ->
 
 @needs_template_env
 def test_ui_tests_run_with_a_read_only_node_modules(tmp_path: Path) -> None:
-    """In Docker the shared node_modules belongs to another user: caches go into the world."""
+    """In Docker the shared node_modules belongs to another user; caches go in the world."""
     import os
     import subprocess
 
