@@ -1,6 +1,7 @@
 import json
 
 import httpx
+from planworldsimulator_backend.generator import STEPS
 
 PROMPT = "A nuclear plant under heat waves"
 
@@ -55,7 +56,7 @@ async def test_create_world_generates_and_becomes_ready(
 
     events = (await client.get(f"/worlds/{created['id']}/events")).json()
     steps = [e["step"] for e in events if e["state"] == "done"]
-    assert steps == ["storyline", "copy_template", "fill_template", "tests"]
+    assert steps == list(STEPS)
 
 
 async def test_generated_world_folder_is_created(client: httpx.AsyncClient) -> None:

@@ -2,34 +2,13 @@ import asyncio
 import json
 import shutil
 from collections.abc import AsyncIterator
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
 
-STEPS = ("storyline", "copy_template", "fill_template", "tests")
-# Every generated world ships with all of these; the level is chosen when playing.
-LEVELS = (1, 2, 3)
-
-
-@dataclass(frozen=True)
-class GenerationEvent:
-    step: str
-    state: str  # started | done
-    message: str = ""
-    storyline: str | None = None
-    path: str | None = None
-
-
-@dataclass(frozen=True)
-class GenerationRequest:
-    world_id: str
-    title: str
-    prompt: str
-    seed: int
-
-
-class Generator(Protocol):
-    def run(self, request: GenerationRequest) -> AsyncIterator[GenerationEvent]: ...
+from planworldsimulator_backend.generator.base import (
+    LEVELS,
+    GenerationEvent,
+    GenerationRequest,
+)
 
 
 def _template_has_content(template_dir: Path) -> bool:
@@ -49,14 +28,18 @@ class FakeGenerator:
     async def run(self, request: GenerationRequest) -> AsyncIterator[GenerationEvent]:
         world_dir = self.worlds_dir / request.world_id
 
-        yield GenerationEvent("storyline", "started", "Writing the storyline")
+        yield GenerationEvent("check_exists", "started", "Checking the name")
+        await asyncio.sleep(self.delay)
+        yield GenerationEvent("check_exists", "done", "The name is free")
+
+        yield GenerationEvent("design", "started", "Writing the storyline")
         await asyncio.sleep(self.delay)
         storyline = (
             f"{request.title}. A hidden-dynamics planning world generated from: "
             f"“{request.prompt.strip()}” (seed {request.seed}, "
             f"{len(LEVELS)} difficulty levels)."
         )
-        yield GenerationEvent("storyline", "done", "Storyline ready", storyline)
+        yield GenerationEvent("design", "done", "Storyline ready", storyline)
 
         yield GenerationEvent("copy_template", "started", "Copying the base template")
         await asyncio.sleep(self.delay)
@@ -71,7 +54,7 @@ class FakeGenerator:
             note = "Template is empty, wrote a stub"
         yield GenerationEvent("copy_template", "done", note, path=str(world_dir))
 
-        yield GenerationEvent("fill_template", "started", "Filling the template")
+        yield GenerationEvent("fill", "started", "Filling the template")
         await asyncio.sleep(self.delay)
         (world_dir / "world.json").write_text(
             json.dumps(
@@ -86,8 +69,14 @@ class FakeGenerator:
                 indent=2,
             )
         )
-        yield GenerationEvent("fill_template", "done", "Wrote world.json")
+        yield GenerationEvent("fill", "done", "Wrote world.json")
 
-        yield GenerationEvent("tests", "started", "Running tests")
-        await asyncio.sleep(self.delay)
-        yield GenerationEvent("tests", "done", "All checks passed")
+        for step, started, done in (
+            ("tests", "Running tests", "All checks passed"),
+            ("polish", "Polishing the look", "Looks good"),
+            ("smoke", "Booting the world", "The world starts"),
+            ("publish", "Publishing", "Published"),
+        ):
+            yield GenerationEvent(step, "started", started)
+            await asyncio.sleep(self.delay)
+            yield GenerationEvent(step, "done", done)
