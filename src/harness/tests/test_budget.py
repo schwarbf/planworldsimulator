@@ -3,14 +3,14 @@ from pydantic_ai.usage import RunUsage
 
 
 def test_status_is_numbers_only():
-    budget = Budget(tool_calls=300, tokens=2_000_000, seconds=600)
+    budget = Budget(tokens=2_000_000, seconds=600)
     usage = RunUsage(tool_calls=88, input_tokens=1_000_000, output_tokens=200_000)
     assert budget.status(usage, elapsed=230) == (
-        "Budget left: 212/300 tool calls, 0.8M/2.0M tokens, 6:10 min."
+        "Budget left: 0.8M/2.0M tokens, 6:10 min."
     )
 
 
 def test_status_never_negative():
     usage = RunUsage(tool_calls=999, input_tokens=9_000_000)
-    assert "0/300 tool calls" in Budget().status(usage, elapsed=9999)
+    assert "0k/2.0M tokens" in Budget().status(usage, elapsed=9999)
     assert "0:00 min" in Budget().status(usage, elapsed=9999)

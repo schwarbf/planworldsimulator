@@ -68,8 +68,8 @@ async def test_budget_line_is_shown_every_request(world_url):
         model=scripted(seen),
     )
     assert len(seen) == len(SCRIPT) + 1
-    assert "Budget left: 300/300 tool calls" in seen[0]
-    assert "Budget left: 296/300 tool calls" in seen[-1]
+    assert "Budget left: 2.0M/2.0M tokens" in seen[0]
+    assert "tool calls" not in seen[-1]
 
 
 async def test_limit_stops_run_and_episode_still_scores(world_url):
@@ -78,7 +78,7 @@ async def test_limit_stops_run_and_episode_still_scores(world_url):
         FAKE,
         seed=7,
         difficulty="medium",
-        budget=Budget(tool_calls=2),
+        budget=Budget(tokens=200),
         model=scripted([]),
     )
     assert result.stopped_by == "limit"

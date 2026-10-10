@@ -20,12 +20,11 @@ def main() -> None:
     play.add_argument("--agent", default=DEFAULT_AGENT)
     play.add_argument("--seed", type=int, default=1)
     play.add_argument("--difficulty", default="medium")
-    play.add_argument("--tool-calls", type=int, default=Budget.tool_calls)
     play.add_argument("--tokens", type=int, default=Budget.tokens)
     play.add_argument("--seconds", type=float, default=Budget.seconds)
     args = parser.parse_args()
 
-    budget = Budget(args.tool_calls, args.tokens, args.seconds)
+    budget = Budget(args.tokens, args.seconds)
     result = asyncio.run(
         run_episode(args.url, get_agent(args.agent), args.seed, args.difficulty, budget)
     )

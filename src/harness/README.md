@@ -10,4 +10,4 @@ pixi run pytest src/harness                          # tests: real world, script
 ```
 
 **Add an agent:** add an entry to `agents.toml` (model, base_url, api_key_env, settings).
-**Budget:** `--tool-calls`, `--tokens`, `--seconds`, one cap for the whole episode.
+**Budget:** `--tokens`, `--seconds`, one cap for the whole episode. Tool calls count through their tokens.
