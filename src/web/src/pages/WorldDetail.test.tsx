@@ -31,6 +31,7 @@ function world(overrides: Partial<World> = {}): World {
     generation_attempt: 1,
     storyline: null,
     path: null,
+    duplicate_of: null,
     running: false,
     port: null,
     featured: false,
