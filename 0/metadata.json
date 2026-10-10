@@ -1,0 +1,118 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4KBT9BPEGHS70XQ4RZ21NBC",
+  "session_id": "816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T16:54:54.331082Z",
+  "branch": "submission/demo-video",
+  "checkpoints_count": 5,
+  "save_step_count": 2,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "02187eeefb98",
+  "checkpoint_transcript_start": 43,
+  "transcript_lines_at_start": 43,
+  "compact_transcript_start": 3,
+  "token_usage": {
+    "input_tokens": 120,
+    "cache_creation_tokens": 124991,
+    "cache_read_tokens": 6666147,
+    "output_tokens": 45634,
+    "api_call_count": 60
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01RSn9q647PegjDzGJKFqxyN",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "remotion-best-practices"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "02187eeefb98",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 398,
+        "end": 399,
+        "entry_ids": [
+          "aa4eaffd-ae75-448c-9492-a12a0483d87a"
+        ],
+        "tool_use_id": "toolu_01RSn9q647PegjDzGJKFqxyN"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01RSn9q647PegjDzGJKFqxyN"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: remotion-best-practices",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 111,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        ".gitignore": 5,
+        "demo-video/.gitignore": 2,
+        "demo-video/common.py": 10,
+        "demo-video/omni.py": 46,
+        "demo-video/script.json": 10,
+        "demo-video/voice.py": 32
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 6,
+      "user_lines_removed": 0,
+      "agent_lines_added": 100,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 5605,
+      "user_lines_removed": 4,
+      "agent_lines_added": 167,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        "demo-video/assemble.py": 9,
+        "demo-video/probe.py": 20,
+        "demo-video/record_browser.py": 123,
+        "demo-video/remotion/.gitignore": 7,
+        "demo-video/remotion/.prettierrc": 5,
+        "demo-video/remotion/README.md": 54,
+        "demo-video/remotion/eslint.config.mjs": 3,
+        "demo-video/remotion/package-lock.json": 5281,
+        "demo-video/remotion/package.json": 28,
+        "demo-video/remotion/remotion.config.ts": 12,
+        "demo-video/remotion/src/Composition.tsx": 25,
+        "demo-video/remotion/src/Root.tsx": 9,
+        "demo-video/remotion/src/index.ts": 4,
+        "demo-video/remotion/tsconfig.json": 16,
+        "demo-video/timeline.json": 3
+      },
+      "user_removed_per_file": {
+        "demo-video/assemble.py": 1,
+        "demo-video/timeline.json": 3
+      }
+    }
+  ]
+}
