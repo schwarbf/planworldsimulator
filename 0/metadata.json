@@ -43,6 +43,37 @@
         "label": "/create-commits",
         "default_collapsed": true
       }
+    },
+    {
+      "id": "claude-skill-toolu_01Ak967KTvUzrP4ykHRRHweK",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "create-pr"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "8b72d1069703",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 81,
+        "end": 82,
+        "entry_ids": [
+          "c76ddb2b-b418-4cba-a1b6-8351ad6cd3e5"
+        ],
+        "tool_use_id": "toolu_01Ak967KTvUzrP4ykHRRHweK"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01Ak967KTvUzrP4ykHRRHweK"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: create-pr",
+        "default_collapsed": true
+      }
     }
   ],
   "session_metrics": {
