@@ -1,9 +1,9 @@
 import asyncio
 import json
-import shutil
 from collections.abc import AsyncIterator
 from pathlib import Path
 
+from planworldsimulator_backend.generator import workspace
 from planworldsimulator_backend.generator.base import (
     LEVELS,
     GenerationEvent,
@@ -35,7 +35,8 @@ class FakeGenerator:
         yield GenerationEvent("copy_template", "started", "Copying the base template")
         await asyncio.sleep(self.delay)
         if _template_has_content(self.template_dir):
-            shutil.copytree(self.template_dir, world_dir, dirs_exist_ok=True)
+            # Same copy as the real generator: no environments, caches or build output.
+            workspace.copy_template(self.template_dir, world_dir, None)
             note = "Copied src/worlds-template"
         else:
             world_dir.mkdir(parents=True, exist_ok=True)
