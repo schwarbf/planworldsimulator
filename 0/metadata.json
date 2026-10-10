@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K2FZHMPYR49A3R80ATDCJN",
+  "session_id": "01a1261b-7730-78d2-86fd-e7651627ea0e",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:11:58.505777Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/api/play.py",
+    "src/backend/src/planworldsimulator_backend/config.py",
+    "src/backend/src/planworldsimulator_backend/launcher.py",
+    "src/backend/src/planworldsimulator_backend/main.py",
+    "src/backend/tests/fake_opencode.py",
+    "src/backend/tests/test_generator.py"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6.1-sol",
+  "turn_id": "cf6ac6cb0c5c",
+  "checkpoint_transcript_start": 83,
+  "transcript_lines_at_start": 83,
+  "compact_transcript_start": 9,
+  "token_usage": {
+    "input_tokens": 29389,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 567424,
+    "output_tokens": 8697,
+    "api_call_count": 8
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T14:11:58.488868Z",
+    "agent_lines": 421,
+    "agent_removed": 2,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 1,
+    "total_committed": 421,
+    "total_lines_changed": 424,
+    "agent_percentage": 99.76415094339622,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2,
+      "user_lines_removed": 1,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "src/backend/src/planworldsimulator_backend/config.py": 1,
+        "src/backend/src/planworldsimulator_backend/generator/prompts/fill_sim.md": 1
+      },
+      "user_removed_per_file": {
+        "src/backend/src/planworldsimulator_backend/config.py": 1
+      }
+    }
+  ]
+}
