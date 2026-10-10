@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K37C4PZ0XMP2EECMPYCXJQ",
+  "session_id": "4fe34fe7-8886-4590-9116-c41d85c08c5d",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:24:45.169105Z",
+  "branch": "feat/entire-trail-runners",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high",
+  "turn_id": "da7ae6471e9b",
+  "checkpoint_transcript_start": 18,
+  "transcript_lines_at_start": 18,
+  "compact_transcript_start": 3,
+  "session_metrics": {
+    "turn_count": 1
+  }
+}
