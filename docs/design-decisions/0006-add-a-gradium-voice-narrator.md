@@ -40,9 +40,12 @@ explanation of the world when it opens. Every world already has a public
 
 - Every world gets an intro for free, because every world has `brief.md`.
 - Without keys the narrator shows `brief.md` as captions only.
-- Future (not v1): `kind: "commentary"` sends the current state and score to
-  Gemini ("how you are doing"), read aloud by Gradium, using its WebSocket for
-  low latency.
+- `kind: "commentary"`: every 8 weeks, or on "How am I doing?", the server sends
+  score, visible state, discoveries, notes and recent actions to Gemini; Gradium
+  reads the update aloud (about 15 s to generate; cached per seed and week).
+  Without Gemini it reads the plain numbers.
+- While an agent plays, the narrator shrinks to its pill; updates appear there.
+- Later: Gradium's WebSocket for lower latency.
 
 ## Alternatives considered
 

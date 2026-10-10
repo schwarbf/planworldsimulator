@@ -3,7 +3,7 @@ version: "0.5"
 disable_env_expansion: true
 processes:
   server:
-    command: uvicorn server.api:app --host 127.0.0.1 --port ${PORT:-8000}
+    command: uvicorn server.api:app --host 127.0.0.1 --port ${PORT:-8000} --timeout-graceful-shutdown 2
     readiness_probe:
       exec: { command: "curl -fs http://127.0.0.1:${PORT:-8000}/api/state > /dev/null" }
   ui:

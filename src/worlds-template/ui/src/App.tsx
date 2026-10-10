@@ -113,7 +113,7 @@ export default function App() {
         {playing && <FrozenLock />}
         <ActionDock dock={dock} onAction={playing ? ignore : onDock} />
       </div>
-      <div className="app__narrator"><Narrator collapse={playing} onOpen={setNarratorOpen} /></div>
+      <div className="app__narrator"><Narrator collapse={playing} onOpen={setNarratorOpen} week={score?.week} /></div>
       {playing && <AgentBanner look={look} timeLabel={model.topBar.timeLabel} onStop={takeOver} />}
       <AgentCursor look={look} active={playing} onTarget={setSelectedId} />
     </div>

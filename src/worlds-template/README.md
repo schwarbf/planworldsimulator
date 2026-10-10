@@ -58,6 +58,6 @@ pixi run test   # backend tests
 | `POST /api/advance {steps?}` | apply queued actions and step |
 | `POST /api/reset {seed?, difficulty?}` | new episode |
 | `GET /api/events?after=` · `WS /api/events` | event log: MCP calls, UI actions, advances |
-| `POST /api/narration {kind}` | narrator (`kind: "intro"`): `{text, sentences, audio_url, audio_error}`; Gemini rewrites `brief.md`, Gradium speaks it; cached in `.narration/`. Keys: `GEMINI_API_KEY` / `GRADIUM_API_KEY`, or `*_FILE` paths, or the world `.env`. Without Gemini: brief captions; without Gradium: `audio_url` null and `audio_error` says why |
+| `POST /api/narration {kind}` | narrator (`kind: "intro"` or `"commentary"`, a progress update from the current game): `{text, sentences, audio_url, audio_error}`; Gemini rewrites `brief.md`, Gradium speaks it; cached in `.narration/`. Keys: `GEMINI_API_KEY` / `GRADIUM_API_KEY`, or `*_FILE` paths, or the world `.env`. Without Gemini: brief captions; without Gradium: `audio_url` null and `audio_error` says why |
 | `GET /api/narration/{kind}/audio` | cached narrator audio (`audio/wav`) |
 | `/mcp` | MCP, streamable HTTP |

@@ -21,6 +21,8 @@ over at any time.
   agent re-reads the world with `brief()` and `observe()`.
 - `--pace` (default 1 s per tool call, via the MCP `process_tool_call` hook) for
   UI runs only; benchmarks run at full speed.
+- Speed slider in the Agent panel (max … 3 s per step): `POST /pace`, applied to
+  the running agent at once.
 - A UI run does not play out the remaining weeks (`run_episode(reset=False,
   finish=False)`); the fair finish is for benchmarks only.
 
@@ -29,7 +31,10 @@ over at any time.
 - The UI already gets every agent call live (`WS /api/events`, `source: "agent"`).
 - Each action becomes an animation: move to the site on the map, move to the
   dock verb, click pulse, action appears in the queue. `advance` goes to Play.
-- Reads (`observe`, `brief`) show a short "reading…" bubble.
+- A tag above the cursor says what the agent does, from its MCP call alone
+  ("Order 75 · Store B", "Next week", "Checking the state"), plus its last
+  `note()` hypothesis ("Testing: …"). Names come from `data-label` on dock verbs
+  and map labels; no model reasoning is needed.
 - Events play one after another, about 0.6 s per move.
 - World-independent: map elements and dock buttons get `data-target`
   attributes in the base components (`map:<id>` via the `target` prop of `Hud`
