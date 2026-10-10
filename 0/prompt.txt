@@ -472,3 +472,7 @@ can you tear down everything which is running so far - then start this just star
 ---
 
 one small thing I noticed, when the update came in the agent also talked (so we had two audios talking) - can we mute the agent when the update comes?
+
+---
+
+which tests are failing? large issues?
