@@ -1,14 +1,5 @@
 import { SHOWCASE } from "../data/showcase";
-import { cx } from "./ui";
 import { Section } from "./Section";
-
-// Alternating column spans give an asymmetric two-row layout on wide screens.
-const SPANS = [
-  "lg:col-span-7",
-  "lg:col-span-5",
-  "lg:col-span-5",
-  "lg:col-span-7",
-];
 
 export function ShowcaseGallery({
   onUse,
@@ -22,9 +13,9 @@ export function ShowcaseGallery({
       label="Examples"
       title={<>Worlds to start from.</>}
     >
-      <div className="grid gap-x-8 gap-y-12 lg:grid-cols-12">
-        {SHOWCASE.map((world, i) => (
-          <article key={world.name} className={cx("flex flex-col", SPANS[i])}>
+      <div className="grid gap-x-8 gap-y-12 md:grid-cols-2">
+        {SHOWCASE.map((world) => (
+          <article key={world.name} className="flex flex-col">
             <img
               src={world.image}
               alt={`${world.name} world preview`}
