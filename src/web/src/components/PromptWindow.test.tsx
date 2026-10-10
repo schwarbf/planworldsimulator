@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
+import { MemoryRouter } from "react-router";
 
 import type { World } from "../api/client";
 import { type Draft, PromptWindow } from "./PromptWindow";
@@ -10,11 +11,13 @@ const world = { id: "bakery-1", title: "Bakery" } as World;
 function Harness({ onCreated }: { onCreated: (w: World) => void }) {
   const [draft, setDraft] = useState<Draft>({ name: "", prompt: "" });
   return (
-    <PromptWindow
-      draft={draft}
-      onDraftChange={setDraft}
-      onCreated={onCreated}
-    />
+    <MemoryRouter>
+      <PromptWindow
+        draft={draft}
+        onDraftChange={setDraft}
+        onCreated={onCreated}
+      />
+    </MemoryRouter>
   );
 }
 
@@ -76,7 +79,7 @@ test("choosing a starting point fills the name and the prompt", async () => {
 
 test("shows the server's error when creating fails", async () => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response("name too short", { status: 422 }),
+    new Response(JSON.stringify({ detail: "name too short" }), { status: 422 }),
   );
   render(<Harness onCreated={vi.fn()} />);
   await userEvent.type(screen.getByLabelText("World name"), "Bakery");
@@ -88,5 +91,33 @@ test("shows the server's error when creating fails", async () => {
     screen.getByRole("button", { name: /generate world/i }),
   );
 
-  expect(await screen.findByRole("alert")).toHaveTextContent("422");
+  expect(await screen.findByRole("alert")).toHaveTextContent("name too short");
+});
+
+test("a taken name links to the world that has it", async () => {
+  vi.spyOn(globalThis, "fetch").mockResolvedValue(
+    new Response(
+      JSON.stringify({ detail: "A world called “Bakery” already exists." }),
+      {
+        status: 409,
+        headers: { "X-Existing-World": "bakery-abc123" },
+      },
+    ),
+  );
+  render(<Harness onCreated={vi.fn()} />);
+  await userEvent.type(screen.getByLabelText("World name"), "Bakery");
+  await userEvent.type(
+    screen.getByLabelText(/describe your benchmark/i),
+    "A bakery",
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: /generate world/i }),
+  );
+
+  const alert = await screen.findByRole("alert");
+  expect(alert).toHaveTextContent("already exists");
+  expect(screen.getByRole("link", { name: "Open it" })).toHaveAttribute(
+    "href",
+    "/worlds/bakery-abc123",
+  );
 });

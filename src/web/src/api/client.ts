@@ -1,4 +1,5 @@
-export type WorldStatus = "queued" | "generating" | "ready" | "failed";
+export type WorldStatus =
+  "queued" | "generating" | "ready" | "failed" | "exists";
 
 export interface World {
   id: string;
@@ -9,6 +10,8 @@ export interface World {
   status: WorldStatus;
   storyline: string | null;
   path: string | null;
+  /** With status "exists": the world that already has this name. */
+  duplicate_of: string | null;
   running: boolean;
   port: number | null;
   featured: boolean;
@@ -27,7 +30,7 @@ export interface WorldPage {
 export interface WorldEvent {
   id: number;
   step: string;
-  state: "started" | "done" | "failed";
+  state: "started" | "done" | "failed" | "exists";
   message: string;
   created_at: string;
 }
@@ -38,13 +41,37 @@ export interface CreateWorld {
   seed?: number;
 }
 
+/** An error answer from the API: `detail` is the readable message. */
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+    /** Set when the name is taken: the world that has it. */
+    readonly existingWorld: string | null = null,
+  ) {
+    super(message);
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api${path}`, {
     headers: { "Content-Type": "application/json" },
     ...init,
   });
   if (!response.ok) {
-    throw new Error(`${response.status} ${await response.text()}`);
+    const text = await response.text();
+    let detail = text;
+    try {
+      const body = JSON.parse(text) as { detail?: unknown };
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // not JSON: keep the text
+    }
+    throw new ApiError(
+      response.status,
+      detail,
+      response.headers.get("X-Existing-World"),
+    );
   }
   return (await response.json()) as T;
 }

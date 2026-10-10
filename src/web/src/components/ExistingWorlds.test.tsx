@@ -15,6 +15,7 @@ function world(overrides: Partial<World>): World {
     status: "ready",
     storyline: "Plan the flour orders.",
     path: null,
+    duplicate_of: null,
     running: false,
     port: null,
     featured: false,

@@ -170,9 +170,8 @@ async def test_pipeline_publishes_a_world_that_passes_every_gate(
         "smoke",
         "publish",
     ]
-    assert next(
-        e for e in events if e.step == "design" and e.storyline
-    ).storyline.startswith("A tiny shop")
+    storylines = [e.storyline for e in events if e.step == "design" and e.storyline]
+    assert storylines and storylines[0].startswith("A tiny shop")
     world = tmp_path / "worlds" / "shop-abc123"
     meta = json.loads((world / "world.json").read_text())
     assert meta["levels"] == [1, 2, 3] and meta["gates"]["ok"] is True

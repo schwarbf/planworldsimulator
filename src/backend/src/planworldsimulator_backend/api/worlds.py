@@ -129,9 +129,9 @@ async def list_worlds(
     limit: int = Query(default=12, ge=1, le=50),
     offset: int = Query(default=0, ge=0),
 ) -> WorldPage:
-    """The public catalogue. Failed worlds are only listed for their creator."""
+    """The public catalogue. Failed and duplicate worlds only show for their creator."""
     me = current_creator(request)
-    visible = World.status != "failed"
+    visible = World.status.not_in(("failed", "exists"))
     if me is not None:
         visible = or_(visible, World.creator_hash == me)
     filters = [visible]

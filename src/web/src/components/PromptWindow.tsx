@@ -1,6 +1,8 @@
 import { type FormEvent, useState } from "react";
 
-import { api, type World } from "../api/client";
+import { Link } from "react-router";
+
+import { api, ApiError, type World } from "../api/client";
 import { SHOWCASE } from "../data/showcase";
 import { cx } from "./ui";
 
@@ -22,6 +24,7 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
   const [seed, setSeed] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [existing, setExisting] = useState<string | null>(null);
 
   const canSubmit =
     name.trim().length >= 2 && prompt.trim().length >= 3 && !busy;
@@ -31,6 +34,7 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
     event.preventDefault();
     setBusy(true);
     setError(null);
+    setExisting(null);
     try {
       const world = await api.createWorld({
         name: name.trim(),
@@ -40,6 +44,7 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
       onCreated(world);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      if (err instanceof ApiError) setExisting(err.existingWorld);
     } finally {
       setBusy(false);
     }
@@ -140,6 +145,17 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
       {error && (
         <p role="alert" className="mt-3 text-sm text-bad">
           {error}
+          {existing && (
+            <>
+              {" "}
+              <Link
+                to={`/worlds/${existing}`}
+                className="font-semibold underline"
+              >
+                Open it
+              </Link>
+            </>
+          )}
         </p>
       )}
     </section>

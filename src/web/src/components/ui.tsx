@@ -60,6 +60,7 @@ const STATUS_STYLE: Record<WorldStatus, string> = {
   generating: "bg-violet-soft text-violet",
   ready: "bg-good-soft text-good",
   failed: "bg-bad-soft text-bad",
+  exists: "bg-sand text-muted",
 };
 
 export function StatusChip({ status }: { status: WorldStatus }) {

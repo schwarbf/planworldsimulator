@@ -6,10 +6,13 @@ import { PlayLevels } from "../components/PlayLevels";
 import { Button, Card, cx, Label, StatusChip } from "../components/ui";
 
 const STEPS = [
-  { key: "storyline", label: "Storyline" },
+  { key: "check_exists", label: "Check the name" },
   { key: "copy_template", label: "Copy template" },
-  { key: "fill_template", label: "Fill template" },
+  { key: "design", label: "Design" },
+  { key: "fill", label: "Write simulator and world view" },
   { key: "tests", label: "Tests" },
+  { key: "smoke", label: "Build and boot" },
+  { key: "publish", label: "Publish" },
 ];
 
 type StepState = "pending" | "active" | "done" | "failed";
@@ -17,7 +20,12 @@ type StepState = "pending" | "active" | "done" | "failed";
 function stepState(key: string, events: WorldEvent[], world: World): StepState {
   const mine = events.filter((e) => e.step === key);
   if (mine.some((e) => e.state === "done")) return "done";
-  if (mine.length > 0) return world.status === "failed" ? "failed" : "active";
+  if (mine.some((e) => e.state === "exists")) return "failed";
+  if (mine.length > 0) {
+    return world.status === "failed" || mine.some((e) => e.state === "failed")
+      ? "failed"
+      : "active";
+  }
   return "pending";
 }
 
@@ -125,11 +133,24 @@ export function WorldDetail() {
             );
           })}
         </ol>
+        {world.status === "exists" && (
+          <p role="alert" className="text-sm text-bad">
+            A world called “{world.title}” already exists.{" "}
+            {world.duplicate_of && (
+              <Link
+                to={`/worlds/${world.duplicate_of}`}
+                className="font-semibold underline"
+              >
+                Open it
+              </Link>
+            )}
+          </p>
+        )}
         {world.status === "failed" && (
           <div className="flex items-center gap-3">
             <p role="alert" className="text-sm text-bad">
-              {events.find((e) => e.state === "failed")?.message ??
-                "Generation failed"}
+              {[...events].reverse().find((e) => e.state === "failed")
+                ?.message ?? "Generation failed"}
             </p>
             {world.mine && (
               <Button variant="dark" onClick={() => act(api.retryWorld)}>
