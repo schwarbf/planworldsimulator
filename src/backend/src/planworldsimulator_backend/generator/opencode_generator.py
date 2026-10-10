@@ -263,6 +263,7 @@ class OpenCodeGenerator:
                 workspace.DESIGN_FILES,
                 DESIGN_SECONDS,
             )
+            spec: WorldSpec | None = None
             for attempt in range(DESIGN_REPAIRS + 1):
                 try:
                     spec = WorldSpec.model_validate_json(
@@ -282,6 +283,7 @@ class OpenCodeGenerator:
                         FIX_SECONDS,
                         repair=True,
                     )
+            assert spec is not None
             spec.write_contract(world_dir)
             checkpoint.save("design", design_files)
         else:
