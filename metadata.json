@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K3DARPKM4NS2FJF0TKXEM0",
+  "strategy": "manual-commit",
+  "branch": "feat/world-generation-performance",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "benchmarks/world_generation.json",
+    "src/backend/src/planworldsimulator_backend/api/worlds.py",
+    "src/backend/src/planworldsimulator_backend/benchmark.py",
+    "src/backend/src/planworldsimulator_backend/config.py",
+    "src/backend/src/planworldsimulator_backend/db/migrations/versions/0005_generation_attempts.py",
+    "src/backend/src/planworldsimulator_backend/db/models.py",
+    "src/backend/src/planworldsimulator_backend/generator/base.py",
+    "src/backend/src/planworldsimulator_backend/generator/checkpoint.py",
+    "src/backend/src/planworldsimulator_backend/generator/fake.py",
+    "src/backend/src/planworldsimulator_backend/generator/gates.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_generator.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_runner.py",
+    "src/backend/src/planworldsimulator_backend/generator/processes.py",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/design.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_sim.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_ui.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fix.md",
+    "src/backend/src/planworldsimulator_backend/generator/spec.py",
+    "src/backend/src/planworldsimulator_backend/generator/workspace.py",
+    "src/backend/src/planworldsimulator_backend/main.py",
+    "src/backend/src/planworldsimulator_backend/runner.py",
+    "src/backend/src/planworldsimulator_backend/schemas.py",
+    "src/backend/tests/test_generation.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/web/src/api/client.ts",
+    "src/web/src/components/ui.tsx",
+    "src/web/src/pages/WorldDetail.test.tsx",
+    "src/web/src/pages/WorldDetail.tsx",
+    "src/worlds-template/tests/backend/test_contract.py",
+    "src/worlds-template/ui/src/World.tsx",
+    "src/worlds-template/ui/src/WorldState.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 13065,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1473408,
+    "output_tokens": 5021,
+    "api_call_count": 11
+  }
+}
