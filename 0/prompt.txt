@@ -1,0 +1,5 @@
+What do you think about the current implementation of the world generating step? I need some ways in which we can make it as fast and seamlessly as possible. Do you have any ways to improve it?
+
+---
+
+Can you come up with a concrete plan what you suggest to improve here please?
