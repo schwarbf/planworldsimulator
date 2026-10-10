@@ -5,7 +5,7 @@ import { DifficultySection } from "../components/DifficultySection";
 import { HowItWorks } from "../components/HowItWorks";
 import { type Draft, PromptWindow } from "../components/PromptWindow";
 import { ShowcaseGallery } from "../components/ShowcaseGallery";
-import { WorldsList } from "../components/WorldsList";
+import { ExistingWorlds } from "../components/ExistingWorlds";
 import { SHOWCASE } from "../data/showcase";
 
 export function Home() {
@@ -30,7 +30,7 @@ export function Home() {
       <HowItWorks />
       <DifficultySection />
       <ShowcaseGallery onUse={usePrompt} />
-      <WorldsList />
+      <ExistingWorlds />
     </main>
   );
 }

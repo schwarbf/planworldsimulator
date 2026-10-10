@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
 
 import { api, type World, type WorldEvent } from "../api/client";
+import { PlayLevels } from "../components/PlayLevels";
 import { Button, Card, cx, Label, StatusChip } from "../components/ui";
 
 const STEPS = [
@@ -130,9 +131,11 @@ export function WorldDetail() {
               {events.find((e) => e.state === "failed")?.message ??
                 "Generation failed"}
             </p>
-            <Button variant="dark" onClick={() => act(api.retryWorld)}>
-              Retry
-            </Button>
+            {world.mine && (
+              <Button variant="dark" onClick={() => act(api.retryWorld)}>
+                Retry
+              </Button>
+            )}
           </div>
         )}
       </Card>
@@ -145,23 +148,16 @@ export function WorldDetail() {
       )}
 
       {world.status === "ready" && (
-        <Card className="flex items-center justify-between gap-3 p-6">
+        <Card className="flex flex-col gap-3 p-6">
           <div>
-            <p className="font-semibold">
-              {world.running ? "World is running" : "World is ready"}
-            </p>
+            <p className="font-semibold">Play this world</p>
             <p className="text-xs text-muted">
-              {world.running && world.port
-                ? `Serving on port ${world.port}`
-                : "Start it to play or hand it to an agent."}
+              Public: anyone with the link can play. It starts when someone
+              opens it and stops after a while without players.
+              {world.play_count > 0 && ` Played ${world.play_count}×.`}
             </p>
           </div>
-          <Button
-            variant={world.running ? "soft" : "primary"}
-            onClick={() => act(world.running ? api.stopWorld : api.startWorld)}
-          >
-            {world.running ? "Stop" : "Start world"}
-          </Button>
+          <PlayLevels world={world} />
         </Card>
       )}
     </main>

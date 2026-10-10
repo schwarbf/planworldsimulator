@@ -6,7 +6,7 @@ import { Home } from "./Home";
 
 beforeEach(() => {
   vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response("[]", { status: 200 }),
+    new Response(JSON.stringify({ items: [], total: 0 }), { status: 200 }),
   );
   window.scrollTo = vi.fn();
 });
@@ -30,6 +30,9 @@ test("shows the hero, the showcase and an empty worlds list", async () => {
     screen.getByRole("heading", { name: /four levels in every world/i }),
   ).toBeInTheDocument();
   expect(await screen.findByText(/no worlds yet/i)).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: /existing worlds, ready to play/i }),
+  ).toBeInTheDocument();
 });
 
 test("'Use this prompt' copies a showcase prompt into the generator", async () => {

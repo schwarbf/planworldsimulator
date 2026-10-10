@@ -7,7 +7,7 @@ const LINKS = [
   { href: "/#how", label: "How it works" },
   { href: "/#levels", label: "Difficulty" },
   { href: "/#examples", label: "Examples" },
-  { href: "/#worlds", label: "Your worlds" },
+  { href: "/#worlds", label: "Worlds" },
 ];
 
 export function SiteNav() {

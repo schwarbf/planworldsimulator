@@ -11,8 +11,17 @@ export interface World {
   path: string | null;
   running: boolean;
   port: number | null;
+  featured: boolean;
+  play_count: number;
+  /** True when this browser created the world. */
+  mine: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface WorldPage {
+  items: World[];
+  total: number;
 }
 
 export interface WorldEvent {
@@ -41,15 +50,20 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-  listWorlds: () => request<World[]>("/worlds"),
+  listWorlds: ({ q = "", limit = 12 }: { q?: string; limit?: number } = {}) => {
+    const params = new URLSearchParams({ limit: String(limit) });
+    if (q) params.set("q", q);
+    return request<WorldPage>(`/worlds?${params}`);
+  },
   getWorld: (id: string) => request<World>(`/worlds/${id}`),
   listEvents: (id: string) => request<WorldEvent[]>(`/worlds/${id}/events`),
   createWorld: (body: CreateWorld) =>
     request<World>("/worlds", { method: "POST", body: JSON.stringify(body) }),
   retryWorld: (id: string) =>
     request<World>(`/worlds/${id}/retry`, { method: "POST" }),
-  startWorld: (id: string) =>
-    request<World>(`/worlds/${id}/start`, { method: "POST" }),
-  stopWorld: (id: string) =>
-    request<World>(`/worlds/${id}/stop`, { method: "POST" }),
 };
+
+/** Public link that starts the world on demand and opens it at a level. */
+export function playUrl(worldId: string, level: number): string {
+  return `/api/play/${worldId}/?level=${level}`;
+}
