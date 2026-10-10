@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K3DARPKM4NS2FJF0TKXEM0",
   "strategy": "manual-commit",
   "branch": "feat/world-generation-performance",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
     "benchmarks/world_generation.json",
     "src/backend/src/planworldsimulator_backend/api/worlds.py",
@@ -51,13 +51,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 13065,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 1473408,
-    "output_tokens": 5021,
-    "api_call_count": 11
+    "input_tokens": 13079,
+    "cache_creation_tokens": 9630,
+    "cache_read_tokens": 4035504,
+    "output_tokens": 10009,
+    "api_call_count": 18
   }
 }
