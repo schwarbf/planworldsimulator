@@ -1,0 +1,148 @@
+I actually want to use gemini omni (the api) you have access to the GEMINI_API_KEY in the environment. Let's update the plan:
+- For the hook: I want to say something like you think that playing the foodtruck stand is hard? [Image #1] or playing https://arcprize.org/arc-agi/3 [Image #2] is hard? Then you have never played any of the games from the PlanWorldSimulator. Here you can generate planning scenario and test your skills against the agent. Can you beat him?
+- Then There should be a video that goes to http://localhost:8480/ and create [Image #3] [Image #4] Here's the input text 
+
+<pasted_content id="eefd">
+Create a bike factory world where I manage suppliers, component inventory, assembly, a warehouse, and three bike shops. Each week I order parts, allocate production, and ship bikes to meet demand. My goal is to earn CHF 1 million while fulfilling at least 95% of customer orders. Include delivery delays, storage costs, capacity upgrades, and shop stockouts. Add hidden patterns I can discover through experiments: seasonal demand, storms delaying suppliers, and larger orders amplifying upstream shortages. Use an isometric view with clickable buildings, visible shipment routes, inventory indicators, and clear weekly controls. Let me play manually or delegate ordering to an agent. Make Easy forgiving, Medium require careful planning, and Hard introduce tighter cash flow and less predictable disruptions.
+</pasted_content id="eefd">
+
+ Then omni should somehow generate a sequence that instead of waiting until everything is green, generates the world in 3d and ships it in a parcel
+- Then use browser use to show the 3 difficulty levels and show what differs by level
+- Then make a simple diagram that quickly highlights how it works on a high level
+- Then in the end, there should be a small line with: Do you have what it takes to be a planning master?
+
+As gemini omni can only generate 10s videos at most. Can you make a plan to split up each steps please? Here's the text that goes into the prompt line:
+
+Here's how it looks at the end? [Image #6] [Image #7]
+
+Can you make a plan for these video segments? My friend will create a screen recording of him playing and of the agent playing
+
+---
+
+You have also access to GRADIUM_API_KEY if you want to use voice for the video or can use any other gemini product. Can you refine the plan please?
+
+---
+
+In the end you also need to be able to concatenate all video frames please? Where should my friend place them?
+
+---
+
+Yes, start creating the videos please
+
+---
+
+now the gradium key should work as well
+
+---
+
+you can go ahed now
+
+---
+
+<task-notification>
+<task-id>bf8qxrfvt</task-id>
+<tool-use-id>toolu_014CJE7cK4ucLZ14LK7NtsLv</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/bf8qxrfvt.output</output-file>
+<status>completed</status>
+<summary>Background command "Fix delivery and rerun Omni C1 test" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Please build everything that my friend can only provide the videos at the very end please
+
+---
+
+<task-notification>
+<task-id>bv2v4c6y0</task-id>
+<tool-use-id>toolu_012N7KKEzjcXQnXQZYaHGChs</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/bv2v4c6y0.output</output-file>
+<status>failed</status>
+<summary>Background command "Wait for draft render and inspect it" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>blac75ika</task-id>
+<tool-use-id>toolu_01ERMgsbx8GTisQYNEmQQ9Xp</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/blac75ika.output</output-file>
+<status>failed</status>
+<summary>Background command "Write timeline and assembly script, render draft" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b83rwuu1b</task-id>
+<tool-use-id>toolu_01FA4fiApm5dFn6AgByPv8Lq</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/b83rwuu1b.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun probe on Hard" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+I copied my friends run and how the agent runs into the inputs/ folder. Can you double check please?
+
+---
+
+<task-notification>
+<task-id>b3tc5n4hd</task-id>
+<tool-use-id>toolu_0167tJXnpktDG1boi64rckQV</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/b3tc5n4hd.output</output-file>
+<status>completed</status>
+<summary>Background command "Record segments B and E1-E3 from the live site" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Until 42s he plays and one can listen to the gameplay. Maybe you can cut it a bit?
+
+---
+
+You have to speed up. I only have 5mins left until final submission
+
+---
+
+<task-notification>
+<task-id>baaid1ege</task-id>
+<tool-use-id>toolu_01PphZTpoVCpoftLdT2MBqJr</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/baaid1ege.output</output-file>
+<status>failed</status>
+<summary>Background command "Inspect preset bike-factory world with relaxed load wait" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+Make sure the file is only 2mins long at most. Create a new
+
+---
+
+<task-notification>
+<task-id>bkg22jsma</task-id>
+<tool-use-id>toolu_01Gswp6aLF7viQWxt8HqL2Rp</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-florianschwarb-code-personal-planworldsimulator/816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e/tasks/bkg22jsma.output</output-file>
+<status>completed</status>
+<summary>Background command "Cut D1/D2, make F/G, fix timeline, assemble final video" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Can you draft a PR to the repo such that it lands then at the following location once it's meged to master? https://github.com/schwarbf/planworldsimulator/tree/main/submission/video.mp4
+
+---
+
+Can you refine the video please? What was maybe too short and needs improving please? Can you make a plan?
+
+---
+
+The shipping of the world takes a bit long, this needs to be much faster. The gameplay of my friend and of the agent should be rather longer. Also, the description of what the tool does should be a bit nicer please. Also, I don't want a robot in there. Can you update your plan please?
+
+---
+
+Also, can you use a much more enthusiastic voice please? Can you update your plan please?
+
+---
+
+you can go ahead now
