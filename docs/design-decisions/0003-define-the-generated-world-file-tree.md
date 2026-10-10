@@ -13,18 +13,21 @@ which ones it writes.
 
 `[base]` = copied from the template, never edited · `[gen]` = written by the generator
 
+The template lives in `src/worlds-template/`; each world is a copy in
+`src/worlds/<id>/`. `src/worlds/bike-factory/` is the reference world.
+
 ```
-worlds/<slug>/
+src/worlds/<id>/
 ├─ brief.md               [gen]  Public story, goal and actions; given to the agent.
 ├─ secret.md              [gen]  Hidden rules and scoring; never given to the agent.
-├─ pixi.toml              [base] Dependencies (gymnasium, mcp, fastapi) and tasks (serve, test).
-├─ process-compose.yaml   [base] Starts the server and the UI.
+├─ pixi.toml              [base] Dependencies (gymnasium, mcp, fastapi) and tasks (serve, ui, test, dev).
+├─ process-compose.yaml   [base] Starts the server ($PORT) and the UI ($UI_PORT).
 ├─ sim/
-│  ├─ env.py              [gen]  Gymnasium env: spaces per difficulty, new instance per seed, one step = one day.
+│  ├─ env.py              [gen]  Gymnasium env: spaces per difficulty, new instance per seed, one step = one week.
 │  ├─ rules.py            [gen]  World dynamics and hidden rules.
-│  └─ helpers.py          [base] Padding and action masks, observation → JSON, env registration.
+│  └─ helpers.py          [base] Observation → JSON, env registration.
 ├─ server/
-│  ├─ mcp.py              [gen]  One MCP tool per unlocked action, plus advance, observe and score.
+│  ├─ mcp.py              [gen]  Core tools (brief, observe, note, advance, score) plus one tool per world action.
 │  └─ api.py              [base] REST/WebSocket for the UI and the agent event log; same process as MCP.
 ├─ ui/src/
 │  ├─ shared/             [base] Branding, shared controls and the SVG kit (see below).
@@ -35,14 +38,15 @@ worlds/<slug>/
    ├─ backend/
    │  ├─ test_env.py      [base] Gymnasium `check_env` and determinism for every difficulty.
    │  ├─ test_rules.py    [gen]  World-specific invariants.
-   │  ├─ test_mcp.py      [base] MCP tools match the unlocked actions; advance, observe and score work.
+   │  ├─ test_mcp.py      [base] MCP tools cover the world's actions; reads, notes and advance work.
+   │  ├─ test_api.py      [base] REST routes, UI controls and the event WebSocket work.
    │  └─ test_run.py      [base] Optional: one agent run end to end.
    └─ frontend/
       └─ App.test.tsx     [base] Vitest: renders `World.tsx` with mock state without crashing.
 ```
 
-- **Difficulty** is set in the env constructor and defines the available actions.
-- **Seed** is set in `reset` and draws a new world instance.
+- **Difficulty** (env constructor) fixes the structure: buildings, instance kinds and available actions.
+- **Seed** (`reset`) only changes values, so no padding or action masks.
 
 ### `ui/src/shared/`
 
@@ -67,6 +71,7 @@ shared/
 └─ kit/                SVG building blocks for isometric world views.
    ├─ README.md         What exists and how to use it; the generator reads this.
    ├─ iso.ts            Isometric projection and tile math.
+   ├─ Stage.tsx         Frame that keeps the SVG and the Hud overlay aligned.
    ├─ IsoIsland.tsx     Floating tile slab with grid, path and water tiles.
    ├─ IsoBox.tsx        Shaded box; the base for buildings.
    ├─ Building.tsx      Box with windows, roof, chimney and gable variants.
