@@ -11,6 +11,17 @@ WAV = b"RIFF\x24\x00\x00\x00WAVEfmt fake-audio"
 INTRO = "Welcome to the world. You run it for a year. Good luck."
 
 
+KEY_VARS = ("GEMINI_API_KEY", "GRADIUM_API_KEY")
+
+
+@pytest.fixture(autouse=True)
+def no_real_keys(monkeypatch):
+    """Tests never see real keys, also not via *_API_KEY_FILE or a world .env."""
+    for name in KEY_VARS:
+        monkeypatch.delenv(name, raising=False)
+        monkeypatch.delenv(f"{name}_FILE", raising=False)
+
+
 @pytest.fixture
 def client():
     # No `with`: the narrator routes do not need the MCP lifespan (it can only start once per app).

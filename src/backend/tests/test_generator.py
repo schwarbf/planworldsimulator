@@ -6,7 +6,12 @@ from pathlib import Path
 import pytest
 from planworldsimulator_backend import worldproc
 from planworldsimulator_backend.config import Settings
-from planworldsimulator_backend.generator import GenerationRequest, prompts, workspace
+from planworldsimulator_backend.generator import (
+    GenerationRequest,
+    gates,
+    prompts,
+    workspace,
+)
 from planworldsimulator_backend.generator.opencode_generator import (
     GenerationFailed,
     OpenCodeGenerator,
@@ -404,3 +409,12 @@ def test_ui_tests_run_with_a_read_only_node_modules(tmp_path: Path) -> None:
         for path in [shared, *shared.rglob("*")]:
             if not path.is_symlink():
                 path.chmod(path.stat().st_mode | 0o200)
+
+
+def test_gates_run_worlds_without_secrets(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("GEMINI_API_KEY", "secret-1")
+    monkeypatch.setenv("GRADIUM_API_KEY_FILE", "/keys/gradium.txt")
+    monkeypatch.setenv("SOME_TOKEN", "secret-2")
+    env = gates._env(tmp_path)
+    assert not {"GEMINI_API_KEY", "GRADIUM_API_KEY_FILE", "SOME_TOKEN"} & env.keys()
+    assert env["PYTHONPATH"] == str(tmp_path) and "PATH" in env
