@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>PlanWorldSimulator architecture</title>
+<style>
+  @page { size: 1600px 900px; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #f6f2ea; }
+  svg { display: block; break-after: page; }
+  text { font-family: "Inter", -apple-system, "Helvetica Neue", Helvetica, Arial, sans-serif; fill: #1b1f3b; }
+  .t { font-size: 30px; font-weight: 800; }
+  .h { font-size: 22px; font-weight: 700; }
+  .h2 { font-size: 19px; font-weight: 700; }
+  .s { font-size: 15px; fill: #7a7468; font-weight: 500; }
+  .m, .m text { font-family: Menlo, "SF Mono", monospace; font-size: 14px; font-weight: 600; }
+  .lab { font-size: 13px; font-weight: 700; fill: #7a7468; letter-spacing: 0.06em; }
+  .tag { font-size: 15px; font-weight: 700; fill: #fff; }
+  .card { fill: #fff; stroke: #e6dfd2; stroke-width: 1.5; }
+  .arrow { stroke: #1b1f3b; stroke-width: 2.6; fill: none; marker-end: url(#tip); }
+  .arrow2 { stroke: #1b1f3b; stroke-width: 2.6; fill: none; marker-end: url(#tip); marker-start: url(#tip0); }
+  .va { stroke: #7b61ff; stroke-width: 3; fill: none; marker-end: url(#tipv); }
+  .va2 { stroke: #7b61ff; stroke-width: 3; fill: none; marker-end: url(#tipv); marker-start: url(#tipv0); }
+  .ga { stroke: #22b07d; stroke-width: 3; fill: none; marker-end: url(#tipg); }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute;break-after:auto">
+  <defs>
+    <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1b1f3b"/></marker>
+    <marker id="tip0" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#1b1f3b"/></marker>
+    <marker id="tipv" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7b61ff"/></marker>
+    <marker id="tipv0" viewBox="0 0 10 10" refX="2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#7b61ff"/></marker>
+    <marker id="tipg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#22b07d"/></marker>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="6" stdDeviation="9" flood-color="#1b1f3b" flood-opacity="0.08"/></filter>
+    <linearGradient id="orb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22b07d"/><stop offset="1" stop-color="#7b61ff"/></linearGradient>
+    <g id="robot">
+      <circle r="17" fill="#7b61ff" stroke="#fff" stroke-width="2.5"/>
+      <line x1="0" y1="-14" x2="0" y2="-9" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+      <circle cy="-14" r="2" fill="#fff"/>
+      <rect x="-9.5" y="-7.5" width="19" height="15" rx="5" fill="#fff"/>
+      <circle cx="-4" cy="-0.5" r="2.3" fill="#7b61ff"/><circle cx="4" cy="-0.5" r="2.3" fill="#7b61ff"/>
+      <path d="M-3 4h6" stroke="#7b61ff" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+    <g id="logo"><rect width="34" height="34" rx="10" fill="#1b1f3b"/><path d="M17 8l9 9-9 9-9-9z" fill="#ff6f4f"/></g>
+    <g id="gem"><path d="M0-14c1.6 8.4 5.6 12.4 14 14-8.4 1.6-12.4 5.6-14 14-1.6-8.4-5.6-12.4-14-14 8.4-1.6 12.4-5.6 14-14z" fill="#4c7cf3"/></g>
+    <g id="wave"><circle r="15" fill="url(#orb)"/><g fill="#fff"><rect x="-8" y="-5" width="2.6" height="10" rx="1.3"/><rect x="-3.5" y="-8" width="2.6" height="16" rx="1.3"/><rect x="1" y="-6" width="2.6" height="12" rx="1.3"/><rect x="5.5" y="-3" width="2.6" height="6" rx="1.3"/></g></g>
+    <g id="check"><circle r="15" fill="#22b07d"/><path d="M-6 0l4 4 8-8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="cross"><circle r="15" fill="#e9e2d6"/><path d="M-5-5l10 10M5-5l-10 10" stroke="#a49c8e" stroke-width="3" stroke-linecap="round"/></g>
+    <g id="tile"><path d="M0-16L28 0L0 16L-28 0z" fill="#ece4d4" stroke="#d8cdb9"/><path d="M-28 0L0 16v6L-28 6z" fill="#d8cdb9"/><path d="M28 0L0 16v6L28 6z" fill="#c9bda6"/></g>
+  </defs>
+</svg>
+
+<!-- =================== PAGE 1: comparison =================== -->
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <use href="#logo" x="60" y="44"/>
+  <text x="108" y="70" class="t">PlanWorldSimulator</text>
+  <text x="1540" y="70" text-anchor="end" class="s" style="font-size:20px">planning benchmarks</text>
+
+  <!-- row labels -->
+  <g class="lab">
+    <text x="60" y="404">WORLDS</text>
+    <text x="60" y="524">BUILT BY</text>
+    <text x="60" y="644">NEW WORLD FROM A PROMPT</text>
+    <text x="60" y="764">AGENT &amp; HUMAN, SAME CONTROLS</text>
+  </g>
+  <g stroke="#e6dfd2" stroke-width="1.5">
+    <line x1="60" y1="460" x2="1540" y2="460"/><line x1="60" y1="580" x2="1540" y2="580"/><line x1="60" y1="700" x2="1540" y2="700"/>
+  </g>
+
+  <!-- column 1: FoodTruck Bench -->
+  <g transform="translate(330 0)">
+    <g filter="url(#sh)"><rect x="0" y="130" width="250" height="190" rx="22" class="card"/></g>
+    <g transform="translate(125 200)">
+      <rect x="-46" y="-26" width="70" height="44" rx="8" fill="#ff9b3f"/><rect x="24" y="-12" width="26" height="30" rx="6" fill="#ff9b3f"/>
+      <rect x="-36" y="-18" width="30" height="16" rx="3" fill="#fff"/><rect x="30" y="-6" width="14" height="10" rx="2" fill="#fff"/>
+      <circle cx="-28" cy="22" r="9" fill="#1b1f3b"/><circle cx="34" cy="22" r="9" fill="#1b1f3b"/>
+    </g>
+    <text x="125" y="290" text-anchor="middle" class="h">FoodTruck Bench</text>
+    <use href="#tile" x="125" y="400"/>
+    <text x="125" y="530" text-anchor="middle" class="h2">hand-made</text>
+    <use href="#cross" x="125" y="640"/>
+    <use href="#check" x="125" y="760"/>
+  </g>
+
+  <!-- column 2: ARC-AGI-3 -->
+  <g transform="translate(620 0)">
+    <g filter="url(#sh)"><rect x="0" y="130" width="250" height="190" rx="22" class="card"/></g>
+    <g transform="translate(125 196)">
+      <rect x="-30" y="-36" width="60" height="72" rx="10" fill="#e85aa8"/><rect x="-22" y="-28" width="44" height="34" rx="4" fill="#1b1f3b"/>
+      <rect x="-14" y="-20" width="8" height="8" fill="#f2d14a"/><rect x="-4" y="-20" width="8" height="8" fill="#4c7cf3"/><rect x="6" y="-12" width="8" height="8" fill="#e85aa8"/>
+      <circle cx="-10" cy="20" r="5" fill="#1b1f3b"/><rect x="4" y="17" width="12" height="6" rx="3" fill="#fff"/>
+    </g>
+    <text x="125" y="290" text-anchor="middle" class="h">ARC-AGI-3</text>
+    <use href="#tile" x="95" y="392"/><use href="#tile" x="155" y="392"/><use href="#tile" x="125" y="412"/>
+    <text x="125" y="530" text-anchor="middle" class="h2">hand-made</text>
+    <use href="#cross" x="125" y="640"/>
+    <use href="#check" x="125" y="760"/>
+  </g>
+
+  <!-- column 3: E-commerce bench -->
+  <g transform="translate(910 0)">
+    <g filter="url(#sh)"><rect x="0" y="130" width="250" height="190" rx="22" class="card"/></g>
+    <g transform="translate(125 200)">
+      <path d="M-40-26h12l10 38h44l8-28h-58" stroke="#4c7cf3" stroke-width="6" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="-12" cy="24" r="6" fill="#4c7cf3"/><circle cx="22" cy="24" r="6" fill="#4c7cf3"/>
+    </g>
+    <text x="125" y="290" text-anchor="middle" class="h">E-commerce Bench</text>
+    <use href="#tile" x="125" y="400"/>
+    <text x="125" y="530" text-anchor="middle" class="h2">hand-made</text>
+    <use href="#cross" x="125" y="640"/>
+    <text x="125" y="768" text-anchor="middle" style="font-size:26px;font-weight:700;fill:#a49c8e">–</text>
+  </g>
+
+  <!-- column 4: PlanWorld (highlighted) -->
+  <g transform="translate(1210 0)">
+    <rect x="-14" y="112" width="344" height="708" rx="30" fill="#efeaff" stroke="#7b61ff" stroke-width="2.5"/>
+    <g filter="url(#sh)"><rect x="40" y="130" width="250" height="190" rx="22" class="card"/></g>
+    <use href="#logo" x="148" y="168"/>
+    <text x="165" y="290" text-anchor="middle" class="h">PlanWorld</text>
+    <!-- prompt -> many worlds -->
+    <g transform="translate(30 398)">
+      <rect x="0" y="-16" width="70" height="32" rx="12" fill="#fff" stroke="#1b1f3b" stroke-width="2"/>
+      <text x="35" y="6" text-anchor="middle" style="font-size:18px;font-weight:800">“…”</text>
+      <path d="M78 0h26" class="arrow"/>
+    </g>
+    <use href="#tile" x="166" y="378"/><use href="#tile" x="226" y="378"/><use href="#tile" x="286" y="378"/>
+    <use href="#tile" x="196" y="414"/><use href="#tile" x="256" y="414"/>
+    <text x="300" y="438" style="font-size:26px;font-weight:800;fill:#7b61ff">∞</text>
+    <g transform="translate(165 520)">
+      <use href="#robot" x="-44" y="0"/>
+      <text x="-18" y="7" class="h2" style="fill:#5b44d6">generated</text>
+    </g>
+    <use href="#check" x="165" y="640"/>
+    <use href="#check" x="165" y="760"/>
+  </g>
+</svg>
+
+<!-- =================== PAGE 2: architecture =================== -->
+<svg width="1600" height="900" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <use href="#logo" x="60" y="40"/>
+  <text x="108" y="66" class="t">PlanWorldSimulator</text>
+
+  <!-- ===== 1 · generator pipeline ===== -->
+  <rect x="40" y="100" width="1520" height="250" rx="26" fill="#fffaf0" stroke="#e6dfd2" stroke-width="1.5"/>
+  <rect x="64" y="86" width="250" height="30" rx="15" fill="#1b1f3b"/>
+  <use href="#gem" x="84" y="101" transform="scale(1)"/>
+  <text x="104" y="107" class="tag">World Generator · OpenCode</text>
+
+  <!-- prompt -->
+  <g filter="url(#sh)"><path d="M64 156h140a14 14 0 0 1 14 14v58a14 14 0 0 1-14 14H110l-18 18v-18H78a14 14 0 0 1-14-14v-58a14 14 0 0 1 14-14z" class="card"/></g>
+  <text x="84" y="192" style="font-size:16px;font-style:italic;font-weight:600">“A bike factory</text>
+  <text x="84" y="214" style="font-size:16px;font-style:italic;font-weight:600">supply chain…”</text>
+  <path d="M222 205h22" class="arrow"/>
+
+  <!-- step boxes -->
+  <g>
+    <!-- 1 template -->
+    <g filter="url(#sh)"><rect x="252" y="150" width="150" height="112" rx="18" class="card"/></g>
+    <circle cx="272" cy="170" r="12" fill="#1b1f3b"/><text x="272" y="175" text-anchor="middle" class="tag" style="font-size:13px">1</text>
+    <g transform="translate(327 205)"><rect x="-22" y="-18" width="34" height="40" rx="5" fill="#efe9dd" stroke="#1b1f3b" stroke-width="2"/><rect x="-12" y="-26" width="34" height="40" rx="5" fill="#fff" stroke="#1b1f3b" stroke-width="2"/></g>
+    <text x="327" y="250" text-anchor="middle" class="h2" style="font-size:17px">Template</text>
+    <path d="M402 205h20" class="arrow"/>
+
+    <!-- 2 design -->
+    <g filter="url(#sh)"><rect x="430" y="150" width="190" height="112" rx="18" class="card"/></g>
+    <circle cx="450" cy="170" r="12" fill="#1b1f3b"/><text x="450" y="175" text-anchor="middle" class="tag" style="font-size:13px">2</text>
+    <text x="525" y="178" text-anchor="middle" class="h2" style="font-size:17px">Design</text>
+    <g transform="translate(470 200)">
+      <rect width="22" height="28" rx="4" fill="#fff" stroke="#1b1f3b" stroke-width="1.8"/><path d="M5 8h12M5 14h12M5 20h8" stroke="#1b1f3b" stroke-width="1.6"/>
+      <text x="28" y="19" class="m" style="font-size:12px">brief</text>
+      <rect x="78" y="0" width="22" height="28" rx="4" fill="#1b1f3b"/><rect x="84" y="12" width="10" height="9" rx="2" fill="#fff"/><path d="M86 12v-3a3 3 0 0 1 6 0v3" stroke="#fff" stroke-width="1.6" fill="none"/>
+      <text x="106" y="19" class="m" style="font-size:12px">rules</text>
+    </g>
+    <text x="525" y="250" text-anchor="middle" class="s" style="font-size:13px">storyline · spec</text>
+    <path d="M620 205h20" class="arrow"/>
+
+    <!-- 3 fill: two tracks with gates + fix loop -->
+    <g filter="url(#sh)"><rect x="648" y="132" width="420" height="160" rx="18" class="card"/></g>
+    <circle cx="668" cy="152" r="12" fill="#1b1f3b"/><text x="668" y="157" text-anchor="middle" class="tag" style="font-size:13px">3</text>
+    <text x="690" y="158" class="h2" style="font-size:17px">Fill · in parallel</text>
+    <!-- sim track -->
+    <g transform="translate(668 176)">
+      <rect width="380" height="44" rx="12" fill="#f6f2ea"/>
+      <text x="14" y="28" class="m">env.py · rules.py · mcp.py</text>
+      <g transform="translate(300 22)"><rect x="-20" y="-14" width="40" height="28" rx="8" fill="#1b1f3b"/><text x="0" y="5" text-anchor="middle" class="tag" style="font-size:12px">pytest</text></g>
+      <use href="#check" x="358" y="22" transform="scale(1)"/>
+    </g>
+    <!-- ui track -->
+    <g transform="translate(668 228)">
+      <rect width="380" height="44" rx="12" fill="#f6f2ea"/>
+      <text x="14" y="28" class="m">World.tsx</text>
+      <g transform="translate(284 22)"><rect x="-42" y="-14" width="84" height="28" rx="8" fill="#1b1f3b"/><text x="0" y="5" text-anchor="middle" class="tag" style="font-size:12px">tsc · vitest</text></g>
+      <use href="#check" x="358" y="22"/>
+    </g>
+    <!-- fix loop -->
+    <path d="M1040 294C1040 318 728 318 728 298" stroke="#ff6f4f" stroke-width="2.6" fill="none" marker-end="url(#tip)" stroke-dasharray="6 5"/>
+    <text x="884" y="338" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#ff6f4f">gates fail → fix rounds</text>
+    <path d="M1068 205h20" class="arrow"/>
+
+    <!-- 4 polish -->
+    <g filter="url(#sh)"><rect x="1096" y="150" width="130" height="112" rx="18" class="card"/></g>
+    <circle cx="1116" cy="170" r="12" fill="#1b1f3b"/><text x="1116" y="175" text-anchor="middle" class="tag" style="font-size:13px">4</text>
+    <g transform="translate(1161 205)"><rect x="-22" y="-16" width="44" height="32" rx="6" fill="#1b1f3b"/><circle r="9" fill="#fff"/><circle r="5" fill="#7b61ff"/><rect x="-8" y="-21" width="14" height="6" rx="2" fill="#1b1f3b"/></g>
+    <text x="1161" y="250" text-anchor="middle" class="h2" style="font-size:17px">Polish</text>
+    <path d="M1226 205h20" class="arrow"/>
+
+    <!-- 5 tests + smoke -->
+    <g filter="url(#sh)"><rect x="1254" y="150" width="130" height="112" rx="18" class="card"/></g>
+    <circle cx="1274" cy="170" r="12" fill="#1b1f3b"/><text x="1274" y="175" text-anchor="middle" class="tag" style="font-size:13px">5</text>
+    <use href="#check" x="1305" y="205"/><use href="#check" x="1333" y="205"/>
+    <text x="1319" y="250" text-anchor="middle" class="h2" style="font-size:17px">Smoke</text>
+    <path d="M1384 205h20" class="arrow"/>
+
+    <!-- 6 publish -->
+    <g filter="url(#sh)"><rect x="1412" y="150" width="128" height="112" rx="18" fill="#1b1f3b"/></g>
+    <circle cx="1432" cy="170" r="12" fill="#fff"/><text x="1432" y="175" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#1b1f3b">6</text>
+    <g transform="translate(1476 204)"><path d="M0-18v26M-10-8l10-10 10 10" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M-16 6v8h32v-8" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round"/></g>
+    <text x="1476" y="250" text-anchor="middle" class="h2" style="font-size:17px;fill:#fff">Publish</text>
+  </g>
+
+  <!-- publish -> world folder -->
+  <path d="M1476 262C1476 330 1440 352 1200 360C700 372 260 352 220 376" class="arrow" style="stroke-dasharray:2 7;stroke-linecap:round"/>
+
+  <!-- ===== 2 · world folder ===== -->
+  <g filter="url(#sh)"><rect x="40" y="384" width="350" height="456" rx="24" class="card"/></g>
+  <g transform="translate(66 414)"><path d="M0 4a4 4 0 0 1 4-4h14l6 6h22a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H4a4 4 0 0 1-4-4z" fill="#f2b23a"/></g>
+  <text x="128" y="438" class="h">worlds/&lt;id&gt;/</text>
+  <g class="m" transform="translate(70 488)">
+    <text y="0">brief.md</text>
+    <g transform="translate(176 -15)"><rect width="16" height="20" rx="3" fill="#fff" stroke="#1b1f3b" stroke-width="1.6"/><path d="M4 7h8M4 11h8M4 15h5" stroke="#1b1f3b" stroke-width="1.4"/></g>
+    <g transform="translate(176 19)"><rect width="16" height="20" rx="3" fill="#1b1f3b"/><rect x="4" y="9" width="8" height="7" rx="1.5" fill="#fff"/><path d="M5.5 9v-2a2.5 2.5 0 0 1 5 0v2" stroke="#fff" stroke-width="1.4" fill="none"/></g>
+    <text y="34">secret.md</text>
+    <text y="80" style="fill:#7a7468">sim/</text>
+    <text x="22" y="108">env.py · rules.py</text>
+    <text y="148" style="fill:#7a7468">server/</text>
+    <text x="22" y="176">api.py · mcp.py</text>
+    <text y="216" style="fill:#7a7468">ui/</text>
+    <text x="22" y="244">World.tsx · shared/</text>
+    <text y="284" style="fill:#7a7468">tests/</text>
+  </g>
+  <g transform="translate(66 800)">
+    <rect width="298" height="28" rx="14" fill="#efeaff"/>
+    <text x="149" y="19" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#5b44d6">self-contained website</text>
+  </g>
+  <path d="M390 600h48" class="arrow"/>
+
+  <!-- ===== 3 · world server ===== -->
+  <g filter="url(#sh)"><rect x="446" y="384" width="500" height="320" rx="24" fill="#fffdf9" stroke="#1b1f3b" stroke-width="2.5"/></g>
+  <rect x="470" y="370" width="150" height="30" rx="15" fill="#1b1f3b"/>
+  <text x="545" y="391" text-anchor="middle" class="tag">World server</text>
+  <!-- game core -->
+  <rect x="476" y="430" width="200" height="244" rx="18" class="card"/>
+  <g transform="translate(520 470)"><rect x="-20" y="-20" width="40" height="40" rx="10" fill="#1b1f3b"/><rect x="-11" y="2" width="5" height="10" rx="1.5" fill="#22b07d"/><rect x="-2.5" y="-4" width="5" height="16" rx="1.5" fill="#f2b23a"/><rect x="6" y="-10" width="5" height="22" rx="1.5" fill="#ff6f4f"/></g>
+  <text x="550" y="478" class="h2">Game</text>
+  <text x="500" y="530" class="m">Gymnasium env</text>
+  <text x="500" y="560" class="m">week = 1 step</text>
+  <text x="500" y="590" class="m">score · baseline</text>
+  <text x="500" y="620" class="m">event log</text>
+  <path d="M676 552h36" class="arrow"/>
+  <!-- routes -->
+  <g transform="translate(720 430)">
+    <rect width="200" height="64" rx="14" fill="#f6f2ea"/>
+    <text x="16" y="28" class="m">/api</text>
+    <text x="16" y="50" class="s" style="font-size:13px">REST · events</text>
+  </g>
+  <g transform="translate(720 520)">
+    <rect width="200" height="64" rx="14" fill="#efeaff" stroke="#7b61ff" stroke-width="2"/>
+    <text x="16" y="28" class="m" style="fill:#5b44d6">/mcp</text>
+    <text x="16" y="50" class="s" style="font-size:13px">tools</text>
+  </g>
+  <g transform="translate(720 610)">
+    <rect width="200" height="64" rx="14" fill="#e6f7ef" stroke="#22b07d" stroke-width="2"/>
+    <text x="16" y="28" class="m" style="fill:#0f5c40">/narration</text>
+    <use href="#wave" x="176" y="32"/>
+  </g>
+
+  <!-- player UI -->
+  <g filter="url(#sh)"><rect x="446" y="740" width="500" height="100" rx="22" class="card"/></g>
+  <g transform="translate(478 766)"><rect width="56" height="44" rx="7" fill="#efe9dd"/><rect width="56" height="11" rx="5" fill="#1b1f3b"/><circle cx="7" cy="5.5" r="2" fill="#ff6f4f"/><circle cx="14" cy="5.5" r="2" fill="#f2b23a"/>
+    <path d="M14 34L28 26L42 34L28 42z" fill="#d8cdb9"/></g>
+  <text x="552" y="788" class="h2">Player · UI</text>
+  <text x="552" y="814" class="s">same controls as the agent</text>
+  <g transform="translate(830 790)"><path d="M0 0l16 8-6.5 1.9-3.2 6.8z" fill="#7b61ff" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><use href="#robot" x="30" y="16" transform="scale(1)"/></g>
+  <path d="M820 740v-62" class="arrow2"/>
+  <!-- narration -> gradium -->
+  <path d="M920 650C970 650 990 700 1004 748" class="ga"/>
+  <g filter="url(#sh)"><rect x="972" y="756" width="200" height="64" rx="32" class="card"/></g>
+  <use href="#wave" x="1006" y="788"/>
+  <text x="1032" y="786" class="h2">Gradium</text>
+  <text x="1032" y="806" class="s" style="font-size:12px">voice · TTS</text>
+
+  <!-- ===== 4 · agent harness ===== -->
+  <g filter="url(#sh)"><rect x="1010" y="384" width="550" height="210" rx="24" class="card"/></g>
+  <rect x="1034" y="370" width="210" height="30" rx="15" fill="#7b61ff"/>
+  <text x="1139" y="391" text-anchor="middle" class="tag">Agent Harness</text>
+  <!-- agent loop -->
+  <g transform="translate(1040 420)">
+    <rect width="190" height="150" rx="16" fill="#f6f2ea"/>
+    <use href="#robot" x="34" y="36"/>
+    <text x="62" y="42" class="h2" style="font-size:17px">Pydantic AI</text>
+    <g transform="translate(14 70)">
+      <rect width="162" height="30" rx="8" fill="#fff"/><text x="10" y="20" class="m" style="font-size:12px">agents.toml</text>
+      <rect y="38" width="162" height="30" rx="8" fill="#fff"/><text x="10" y="58" class="m" style="font-size:12px">Budget left: 1.2M</text>
+    </g>
+  </g>
+  <!-- loop arrows to gemini -->
+  <path d="M1236 470h70" class="arrow"/>
+  <path d="M1306 520h-70" class="arrow"/>
+  <text x="1271" y="462" text-anchor="middle" class="lab" style="font-size:11px">REST</text>
+  <!-- gemini -->
+  <g transform="translate(1316 420)">
+    <rect width="224" height="150" rx="16" fill="#eef3ff" stroke="#4c7cf3" stroke-width="2"/>
+    <use href="#gem" x="30" y="34"/>
+    <text x="54" y="41" class="h2" style="font-size:17px">Gemini API</text>
+    <!-- limits -->
+    <g transform="translate(16 66)">
+      <text y="12" class="lab" style="font-size:11px">TOKENS</text>
+      <rect x="66" y="2" width="124" height="12" rx="6" fill="#fff"/><rect x="66" y="2" width="76" height="12" rx="6" fill="#4c7cf3"/>
+      <text y="40" class="lab" style="font-size:11px">THINKING</text>
+      <g transform="translate(66 30)"><rect width="38" height="12" rx="6" fill="#4c7cf3"/><rect x="42" width="38" height="12" rx="6" fill="#fff"/><rect x="84" width="38" height="12" rx="6" fill="#fff"/></g>
+      <text y="68" class="lab" style="font-size:11px">TIME</text>
+      <g transform="translate(76 63)"><circle r="9" fill="none" stroke="#4c7cf3" stroke-width="2.5"/><path d="M0-5v5l3.5 2.5" stroke="#4c7cf3" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>
+      <text x="92" y="68" class="m" style="font-size:12px">30 min</text>
+    </g>
+  </g>
+  <!-- harness <-> mcp -->
+  <path d="M1040 552C980 552 980 552 924 552" class="va2"/>
+  <text x="968" y="540" text-anchor="middle" style="font-size:13px;font-weight:700;fill:#7b61ff">MCP</text>
+
+  <!-- tool chips -->
+  <g transform="translate(1040 612)">
+    <g class="m" style="font-size:12px">
+      <rect width="72" height="28" rx="14" fill="#efeaff"/><text x="36" y="19" text-anchor="middle" style="fill:#5b44d6">brief</text>
+      <rect x="80" width="84" height="28" rx="14" fill="#efeaff"/><text x="122" y="19" text-anchor="middle" style="fill:#5b44d6">observe</text>
+      <rect x="172" width="72" height="28" rx="14" fill="#efeaff"/><text x="208" y="19" text-anchor="middle" style="fill:#5b44d6">order</text>
+      <rect x="252" width="76" height="28" rx="14" fill="#efeaff"/><text x="290" y="19" text-anchor="middle" style="fill:#5b44d6">probe</text>
+      <rect x="336" width="64" height="28" rx="14" fill="#efeaff"/><text x="368" y="19" text-anchor="middle" style="fill:#5b44d6">note</text>
+      <rect x="408" width="84" height="28" rx="14" fill="#efeaff"/><text x="450" y="19" text-anchor="middle" style="fill:#5b44d6">advance</text>
+    </g>
+  </g>
+
+  <!-- benchmark -->
+  <g filter="url(#sh)"><rect x="1240" y="772" width="320" height="76" rx="20" class="card"/></g>
+  <g transform="translate(1264 830)">
+    <line x1="0" y1="-38" x2="84" y2="-38" stroke="#a49c8e" stroke-width="2" stroke-dasharray="4 4"/>
+    <rect x="4" y="-44" width="18" height="44" rx="4" fill="#7b61ff"/><rect x="32" y="-16" width="18" height="16" rx="4" fill="#14a3a3"/><rect x="60" y="-30" width="18" height="30" rx="4" fill="#d8cdb9"/>
+  </g>
+  <text x="1364" y="806" class="h2">Benchmark</text>
+  <text x="1364" y="830" class="s" style="font-size:13px">seeds · baseline</text>
+  <path d="M1544 594v170" class="arrow" style="stroke-dasharray:2 7;stroke-linecap:round"/>
+  <g transform="translate(1310 30)">
+    <rect width="250" height="50" rx="12" fill="#1b1f3b"/>
+    <text x="22" y="32" style="font-size:18px;font-weight:700;fill:#22b07d;font-family:Menlo,monospace">$</text>
+    <text x="44" y="32" style="font-size:18px;font-weight:600;fill:#fff;font-family:Menlo,monospace">just start</text>
+  </g>
+</svg>
+</body>
+</html>
