@@ -35,7 +35,7 @@ pixi run test   # backend tests
 - `check_action(verb, args) -> dict` — validate and normalise; raise `ValueError` if invalid.
 - `encode_actions([(verb, args), ...]) -> action` — merge a week's queued actions.
 - `observe(site=None) -> dict` — visible state only.
-- `score() -> dict` — at least `score` (0–1), `week`, `done`.
+- `score() -> dict` — at least `score` (0–1), `week`, `done`, and `formula` (one line: how the score is computed; shown in the Goal card).
 - `baseline_action() -> action` — naive policy for the baseline score.
 - `ui_state(ctx) -> dict` — at least `world {name, seed, difficulty}` and `week`; **same shape as `mockState` in `World.tsx`**. `ctx` has `seed`, `story`, `discoveries`, `active`, `queued`, `agent`.
 
@@ -47,7 +47,7 @@ pixi run test   # backend tests
 
 | Route | |
 |---|---|
-| `GET /api/state` | `env.ui_state(...)` plus `queued` (this step's actions) |
+| `GET /api/state` | `env.ui_state(...)` plus `queued` (this step's actions) and `score` (`env.score()` + `baseline`) |
 | `GET /api/score` | `env.score()` plus `baseline`; not logged (for the harness) |
 | `POST /api/action {id, args}` | world verb (queued) or UI control: `play`, `fast`, `pause`, `stats`, `new_world`, `mode {mode}` |
 | `POST /api/unqueue {index}` | remove one queued action |

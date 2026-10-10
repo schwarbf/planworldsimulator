@@ -154,8 +154,9 @@ class BikeFactoryEnv(gym.Env):
         profit, served = w.cash - R.START_CASH, self._served()
         target = self.structure.target
         value = 0.6 * float(np.clip(profit / target, 0, 1)) + 0.4 * min(1.0, served / R.SERVED_TARGET)
+        formula = f"60% profit vs CHF {target / 1e6:g}M + 40% served vs {R.SERVED_TARGET:.0%}"
         return {"score": round(value, 4), "profit": round(profit), "target": target, "served": round(served, 4),
-                "week": min(w.t + 1, R.WEEKS), "done": w.t >= R.WEEKS}
+                "week": min(w.t + 1, R.WEEKS), "done": w.t >= R.WEEKS, "formula": formula}
 
     def ui_state(self, ctx: dict[str, Any]) -> dict[str, Any]:
         """State for ui/src/World.tsx (same shape as its mockState)."""

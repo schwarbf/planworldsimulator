@@ -171,6 +171,7 @@ class Game:
             }
             ui = self.env.ui_state(ctx)
             ui["queued"] = ctx["queued"]  # base contract: the UI queue panel reads this
+            ui["score"] = {**sc, "baseline": self.baseline}  # base contract: the Goal card reads this
             return to_jsonable(ui)
 
     # ---------- events ----------

@@ -23,6 +23,10 @@ class TestRest:
         assert state["world"]["seed"] == "7"
         assert "week" in state
 
+    def test_state_has_score_for_goal_card(self, client):
+        score = client.get("/api/state").json()["score"]
+        assert {"score", "baseline", "formula"} <= score.keys()
+
     def test_score_has_contract_fields(self, client):
         score = client.get("/api/score").json()
         assert {"score", "baseline", "week", "done"} <= score.keys()

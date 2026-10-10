@@ -1,9 +1,9 @@
 import { Bar } from "../primitives/Bar";
 import { Card } from "../primitives/Card";
-import type { ControlsModel } from "../types";
+import type { ControlsModel, ScoreInfo } from "../types";
 
-/** Goal text and its progress bars. */
-export function Goal({ goal }: { goal: ControlsModel["goal"] }) {
+/** Goal text, its progress bars, and the current score with how it is computed. */
+export function Goal({ goal, score }: { goal: ControlsModel["goal"]; score?: ScoreInfo }) {
   return (
     <Card>
       <span className="caps">Goal</span>
@@ -17,6 +17,17 @@ export function Goal({ goal }: { goal: ControlsModel["goal"] }) {
           <Bar pct={b.pct} tone={b.tone} tick={b.tick} />
         </div>
       ))}
+      {score && (
+        <div className="goal__score">
+          <div className="between">
+            <span className="caps">Score</span>
+            <span className="stat__value">
+              {score.score.toFixed(2)} <span className="muted">· baseline {score.baseline.toFixed(2)}</span>
+            </span>
+          </div>
+          {score.formula && <div className="muted">{score.formula}</div>}
+        </div>
+      )}
     </Card>
   );
 }

@@ -11,12 +11,17 @@ HEADER = (
 )
 
 
-def report(run_dir: Path) -> str:
-    rows = [json.loads(line) for line in (run_dir / "episodes.jsonl").open()]
+def report(*run_dirs: Path) -> str:
+    """One table over all given runs; also saved as report.md for a single run."""
+    rows = [
+        json.loads(line)
+        for run_dir in run_dirs
+        for line in (run_dir / "episodes.jsonl").open()
+    ]
     by_agent: dict[str, list[dict]] = defaultdict(list)
     for row in rows:
         by_agent[row["agent"]].append(row)
-    lines = [f"# {run_dir.name}", "", HEADER]
+    lines = [f"# {' + '.join(d.name for d in run_dirs)}", "", HEADER]
     for agent, eps in by_agent.items():
         score = mean(e["score"] for e in eps)
         baseline = mean(e["baseline"] for e in eps)
@@ -38,5 +43,6 @@ def report(run_dir: Path) -> str:
         ]
         lines.append("| " + " | ".join(str(c) for c in cells) + " |")
     text = "\n".join(lines) + "\n"
-    (run_dir / "report.md").write_text(text)
+    if len(run_dirs) == 1:
+        (run_dirs[0] / "report.md").write_text(text)
     return text

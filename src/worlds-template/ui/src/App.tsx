@@ -10,7 +10,7 @@ import { Inspector } from "./shared/controls/Inspector";
 import { Queue } from "./shared/controls/Queue";
 import { StoryToast } from "./shared/controls/StoryToast";
 import { TopBar } from "./shared/controls/TopBar";
-import type { OnAction, QueuedAction } from "./shared/types";
+import type { OnAction, QueuedAction, ScoreInfo } from "./shared/types";
 import { mockState, toControls, WorldView } from "./World";
 
 // The SVG world is the heaviest part; redraw it only when its props change.
@@ -26,6 +26,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const model = useMemo(() => toControls(state, selectedId), [state, selectedId]);
   const queued = (state as { queued?: QueuedAction[] }).queued ?? [];
+  const score = (state as { score?: ScoreInfo }).score;
 
   useEffect(() => setPending(null), [model.dock.active]);
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function App() {
         <Discoveries discoveries={model.discoveries} />
       </div>
       <div className="app__right">
-        <Goal goal={model.goal} />
+        <Goal goal={model.goal} score={score} />
         <AgentPanel agent={model.agent} onAction={onAction} />
       </div>
       <div className="app__dock"><ActionDock dock={dock} onAction={onDock} /></div>
