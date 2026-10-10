@@ -28,6 +28,16 @@ class WorldClient:
         body = {"seed": seed, "difficulty": difficulty}
         return await self._call("POST", "/api/reset", json=body)
 
+    async def state(self) -> dict[str, Any]:
+        return await self._call("GET", "/api/state")
+
+    async def set_mode(self, mode: str, agent: str | None = None) -> dict[str, Any]:
+        """``agent`` while an agent plays: the world then rejects UI actions."""
+        args = {"mode": mode, **({"agent": agent} if agent else {})}
+        return await self._call(
+            "POST", "/api/action", json={"id": "mode", "args": args}
+        )
+
     async def score(self) -> dict[str, Any]:
         return await self._call("GET", "/api/score")
 

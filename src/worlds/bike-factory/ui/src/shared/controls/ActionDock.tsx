@@ -10,7 +10,7 @@ const timeButtons: { id: string; icon: IconName; label: string }[] = [
   { id: "fast", icon: "fast", label: "Fast forward" },
 ];
 
-/** Verbs (with keyboard shortcuts), time controls and "New world". */
+/** Verbs (with keyboard shortcuts), time controls and "New world". `data-target` lets the agent cursor find them. */
 export function ActionDock({ dock, onAction, running = "play" }: { dock: ControlsModel["dock"]; onAction: OnAction; running?: string }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -25,7 +25,7 @@ export function ActionDock({ dock, onAction, running = "play" }: { dock: Control
   return (
     <div className="dock">
       {dock.verbs.map((v) => (
-        <button key={v.id} className={`verb${dock.active === v.id ? " on" : ""}`} disabled={v.disabled} onClick={() => onAction(v.id)}>
+        <button key={v.id} data-target={`verb:${v.id}`} className={`verb${dock.active === v.id ? " on" : ""}`} disabled={v.disabled} onClick={() => onAction(v.id)}>
           <Icon name={v.disabled ? "lock" : v.icon} size={14} />
           {v.label}
           <kbd>{v.key}</kbd>
@@ -34,7 +34,7 @@ export function ActionDock({ dock, onAction, running = "play" }: { dock: Control
       <Chip tone="muted">{dock.unlocked} / {dock.total} actions</Chip>
       <span className="dock__sep" />
       {timeButtons.map((b) => (
-        <button key={b.id} className={`iconbtn${running === b.id ? " on" : ""}`} aria-label={b.label} title={b.label} onClick={() => onAction(b.id)}>
+        <button key={b.id} data-target={`time:${b.id}`} className={`iconbtn${running === b.id ? " on" : ""}`} aria-label={b.label} title={b.label} onClick={() => onAction(b.id)}>
           <Icon name={b.icon} size={14} />
         </button>
       ))}

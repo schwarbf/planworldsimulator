@@ -14,12 +14,14 @@ export interface BuildingProps {
   chimney?: boolean;
   windows?: boolean;
   z0?: number;
+  /** Object id the agent cursor moves to (`data-target="map:<id>"`). */
+  target?: string;
 }
 
 const CREAM = "#FFF8EC";
 
 /** Box building with windows on both visible faces, optional roof and chimney. */
-export function Building({ x, y, w, d, h, color, roof, gable, chimney, windows = true, z0 = 0 }: BuildingProps) {
+export function Building({ x, y, w, d, h, color, roof, gable, chimney, windows = true, z0 = 0, target }: BuildingProps) {
   const p = local(x, y);
   const a = w / 2, b = d / 2, top = z0 + h;
   const wins: string[] = [];
@@ -43,7 +45,7 @@ export function Building({ x, y, w, d, h, color, roof, gable, chimney, windows =
   const rc = roof ?? shade(color, 0.85);
   const rh = Math.min(w, d) * 0.35;
   return (
-    <g>
+    <g data-target={target ? `map:${target}` : undefined}>
       <IsoBox x={x} y={y} w={w} d={d} h={h} z0={z0} color={color} />
       {wins.map((w2, k) => <polygon key={k} points={w2} fill={CREAM} opacity={0.92} />)}
       {roof && !gable && <IsoBox x={x} y={y} w={w / 2} d={d / 2} h={6} z0={top} color={rc} />}

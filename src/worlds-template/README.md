@@ -42,15 +42,18 @@ pixi run test   # backend tests
 
 **`server/mcp.py`** — `build_mcp(game)`. Core tools `brief`, `observe`, `note`, `advance`, `score`, `cancel`, plus one tool per verb in `env.actions`. Each tool calls `game.*(…, source="agent")`.
 
-**`ui/src/World.tsx`** — exports `mockState`, `toControls(state, selectedId)`, `WorldView({ state, selectedId, onSelect })`. Draw with `shared/kit` (see `shared/kit/README.md`).
+**`ui/src/World.tsx`** — exports `mockState`, `toControls(state, selectedId)`, `WorldView({ state, selectedId, onSelect })`. Draw with `shared/kit` (see `shared/kit/README.md`). Give each actionable object its id as `target` on `Hud` / `Building`, so the agent cursor can move to it.
+
+**Agent playing (decision 0007)** — the Agent panel starts an agent from `agents.toml` through `harness serve` (Vite proxies `/harness` to `$HARNESS_PORT`, default 8090). While it plays, `mode = "agent"`: the server rejects UI actions, the dock, inspector and time controls are locked, and `AgentCursor` replays the agent's MCP calls from `WS /api/events` on the `data-target` elements (`map:<id>`, `verb:<id>`, `time:play`). "Stop & take over" hands the world back; "Continue" restarts the agent from the current week.
 
 ## Server
 
 | Route | |
 |---|---|
-| `GET /api/state` | `env.ui_state(...)` plus `queued` (this step's actions) and `score` (`env.score()` + `baseline`) |
+| `GET /api/state` | `env.ui_state(...)` plus `queued` (this step's actions), `score` (`env.score()` + `baseline`) and `play {mode, agent}` (who plays) |
 | `GET /api/score` | `env.score()` plus `baseline`; not logged (for the harness) |
-| `POST /api/action {id, args}` | world verb (queued) or UI control: `play`, `fast`, `pause`, `stats`, `new_world`, `mode {mode}` |
+| `POST /api/action {id, args}` | world verb (queued) or UI control: `play`, `fast`, `pause`, `stats`, `new_world`, `mode {mode, agent?}` |
+| | while `mode = "agent"` (set by `harness serve`), `/api/action` (except `mode`), `/api/unqueue`, `/api/advance` and `/api/reset` answer 409; MCP calls still work |
 | `POST /api/unqueue {index}` | remove one queued action |
 | `POST /api/advance {steps?}` | apply queued actions and step |
 | `POST /api/reset {seed?, difficulty?}` | new episode |
