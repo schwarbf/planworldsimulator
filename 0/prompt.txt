@@ -1,0 +1,13 @@
+Can you work on the branch from ~/code/personal/planworldsimulator-worldgen feat/world-creation-agent?
+
+---
+
+Can you checkout main and check what you have to do in order to rebase this new worktree onto main?
+
+---
+
+Can you make a plan to rebase such that nothing of both functionalities break?
+
+---
+
+you can implement it now
