@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JZ61XWM8AME6W60RJSHDHC",
+  "strategy": "manual-commit",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "docs/design-decisions/0005-create-worlds-with-a-sandboxed-coding-agent.md",
+    "src/worlds-template/pixi.toml",
+    "src/worlds-template/server/api.py",
+    "src/worlds-template/sim/helpers.py",
+    "src/worlds-template/tests/backend/test_api.py",
+    "src/worlds-template/ui/package-lock.json",
+    "src/worlds-template/ui/package.json",
+    "src/worlds-template/ui/src/App.test.tsx",
+    "src/worlds-template/ui/src/App.tsx",
+    "src/worlds-template/ui/src/api.ts",
+    "src/worlds-template/ui/src/test-setup.ts",
+    "src/worlds-template/ui/vite.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 20,
+    "cache_creation_tokens": 14985,
+    "cache_read_tokens": 1437709,
+    "output_tokens": 7609,
+    "api_call_count": 10
+  }
+}
