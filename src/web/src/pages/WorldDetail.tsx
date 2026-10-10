@@ -27,6 +27,8 @@ type StepState = "pending" | "active" | "done" | "failed";
 
 function stepState(key: string, events: WorldEvent[], world: World): StepState {
   const last = events.filter((e) => e.step === key).at(-1);
+  // A published world is complete, even if a later step reopened an earlier one.
+  if (last && world.status === "ready") return "done";
   if (last?.state === "done") return "done";
   if (last?.state === "failed" || last?.state === "exists") return "failed";
   if (last) return world.status === "failed" ? "failed" : "active";

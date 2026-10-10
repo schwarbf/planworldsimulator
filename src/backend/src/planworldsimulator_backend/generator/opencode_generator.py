@@ -281,7 +281,10 @@ class OpenCodeGenerator:
 
         sessions: dict[str, str | None] = {}
 
-        async def call(name, prompt, writable, cap, repair=False, attachments=()):
+        async def call(
+            name, prompt, writable, cap, repair=False, attachments=(), report=None
+        ):
+            """`report`: the step that shows its progress (default: `name`)."""
             result = await run_agent(
                 prompt,
                 cwd=world_dir,
@@ -290,7 +293,7 @@ class OpenCodeGenerator:
                 max_tool_calls=s.max_tool_calls,
                 session_id=sessions.get(name) if repair else None,
                 files=attachments,
-                on_event=progress(name),
+                on_event=progress(report or name),
             )
             sessions[name] = result.session_id
             metrics["agents"].append(
@@ -573,6 +576,7 @@ class OpenCodeGenerator:
                 POLISH_SECONDS,
                 repair=True,
                 attachments=tuple(shots),
+                report="polish",  # the look step edits the world view; keep it done
             )
             guard()
             if view.read_text() == original:

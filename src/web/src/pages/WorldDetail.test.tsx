@@ -153,3 +153,14 @@ test("the running step shows its newest live-log line and the full trace", async
   act(() => Stream.all[0].emit("step", line(4, "ok", "backend tests passed")));
   expect(screen.getAllByText("backend tests passed")).toHaveLength(2);
 });
+test("a published world shows every step it went through as done", async () => {
+  vi.mocked(api.getWorld).mockResolvedValue(world({ status: "ready" }));
+  vi.mocked(api.listEvents).mockResolvedValue([
+    event(1, "ui", "done"),
+    event(2, "ui", "started"), // e.g. the look step edited the world view again
+    event(3, "publish", "done"),
+  ]);
+  mount();
+  await screen.findByText("publish done");
+  expect(document.querySelectorAll(".animate-pulse")).toHaveLength(0);
+});
