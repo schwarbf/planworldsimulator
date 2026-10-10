@@ -6,6 +6,8 @@ Full reference world: `src/worlds/bike-factory`.
 ```bash
 pixi run dev    # server on $PORT (default 8000: REST /api, MCP /mcp) + UI on $UI_PORT (default 5173)
 pixi run test   # backend tests
+pixi run build-ui && pixi run serve   # one process: API, MCP and the built UI at http://127.0.0.1:8000
+pixi run test-ui                       # UI tests (Vitest)
 ```
 
 ## Files
@@ -19,7 +21,9 @@ pixi run test   # backend tests
 | `secret.md` | [gen] hidden rules and scoring (never given to the agent) |
 | `sim/env.py` | [gen] Gymnasium env + world contract (below) |
 | `sim/rules.py` | [gen] dynamics and hidden rules |
-| `sim/helpers.py` | [base] observation → JSON, `register_world` |
+| `sim/helpers.py` | [base] observation → JSON, `register_world`, `difficulty_for_level` |
+| `sim/demand.py` | [base] multiplicative demand model and its factors |
+| `sim/demand_config.py` | [gen] which demand factors this world has, their parameters and first level |
 | `server/api.py` | [base] FastAPI app, generic `Game`, `/api` routes, `/mcp` mount |
 | `server/narration.py` | [base] voice narrator: Gemini intro text + Gradium TTS, cached in `.narration/` |
 | `server/mcp.py` | [gen] `build_mcp(game) -> FastMCP` with the world's tools |
@@ -30,7 +34,7 @@ pixi run test   # backend tests
 
 **`sim/env.py`** — one `gymnasium.Env` subclass, registered with `register_world(EnvClass)`.
 
-- `NAME`, `DIFFICULTIES`, `__init__(difficulty)`, `actions` (tuple of world verbs).
+- `NAME`, `DIFFICULTIES` (exactly three: easy, medium, hard; website level N = `DIFFICULTIES[N-1]`), `__init__(difficulty)`, `actions` (tuple of world verbs).
 - Difficulty fixes the structure and the `Dict` spaces; `reset(seed)` only draws values. Same seed + actions → same trace.
 - `step` = one week; reward = the week's profit; `info` may carry `discovered: list[str]` and `story: {tag, text, tone}`.
 - `check_action(verb, args) -> dict` — validate and normalise; raise `ValueError` if invalid.
@@ -56,7 +60,8 @@ pixi run test   # backend tests
 | | while `mode = "agent"` (set by `harness serve`), `/api/action` (except `mode`), `/api/unqueue`, `/api/advance` and `/api/reset` answer 409; MCP calls still work |
 | `POST /api/unqueue {index}` | remove one queued action |
 | `POST /api/advance {steps?}` | apply queued actions and step |
-| `POST /api/reset {seed?, difficulty?}` | new episode |
+| `POST /api/reset {seed?, difficulty? \| level?}` | new episode; `level` is 1–3 |
+| `GET /healthz` | `{ok: true}` |
 | `GET /api/events?after=` · `WS /api/events` | event log: MCP calls, UI actions, advances |
 | `POST /api/narration {kind}` | narrator (`kind: "intro"` or `"commentary"`, a progress update from the current game): `{text, sentences, audio_url, audio_error}`; Gemini rewrites `brief.md`, Gradium speaks it; cached in `.narration/`. Keys: `GEMINI_API_KEY` / `GRADIUM_API_KEY`, or `*_FILE` paths, or the world `.env`. Without Gemini: brief captions; without Gradium: `audio_url` null and `audio_error` says why |
 | `GET /api/narration/{kind}/audio` | cached narrator audio (`audio/wav`) |

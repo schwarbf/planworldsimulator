@@ -42,13 +42,14 @@ class ExampleEnv(gym.Env):
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         super().reset(seed=seed)
-        self.w = R.initial_state(self.np_random, self.difficulty)  # seed only draws values
+        self.w = R.initial_state(self.np_random, self.DIFFICULTIES.index(self.difficulty) + 1)  # seed only draws values
         return self._obs(), {}
 
     def step(self, action: dict[str, Any]):
         assert self.w is not None, "call reset() first"
         reward = R.step_world(self.np_random, self.w, int(action["invest"]))
-        return self._obs(), float(reward), self.w.week >= R.WEEKS, False, {"discovered": [], "story": None}
+        discovered = [f.found for f in self.w.new_found]
+        return self._obs(), float(reward), self.w.week >= R.WEEKS, False, {"discovered": discovered, "story": None}
 
     def _obs(self) -> dict[str, Any]:
         w = self.w
@@ -98,7 +99,7 @@ class ExampleEnv(gym.Env):
             "profit": sc["profit"],
             "target": R.TARGET,
             "story": ctx.get("story"),
-            "discoveries": {"total": 0, "found": ctx.get("discoveries", []), "hidden": []},
+            "discoveries": w.model.discoveries(w.found),
             "agent": ctx.get("agent", {}),
             "active": ctx.get("active"),
             "queued": ctx.get("queued", []),

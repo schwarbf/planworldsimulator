@@ -8,5 +8,5 @@
 
 ## Scoring
 
-- Score = profit / CHF 2,000, clipped to 0–1.
+- Score = profit / CHF 3,500, clipped to 0–1.
 - Baseline: invest 1 every week.

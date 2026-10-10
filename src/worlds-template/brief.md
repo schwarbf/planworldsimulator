@@ -8,7 +8,7 @@ You run a small shop for 12 weeks.
 
 ## Goal
 
-Make CHF 2,000 profit.
+Make CHF 3,500 profit.
 
 ## Actions
 

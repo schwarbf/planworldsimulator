@@ -40,7 +40,7 @@ export const mockState: State = {
   capacity: 10,
   demand: 30,
   profit: 0,
-  target: 2000,
+  target: 3500,
   story: { tag: "WEEK 1", text: "Replace this placeholder world with your own.", tone: "mint" },
   discoveries: { total: 0, found: [], hidden: [] },
   agent: { experiment: 1, experiments: 20, mode: "you", scores: [0], baseline: 0.5, now: "Waiting for a hypothesis…", code: "# no agent calls yet" },
