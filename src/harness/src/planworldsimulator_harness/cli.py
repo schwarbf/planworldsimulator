@@ -27,8 +27,9 @@ def main() -> None:
     play.add_argument("--seconds", type=float, default=Budget.seconds)
     bench = sub.add_parser("bench", help="run a benchmark suite")
     bench.add_argument("suite", help="suite name (e.g. smoke) or path to a .toml")
+    bench.add_argument("--agent", help="run only this agent of the suite")
     rep = sub.add_parser("report", help="markdown table for a finished run")
-    rep.add_argument("run_dir", type=Path)
+    rep.add_argument("run_dirs", type=Path, nargs="+", help="one or more run dirs")
     args = parser.parse_args()
 
     if args.command == "play":
@@ -39,10 +40,10 @@ def main() -> None:
         )
         print(json.dumps(result.to_dict(), indent=2))
     elif args.command == "bench":
-        run_dir = asyncio.run(run_suite(load_suite(args.suite)))
+        run_dir = asyncio.run(run_suite(load_suite(args.suite, args.agent)))
         print(f"\n{report(run_dir)}\nResults: {run_dir}")
     else:
-        print(report(args.run_dir))
+        print(report(*args.run_dirs))
 
 
 if __name__ == "__main__":

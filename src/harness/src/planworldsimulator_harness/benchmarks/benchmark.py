@@ -24,7 +24,7 @@ class Suite:
     budget: Budget
 
 
-def load_suite(name_or_path: str) -> Suite:
+def load_suite(name_or_path: str, only_agent: str | None = None) -> Suite:
     path = Path(name_or_path)
     if not path.exists():
         path = SUITES_DIR / f"{name_or_path}.toml"
@@ -34,14 +34,16 @@ def load_suite(name_or_path: str) -> Suite:
         world=data["world"],
         difficulty=data.get("difficulty", "medium"),
         seeds=list(data["seeds"]),
-        agents=list(data["agents"]),
+        agents=[a for a in data["agents"] if only_agent in (None, a)],
         budget=Budget(**data.get("budget", {})),
     )
 
 
 async def run_suite(suite: Suite, results_dir: Path = RESULTS_DIR) -> Path:
     """One fresh world server per episode, so every run starts from a clean state."""
-    run_dir = results_dir / f"{datetime.now():%Y%m%d-%H%M%S}-{suite.name}"
+    tag = suite.agents[0] if len(suite.agents) == 1 else ""
+    stamp = f"{datetime.now():%Y%m%d-%H%M%S}-{suite.name}" + (f"-{tag}" if tag else "")
+    run_dir = results_dir / stamp
     (run_dir / "events").mkdir(parents=True)
     for agent_name in suite.agents:
         agent = get_agent(agent_name)

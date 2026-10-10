@@ -80,7 +80,8 @@ class ExampleEnv(gym.Env):
         assert w is not None
         profit = w.cash - R.START_CASH
         return {"score": round(float(np.clip(profit / R.TARGET, 0, 1)), 4), "profit": round(profit),
-                "week": min(w.week + 1, R.WEEKS), "done": w.week >= R.WEEKS}
+                "week": min(w.week + 1, R.WEEKS), "done": w.week >= R.WEEKS,
+                "formula": f"profit vs CHF {R.TARGET:,.0f}"}
 
     def ui_state(self, ctx: dict[str, Any]) -> dict[str, Any]:
         """Same shape as `mockState` in ui/src/World.tsx."""

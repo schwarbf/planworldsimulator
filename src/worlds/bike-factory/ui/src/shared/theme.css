@@ -103,6 +103,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .action--violet .action__sub { color: #e3deff; }
 .action--locked { background: #efeae0; color: var(--dim); cursor: default; }
 
+.goal__score { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 1px solid var(--line); }
 .queued { display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 10px; border-radius: 10px; background: var(--soft); font-size: 11px; }
 .queued__verb { font-weight: 700; text-transform: capitalize; }
 .queued__args { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
