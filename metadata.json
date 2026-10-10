@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K8NPM6R63GRQJABD959VM4",
   "strategy": "manual-commit",
   "branch": "fix/narration-cache-publication",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
     "src/backend/src/planworldsimulator_backend/generator/workspace.py",
     "src/backend/tests/test_generator.py"
@@ -15,13 +15,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": "/0/prompt.txt"
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": "/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 38527,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 443392,
-    "output_tokens": 3093,
-    "api_call_count": 12
+    "input_tokens": 38531,
+    "cache_creation_tokens": 18926,
+    "cache_read_tokens": 511594,
+    "output_tokens": 4335,
+    "api_call_count": 14
   }
 }

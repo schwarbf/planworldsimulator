@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K8NPM6R63GRQJABD959VM4",
+  "session_id": "816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T15:59:56.944208Z",
+  "branch": "fix/narration-cache-publication",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/generator/workspace.py",
+    "src/backend/tests/test_generator.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "2f78e73d5b59",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 18926,
+    "cache_read_tokens": 68202,
+    "output_tokens": 1242,
+    "api_call_count": 2
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T15:59:56.938454Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 0,
+    "total_lines_changed": 0,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 45,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        "src/backend/src/planworldsimulator_backend/generator/workspace.py": 1,
+        "src/backend/tests/test_generator.py": 38
+      }
+    }
+  ]
+}
