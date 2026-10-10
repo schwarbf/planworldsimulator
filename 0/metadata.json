@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JZ14V0V4YKKZHP4VNNFBRA",
+  "session_id": "5d8d31be-3c40-40b6-a359-c1d8fbdb4a06",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T13:11:26.551191Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 5,
+  "save_step_count": 2,
+  "files_touched": [
+    "docs/design-decisions/0005-create-worlds-with-a-sandboxed-coding-agent.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "eb0da5f72a52",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 48,
+    "cache_creation_tokens": 110267,
+    "cache_read_tokens": 2313119,
+    "output_tokens": 39156,
+    "api_call_count": 24
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T13:11:26.522643Z",
+    "agent_lines": 173,
+    "agent_removed": 0,
+    "human_added": 135,
+    "human_modified": 91,
+    "human_removed": 0,
+    "total_committed": 350,
+    "total_lines_changed": 399,
+    "agent_percentage": 43.35839598997494,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 193,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 111,
+      "user_lines_removed": 42,
+      "agent_lines_added": 326,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "docs/design-decisions/0005-create-worlds-with-a-sandboxed-coding-agent.md": 111
+      },
+      "user_removed_per_file": {
+        "docs/design-decisions/0005-create-worlds-with-a-sandboxed-coding-agent.md": 42
+      }
+    }
+  ]
+}

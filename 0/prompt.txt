@@ -1,0 +1,22 @@
+I would like to work on a new branch please. Now I want to design the actual planning bench world creation part. I would like to use gemini flash 3.8 (I will generate an api key) in a coding harness. There, the following things should happen:
+- A person describes a word / benchmark and provides a name
+- Then the coding harness should use gemini 3.8 flash to create this world. I was thinking about using open code maybe?
+- The agent should first check whether this world exists or not
+- The agent should then create this world for 4 difficulty levels. It should copy the template and start modifying the files until the world is ready to be played
+- An example of how such a expert mode of a world could look like (in terms of things) is here: https://foodtruckbench.com/
+- I would like maybe that there is a demand componenty that is part of these worlds and is somewhere in this world like [Image #1]
+- The agent should use the UI components provided and roughly use the same style
+- The agent should also be able to test the world in a sandbox (it needs tests that pass until the world is live).
+- Once it's live, the UI of the web app should somehow update and the world should be playable by a human (and later also an agent)
+
+Can you make an implementation plan please?
+
+---
+
+I want to clarify some things:
+- Would you use pydantic ai for the agent loop then? How would you use the open code sdk as part of this? Is the pydantic ai wrapper needed at all?
+- Only 3 difficulty levels are enough. Can you make a plan to adjust the webpage?
+- What else do you need from me? 
+- How is the routing then automatically enabled for this world?
+- How is the world stored in the database and rendered by the web page?
+Can you update your plan ans also become more concrete on the individual implementation steps please?
