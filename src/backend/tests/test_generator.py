@@ -268,3 +268,64 @@ async def test_process_launcher_works_with_relative_paths(
         assert port > 0
     finally:
         await launcher.stop("worlds-template")
+
+
+# ---------- Docker image and automatic mode ----------
+
+
+def test_world_requirements_match_the_template() -> None:
+    """The Docker image's shared world environment mirrors the template's pixi.toml."""
+    import tomllib
+
+    pixi = tomllib.loads((TEMPLATE / "pixi.toml").read_text())
+    listed = {
+        line.replace(" ", "")
+        for line in (REPO / "src/backend/world-requirements.txt")
+        .read_text()
+        .splitlines()
+        if line.strip() and not line.startswith("#")
+    }
+    for name, spec in pixi["pypi-dependencies"].items():
+        if isinstance(spec, dict):
+            extras = ",".join(spec.get("extras", []))
+            wanted = (
+                f"{name}[{extras}]{spec['version']}"
+                if extras
+                else f"{name}{spec['version']}"
+            )
+        else:
+            wanted = f"{name}{spec}"
+        assert wanted.replace(" ", "") in listed, (
+            f"world-requirements.txt lacks {wanted}"
+        )
+
+
+def test_shared_node_modules_can_live_outside_the_template(tmp_path: Path) -> None:
+    template = tmp_path / "template"
+    (template / "ui").mkdir(parents=True)
+    shared = tmp_path / "opt" / "node_modules"
+    shared.mkdir(parents=True)
+    world = tmp_path / "world"
+    workspace.copy_template(template, world, None, shared)
+    assert (world / "ui" / "node_modules").resolve() == shared.resolve()
+
+
+def test_auto_mode_needs_a_key_the_binary_and_the_environment(tmp_path: Path) -> None:
+    from planworldsimulator_backend.main import real_generation
+
+    def settings(**overrides) -> Settings:
+        options = {
+            "generator": "auto",
+            "gemini_api_key": "key",
+            "opencode_bin": str(FAKE),
+            "template_dir": tmp_path,
+            "world_python": Path(sys.executable),
+        }
+        return Settings(**{**options, **overrides})
+
+    assert real_generation(settings())
+    assert not real_generation(settings(gemini_api_key=""))
+    assert not real_generation(settings(opencode_bin="/nonexistent/opencode"))
+    assert not real_generation(settings(world_python=tmp_path / "missing"))
+    assert not real_generation(settings(generator="fake"))
+    assert real_generation(settings(generator="opencode", gemini_api_key=""))

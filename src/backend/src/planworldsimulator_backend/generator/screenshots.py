@@ -1,11 +1,17 @@
 """Screenshots of a running world, for its thumbnail and the look check."""
 
+import os
 from pathlib import Path
 
 from planworldsimulator_backend import worldproc
 
 WIDTH, HEIGHT = 1440, 900
 SETTLE_MS = 1800  # the world polls its state and animates; wait for a stable picture
+
+
+def _browser_args() -> list[str]:
+    # Chromium refuses to start as root without this; the Docker image sets it.
+    return ["--no-sandbox"] if os.environ.get("PLANWORLDSIMULATOR_NO_SANDBOX") else []
 
 
 class ScreenshotUnavailable(Exception):
@@ -34,7 +40,7 @@ async def capture_levels(
         await worldproc.wait_healthy(port, process, timeout)
         async with async_playwright() as playwright:
             try:
-                browser = await playwright.chromium.launch()
+                browser = await playwright.chromium.launch(args=_browser_args())
             except PlaywrightError as exc:
                 raise ScreenshotUnavailable(
                     "run `pixi run playwright install chromium`"

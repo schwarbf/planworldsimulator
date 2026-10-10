@@ -31,8 +31,16 @@ defaults.
 
 ## Generate real worlds
 
-The Docker stack uses a fake generator. To let a coding agent (OpenCode with Gemini) build
-worlds on your machine, put `GEMINI_API_KEY` in `.env` and run:
+Put `GEMINI_API_KEY` in `.env`, then `just build` and `just up` as above. The API image
+contains the coding agent (OpenCode), the shared world environment and Chromium, so the site
+generates real worlds that you can play (about 2–5 minutes each; the first build takes a
+while and the image is around 3 GB). Without a key the stack still starts and generates
+fake worlds: the API log says which one it uses ("world generation: ...").
+
+Worlds are written to `src/worlds/` on your machine. The model defaults to
+`google/gemini-3.5-flash` (`PLANWORLDSIMULATOR_GENERATOR_MODEL` changes it).
+
+Without Docker, on your machine:
 
 ```sh
 just world-setup                       # once: world environment, Chromium, OpenCode check
@@ -41,8 +49,8 @@ just api-local                         # or: the API with the real generator and
 just web-local                         # the website on http://localhost:5173
 ```
 
-A world has three difficulty levels, must pass its tests, and is playable from the website
-within 5 minutes. See [decision 0006](docs/design-decisions/0006-create-worlds-with-a-sandboxed-coding-agent.md).
+A world has three difficulty levels, must pass its tests, and is playable from the website.
+See [decision 0006](docs/design-decisions/0006-create-worlds-with-a-sandboxed-coding-agent.md).
 
 ## Develop
 

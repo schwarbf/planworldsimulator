@@ -1,0 +1,8 @@
+# The shared Python environment every generated world runs in (Docker image: /opt/world-env).
+# Keep in step with [pypi-dependencies] in src/worlds-template/pixi.toml; a test checks it.
+gymnasium>=1.0
+fastapi>=0.115
+uvicorn[standard]>=0.30
+mcp>=1.10,<2
+pytest>=8
+httpx>=0.27

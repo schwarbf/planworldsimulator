@@ -10,7 +10,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./data/planworldsimulator.db"
     worlds_dir: Path = Path("src/worlds")
     template_dir: Path = Path("src/worlds-template")
-    # fake: walks through the steps without an LLM; opencode: the real coding agent.
+    # fake: walks through the steps without an LLM; opencode: the real coding agent;
+    # auto: opencode when a Gemini key, OpenCode and the world environment exist.
     generator: str = "fake"
     gemini_api_key: str = Field(
         default="",
@@ -27,6 +28,8 @@ class Settings(BaseSettings):
     max_tool_calls: int = 60
     # Interpreter for world servers and tests; default: the template's pixi env.
     world_python: Path | None = None
+    # Shared `node_modules` for every world's UI; default: the template's own.
+    node_modules_dir: Path | None = None
     # Example world the agent may read; copied into `reference/` and removed at the end.
     reference_dir: Path | None = Path("src/worlds/bike-factory")
     # fake: hands out ports only; process: runs each world's server. auto follows

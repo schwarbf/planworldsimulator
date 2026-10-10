@@ -51,7 +51,10 @@ def _walk(root: Path):
 
 
 def copy_template(
-    template_dir: Path, world_dir: Path, reference_dir: Path | None
+    template_dir: Path,
+    world_dir: Path,
+    reference_dir: Path | None,
+    node_modules: Path | None = None,
 ) -> None:
     """Copy the template (and a read-only reference world) into the world folder.
 
@@ -68,13 +71,16 @@ def copy_template(
             target = reference / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(reference_dir / rel, target)
-    link_node_modules(template_dir, world_dir)
+    link_node_modules(template_dir, world_dir, node_modules)
 
 
-def link_node_modules(template_dir: Path, world_dir: Path) -> None:
-    shared = template_dir / "ui" / "node_modules"
+def link_node_modules(
+    template_dir: Path, world_dir: Path, node_modules: Path | None = None
+) -> None:
+    shared = node_modules or template_dir / "ui" / "node_modules"
     link = world_dir / "ui" / "node_modules"
     if shared.is_dir() and not link.exists():
+        link.parent.mkdir(parents=True, exist_ok=True)
         link.symlink_to(shared.resolve(), target_is_directory=True)
 
 

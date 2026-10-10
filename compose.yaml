@@ -21,8 +21,12 @@ services:
         required: false
     environment:
       PLANWORLDSIMULATOR_STEP_DELAY_SECONDS: ${PLANWORLDSIMULATOR_STEP_DELAY_SECONDS:-1.0}
+      # auto: real worlds when GEMINI_API_KEY is set in .env, fake ones otherwise.
+      PLANWORLDSIMULATOR_GENERATOR: ${PLANWORLDSIMULATOR_GENERATOR:-auto}
       # nginx in front of the API sets X-Forwarded-For for per-visitor limits.
       PLANWORLDSIMULATOR_TRUST_FORWARDED_FOR: "true"
+    # Chromium (screenshots of generated worlds) needs more than Docker's default 64 MB.
+    shm_size: "1gb"
     ports:
       # Loopback only: the API trusts the proxy header, so it must not be public.
       - "127.0.0.1:${PLANWORLDSIMULATOR_API_PORT:-8400}:8000"

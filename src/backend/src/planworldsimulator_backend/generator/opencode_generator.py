@@ -200,9 +200,10 @@ class OpenCodeGenerator:
                 template,
                 world_dir,
                 s.reference_dir.resolve() if s.reference_dir else None,
+                s.node_modules_dir,
             )
         else:
-            workspace.link_node_modules(template, world_dir)
+            workspace.link_node_modules(template, world_dir, s.node_modules_dir)
         step(
             "copy_template",
             "done",
