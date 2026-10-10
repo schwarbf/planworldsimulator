@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K0KTG777X9DVAF0SASGDXJ",
+  "strategy": "manual-commit",
+  "branch": "feat/agent-harness",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/harness/agents.toml",
+    "src/harness/src/planworldsimulator_harness/agent.py",
+    "src/harness/src/planworldsimulator_harness/agents.py",
+    "src/harness/src/planworldsimulator_harness/budget.py",
+    "src/harness/src/planworldsimulator_harness/cli.py",
+    "src/harness/src/planworldsimulator_harness/client.py",
+    "src/harness/src/planworldsimulator_harness/config.py",
+    "src/harness/src/planworldsimulator_harness/episode.py",
+    "src/harness/tests/conftest.py",
+    "src/harness/tests/test_budget.py",
+    "src/harness/tests/test_episode.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 37380,
+    "cache_read_tokens": 3628379,
+    "output_tokens": 20510,
+    "api_call_count": 22
+  }
+}
