@@ -1,0 +1,48 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K188SZW8240NC00B8TBEN3",
+  "strategy": "manual-commit",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/api/worlds.py",
+    "src/backend/src/planworldsimulator_backend/config.py",
+    "src/backend/src/planworldsimulator_backend/db/migrations/versions/0004_duplicate_of.py",
+    "src/backend/src/planworldsimulator_backend/db/models.py",
+    "src/backend/src/planworldsimulator_backend/generate.py",
+    "src/backend/src/planworldsimulator_backend/generator/base.py",
+    "src/backend/src/planworldsimulator_backend/generator/exists.py",
+    "src/backend/src/planworldsimulator_backend/generator/fake.py",
+    "src/backend/src/planworldsimulator_backend/generator/gates.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_generator.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_runner.py",
+    "src/backend/src/planworldsimulator_backend/generator/prompts.py",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/design.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_sim.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_ui.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fix.md",
+    "src/backend/src/planworldsimulator_backend/generator/workspace.py",
+    "src/backend/src/planworldsimulator_backend/main.py",
+    "src/backend/src/planworldsimulator_backend/runner.py",
+    "src/backend/src/planworldsimulator_backend/schemas.py",
+    "src/backend/src/planworldsimulator_backend/worldproc.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/worlds-template/tests/backend/test_playability.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 46081,
+    "cache_read_tokens": 7357186,
+    "output_tokens": 37312,
+    "api_call_count": 28
+  }
+}

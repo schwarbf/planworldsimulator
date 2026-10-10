@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K188SZW8240NC00B8TBEN3",
+  "session_id": "5d8d31be-3c40-40b6-a359-c1d8fbdb4a06",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T13:50:18.75701Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/api/worlds.py",
+    "src/backend/src/planworldsimulator_backend/config.py",
+    "src/backend/src/planworldsimulator_backend/db/migrations/versions/0004_duplicate_of.py",
+    "src/backend/src/planworldsimulator_backend/db/models.py",
+    "src/backend/src/planworldsimulator_backend/generate.py",
+    "src/backend/src/planworldsimulator_backend/generator/base.py",
+    "src/backend/src/planworldsimulator_backend/generator/exists.py",
+    "src/backend/src/planworldsimulator_backend/generator/fake.py",
+    "src/backend/src/planworldsimulator_backend/generator/gates.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_generator.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_runner.py",
+    "src/backend/src/planworldsimulator_backend/generator/prompts.py",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/design.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_sim.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_ui.md",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fix.md",
+    "src/backend/src/planworldsimulator_backend/generator/workspace.py",
+    "src/backend/src/planworldsimulator_backend/main.py",
+    "src/backend/src/planworldsimulator_backend/runner.py",
+    "src/backend/src/planworldsimulator_backend/schemas.py",
+    "src/backend/src/planworldsimulator_backend/worldproc.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/worlds-template/tests/backend/test_playability.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "ffde1914947f",
+  "checkpoint_transcript_start": 590,
+  "transcript_lines_at_start": 590,
+  "compact_transcript_start": 90,
+  "token_usage": {
+    "input_tokens": 56,
+    "cache_creation_tokens": 46081,
+    "cache_read_tokens": 7357186,
+    "output_tokens": 37312,
+    "api_call_count": 28
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T13:50:18.70926Z",
+    "agent_lines": 1326,
+    "agent_removed": 28,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1326,
+    "total_lines_changed": 1354,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
