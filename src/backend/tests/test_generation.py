@@ -402,4 +402,5 @@ async def test_failed_spec_prevents_fill_calls(harness, monkeypatch):
     monkeypatch.setattr(pipeline, "run_agent", invalid_design)
     with pytest.raises(GenerationFailed, match="design is incomplete"):
         await run()
-    assert calls == ["design"]
+    # The design and two correction rounds; no simulator or UI work follows.
+    assert calls == ["design"] * 3

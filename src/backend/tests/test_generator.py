@@ -242,3 +242,14 @@ async def test_process_launcher_runs_and_stops_a_world(tmp_path: Path) -> None:
     with pytest.raises(WorldUnavailable):
         await launcher.start("nothing-here", None)
     assert sys.version_info >= (3, 13)
+
+
+@needs_template_env
+async def test_pipeline_asks_the_agent_to_correct_a_broken_design(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setenv("FAKE_OPENCODE", "badjson")
+    generator = OpenCodeGenerator(settings_for(tmp_path), no_owner)
+    events = [e async for e in generator.run(REQUEST)]
+    assert any(e.message == "Correcting the design" for e in events)
+    assert events[-1].step == "publish" and events[-1].state == "done"

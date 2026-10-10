@@ -7,6 +7,7 @@ Behaviour is chosen with the FAKE_OPENCODE environment variable:
   chatty    makes 5 tool calls, then stops
   tamper    also edits a [base] file
   silent    answers but writes nothing
+  badjson   first writes broken JSON, then a valid design once asked to fix it
 """
 
 import json
@@ -46,10 +47,6 @@ SPEC = {
         "demand": _num(),
         "profit": _num(),
         "target": _num(),
-        "queued": {
-            "type": "array",
-            "items": {"type": "object", "properties": {"action": {"type": "string"}}},
-        },
     },
     "state_sample": {
         "world": {"name": "Shop", "seed": "1", "difficulty": "Easy"},
@@ -73,7 +70,6 @@ SPEC = {
         "demand": 30,
         "profit": 0,
         "target": 100,
-        "queued": [],
     },
     "visual": {
         "palette": {"a": "#112233", "b": "#223344", "c": "#334455", "d": "#445566"},
@@ -108,9 +104,13 @@ def main():
                 tool="read",
                 state={"status": "completed", "input": {"filePath": f"{cwd}/x{i}"}},
             )
-    if mode != "silent" and "design.json" in prompt:
+    is_design = "game designer" in prompt or "does not pass validation" in prompt
+    if mode != "silent" and is_design:
         with open(f"{cwd}/design.json", "w") as f:
-            json.dump(SPEC, f)
+            if mode == "badjson" and "does not pass validation" not in prompt:
+                f.write(json.dumps(SPEC) + "}")
+            else:
+                json.dump(SPEC, f)
         emit(
             "tool_use",
             tool="write",

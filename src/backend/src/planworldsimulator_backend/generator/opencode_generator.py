@@ -33,6 +33,7 @@ NameLookup = Callable[[str, str], Awaitable[str | None]]
 DESIGN_SECONDS = 60
 FILL_SECONDS = 150
 FIX_SECONDS = 60
+DESIGN_REPAIRS = 2
 MIN_FIX_SECONDS = 25
 FINAL_RESERVE_SECONDS = 20
 SAMPLES = tuple(
@@ -262,14 +263,25 @@ class OpenCodeGenerator:
                 workspace.DESIGN_FILES,
                 DESIGN_SECONDS,
             )
-            try:
-                spec = WorldSpec.model_validate_json(
-                    (world_dir / "design.json").read_text()
-                )
-            except (OSError, ValueError) as exc:
-                raise GenerationFailed(
-                    f"The design is incomplete ({result.summary}): {exc}"
-                ) from exc
+            for attempt in range(DESIGN_REPAIRS + 1):
+                try:
+                    spec = WorldSpec.model_validate_json(
+                        (world_dir / "design.json").read_text()
+                    )
+                    break
+                except (OSError, ValueError) as exc:
+                    if attempt == DESIGN_REPAIRS or deadline.left() < MIN_FIX_SECONDS:
+                        raise GenerationFailed(
+                            f"The design is incomplete ({result.summary}): {exc}"
+                        ) from exc
+                    step("design", "started", "Correcting the design")
+                    result = await call(
+                        "design",
+                        prompts.render("fix_design", error=str(exc)[:1500]),
+                        workspace.DESIGN_FILES,
+                        FIX_SECONDS,
+                        repair=True,
+                    )
             spec.write_contract(world_dir)
             checkpoint.save("design", design_files)
         else:
@@ -373,6 +385,8 @@ class OpenCodeGenerator:
                 try:
                     for rel in SAMPLES:
                         value = json.loads((world_dir / rel).read_text())
+                        # `queued` is the shared action queue, not part of the design.
+                        value.pop("queued", None)
                         spec.state.check(value)
                         if value["weeks"] != spec.weeks:
                             raise ValueError(
