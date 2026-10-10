@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Stands in for `opencode run --format json`: writes design.md, changes nothing else.
+"""Stands in for `opencode run --format json`: writes design.json, changes nothing else.
 
 Behaviour is chosen with the FAKE_OPENCODE environment variable:
   (unset)   a valid design on the design prompt, nothing on the others
@@ -14,33 +14,74 @@ import os
 import sys
 import time
 
-DESIGN = """## Storyline
-A tiny shop. Make money.
 
-## Sites
-- shop
+def _num():
+    return {"type": "number"}
 
-## Actions
-- invest(amount)
 
-## Hidden rules
-- none
-
-## Demand
-- seasonality
-
-## Levels
-easy medium hard
-
-## Scoring
-profit
-
-## UI state
-{}
-
-## Visual concept
-one house
-"""
+SPEC = {
+    "storyline": "A tiny shop. Make money.",
+    "weeks": 12,
+    "sites": [
+        {"id": "shop", "description": "the shop", "tile": [1, 1]},
+        {"id": "outlet", "description": "a second outlet", "tile": [3, 3]},
+    ],
+    "actions": [
+        {
+            "name": "invest",
+            "arguments": {"amount": {"type": "integer", "limits": "1 to 10"}},
+            "description": "add capacity",
+        }
+    ],
+    "levels": {
+        name: {"sites": ["shop", "outlet"], "actions": ["invest"], "rules": name}
+        for name in ("easy", "medium", "hard")
+    },
+    "hidden_rules": ["rule one", "rule two", "rule three"],
+    "demand": "seasonality",
+    "scoring": "profit",
+    "state_fields": {
+        "cash": _num(),
+        "capacity": _num(),
+        "demand": _num(),
+        "profit": _num(),
+        "target": _num(),
+        "queued": {
+            "type": "array",
+            "items": {"type": "object", "properties": {"action": {"type": "string"}}},
+        },
+    },
+    "state_sample": {
+        "world": {"name": "Shop", "seed": "1", "difficulty": "Easy"},
+        "week": 1,
+        "weeks": 12,
+        "story": None,
+        "discoveries": {"total": 0, "found": [], "hidden": []},
+        "agent": {
+            "experiment": 1,
+            "experiments": 20,
+            "mode": "you",
+            "scores": [0],
+            "baseline": 0.5,
+            "now": "x",
+            "code": "x",
+        },
+        "active": None,
+        "done": False,
+        "cash": 1000,
+        "capacity": 10,
+        "demand": 30,
+        "profit": 0,
+        "target": 100,
+        "queued": [],
+    },
+    "visual": {
+        "palette": {"a": "#112233", "b": "#223344", "c": "#334455", "d": "#445566"},
+        "grid_size": 6,
+        "objects": ["Tree"] * 8,
+        "animation": "clouds",
+    },
+}
 
 
 def emit(kind, **part):
@@ -67,17 +108,13 @@ def main():
                 tool="read",
                 state={"status": "completed", "input": {"filePath": f"{cwd}/x{i}"}},
             )
-    if (
-        mode != "silent"
-        and "`design.md`" in prompt
-        and "Write exactly one file" in prompt
-    ):
-        with open(f"{cwd}/design.md", "w") as f:
-            f.write(DESIGN)
+    if mode != "silent" and "design.json" in prompt:
+        with open(f"{cwd}/design.json", "w") as f:
+            json.dump(SPEC, f)
         emit(
             "tool_use",
             tool="write",
-            state={"status": "completed", "input": {"filePath": f"{cwd}/design.md"}},
+            state={"status": "completed", "input": {"filePath": f"{cwd}/design.json"}},
         )
     if mode == "tamper":
         with open(f"{cwd}/server/api.py", "a") as f:

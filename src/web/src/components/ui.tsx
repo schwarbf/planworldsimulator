@@ -58,7 +58,6 @@ export function Button({
 const STATUS_STYLE: Record<WorldStatus, string> = {
   queued: "bg-sand text-muted",
   generating: "bg-violet-soft text-violet",
-  exists: "bg-violet-soft text-violet",
   ready: "bg-good-soft text-good",
   failed: "bg-bad-soft text-bad",
   exists: "bg-sand text-muted",

@@ -1,4 +1,5 @@
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -134,13 +135,30 @@ async def test_run_agent_without_the_binary(tmp_path: Path) -> None:
 # ---------- the whole pipeline, with a fake agent ----------
 
 
+def two_site_template(tmp_path: Path) -> Path:
+    """The template with a second site, as the design (at least two sites) says."""
+    copy = tmp_path / "template"
+    shutil.copytree(
+        TEMPLATE,
+        copy,
+        ignore=shutil.ignore_patterns(
+            ".pixi", "node_modules", "dist", "__pycache__", "__samples__"
+        ),
+    )
+    (copy / "ui" / "node_modules").symlink_to(TEMPLATE / "ui" / "node_modules")
+    env = copy / "sim" / "env.py"
+    env.write_text(env.read_text().replace('["shop"]', '["shop", "outlet"]'))
+    return copy
+
+
 def settings_for(tmp_path: Path, **overrides) -> Settings:
     return Settings(
         generator="opencode",
         opencode_bin=str(FAKE),
         gemini_api_key="key",
         worlds_dir=tmp_path / "worlds",
-        template_dir=TEMPLATE,
+        template_dir=two_site_template(tmp_path),
+        world_python=TEMPLATE / ".pixi" / "envs" / "default" / "bin" / "python",
         reference_dir=None,
         **overrides,
     )
@@ -161,15 +179,9 @@ async def test_pipeline_publishes_a_world_that_passes_every_gate(
     events = [e async for e in generator.run(REQUEST)]
 
     done = [e.step for e in events if e.state == "done"]
-    assert done == [
-        "check_exists",
-        "copy_template",
-        "design",
-        "fill",
-        "tests",
-        "smoke",
-        "publish",
-    ]
+    assert done[:3] == ["check_exists", "copy_template", "design"]
+    assert set(done[3:5]) == {"sim", "ui"}
+    assert done[5:] == ["tests", "smoke", "publish"]
     storylines = [e.storyline for e in events if e.step == "design" and e.storyline]
     assert storylines and storylines[0].startswith("A tiny shop")
     world = tmp_path / "worlds" / "shop-abc123"
@@ -196,7 +208,7 @@ async def test_pipeline_rejects_an_agent_that_edits_base_files(
 ) -> None:
     monkeypatch.setenv("FAKE_OPENCODE", "tamper")
     generator = OpenCodeGenerator(settings_for(tmp_path), no_owner)
-    with pytest.raises(GenerationFailed, match="changed base files"):
+    with pytest.raises(GenerationFailed, match="read-only template"):
         _ = [e async for e in generator.run(REQUEST)]
 
 

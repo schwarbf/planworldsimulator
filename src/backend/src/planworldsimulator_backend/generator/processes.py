@@ -7,7 +7,7 @@ import signal
 
 
 def kill_group(process: asyncio.subprocess.Process) -> None:
-    with contextlib.suppress(ProcessLookupError):
+    with contextlib.suppress(ProcessLookupError, PermissionError):
         os.killpg(process.pid, signal.SIGKILL)
 
 

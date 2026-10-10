@@ -9,7 +9,6 @@ export interface World {
   levels: number[];
   status: WorldStatus;
   generation_attempt?: number;
-  duplicate_of?: string | null;
   storyline: string | null;
   path: string | null;
   /** With status "exists": the world that already has this name. */
