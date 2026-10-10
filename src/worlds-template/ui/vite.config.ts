@@ -8,10 +8,18 @@ import react from "@vitejs/plugin-react";
 const apiPort = process.env.PORT ?? "8000";
 
 // Relative asset URLs: the built UI is served behind /api/play/<id>/.
+// The cache lives in the world's own folder: node_modules is shared between worlds and
+// may be read-only (in Docker it belongs to another user).
 export default defineConfig({
   base: "./",
+  cacheDir: ".vite-cache",
   plugins: [react()],
-  test: { environment: "jsdom", include: ["src/**/*.test.tsx"], setupFiles: ["src/test-setup.ts"] },
+  test: {
+    environment: "jsdom",
+    include: ["src/**/*.test.tsx"],
+    setupFiles: ["src/test-setup.ts"],
+    cache: { dir: ".vite-cache/vitest" },
+  },
   server: {
     port: Number(process.env.UI_PORT ?? 5173),
     proxy: {

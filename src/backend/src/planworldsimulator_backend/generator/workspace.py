@@ -28,6 +28,7 @@ SKIP_DIRS = {
     ".pytest_cache",
     ".ruff_cache",
     "__samples__",
+    ".vite-cache",
     "reference",
     ".opencode",
 }

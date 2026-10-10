@@ -329,3 +329,39 @@ def test_auto_mode_needs_a_key_the_binary_and_the_environment(tmp_path: Path) ->
     assert not real_generation(settings(world_python=tmp_path / "missing"))
     assert not real_generation(settings(generator="fake"))
     assert real_generation(settings(generator="opencode", gemini_api_key=""))
+
+
+@needs_template_env
+def test_ui_tests_run_with_a_read_only_node_modules(tmp_path: Path) -> None:
+    """In Docker the shared node_modules belongs to another user: caches go into the world."""
+    import os
+    import subprocess
+
+    if os.geteuid() == 0:
+        pytest.skip("root ignores file permissions")
+    shared = tmp_path / "node_modules"
+    shutil.copytree(
+        TEMPLATE / "ui" / "node_modules",
+        shared,
+        symlinks=True,
+        ignore=shutil.ignore_patterns(".vite", ".vitest"),
+    )
+    for path in [shared, *shared.rglob("*")]:
+        if not path.is_symlink():
+            path.chmod(path.stat().st_mode & 0o555)  # drop write, keep execute
+    world = tmp_path / "world"
+    workspace.copy_template(TEMPLATE, world, None, shared)
+    try:
+        run = subprocess.run(
+            ["npx", "--no-install", "vitest", "run", "src/App.test.tsx"],
+            cwd=world / "ui",
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+        assert run.returncode == 0, run.stdout[-1500:] + run.stderr[-1500:]
+        assert not (shared / ".vite").exists()
+    finally:
+        for path in [shared, *shared.rglob("*")]:
+            if not path.is_symlink():
+                path.chmod(path.stat().st_mode | 0o200)
