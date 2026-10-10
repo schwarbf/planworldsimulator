@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K37C4PZ0XMP2EECMPYCXJQ",
   "strategy": "manual-commit",
   "branch": "feat/entire-trail-runners",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": null,
   "sessions": [
     {
@@ -19,13 +19,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 5080,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 697856,
-    "output_tokens": 3792,
-    "api_call_count": 5
+    "input_tokens": 5090,
+    "cache_creation_tokens": 5612,
+    "cache_read_tokens": 2489266,
+    "output_tokens": 7221,
+    "api_call_count": 10
   }
 }
