@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K4YPG4YPGG4Z4VVA3VBGS3",
   "strategy": "manual-commit",
   "branch": "feat/world-creation-agent",
-  "checkpoints_count": 2,
+  "checkpoints_count": 4,
   "files_touched": [
     "docs/design-decisions/0006-create-worlds-with-a-sandboxed-coding-agent.md",
     "src/backend/src/planworldsimulator_backend/worldproc.py",
@@ -16,6 +16,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": ""
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 6871,
+    "cache_read_tokens": 3218466,
+    "output_tokens": 4182,
+    "api_call_count": 7
+  }
 }
