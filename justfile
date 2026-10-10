@@ -51,6 +51,24 @@ down:                       # stop the stack (data and generated worlds are kept
 dev:                        # run with live reload in the foreground (web on :5173)
     {{compose_dev}} up --build
 
+[group('generator')]
+world-setup:                # once: the shared world environment the generator and launcher use
+    pixi install --manifest-path src/worlds-template/pixi.toml
+    cd src/worlds-template/ui && npm ci
+    @command -v opencode >/dev/null || echo "Install OpenCode too: npm i -g opencode-ai (or brew install sst/tap/opencode)"
+
+[group('generator')]
+generate name prompt:       # generate one world with the real agent (needs GEMINI_API_KEY), no website
+    PLANWORLDSIMULATOR_WORLDS_DIR=src/worlds pixi run python -m planworldsimulator_backend.generate "{{name}}" "{{prompt}}"
+
+[group('generator')]
+api-local:                  # run the API on this machine with the real generator and launcher
+    PLANWORLDSIMULATOR_GENERATOR=opencode PLANWORLDSIMULATOR_DATABASE_URL=sqlite+aiosqlite:///./data/local.db PLANWORLDSIMULATOR_PORT={{api_port}} pixi run planworldsimulator-backend
+
+[group('generator')]
+web-local:                  # the website with live reload, talking to `just api-local`
+    API_PROXY_TARGET=http://localhost:{{api_port}} pnpm --filter @planworldsimulator/web run dev
+
 [group('development')]
 logs *services:             # follow logs, optionally for named services (e.g. `just logs api`)
     {{compose}} logs --follow --tail 100 {{services}}

@@ -29,6 +29,21 @@ those ports, `just up` says so; set `PLANWORLDSIMULATOR_WEB_PORT` and
 reload, site on http://localhost:5173). Copy `.env.example` to `.env` to change
 defaults.
 
+## Generate real worlds
+
+The Docker stack uses a fake generator. To let a coding agent (OpenCode with Gemini) build
+worlds on your machine, put `GEMINI_API_KEY` in `.env` and run:
+
+```sh
+just world-setup                       # once: shared world environment, OpenCode check
+just generate "Lemonade" "A lemonade stand ..."   # one world from the command line
+just api-local                         # or: the API with the real generator and launcher
+just web-local                         # the website on http://localhost:5173
+```
+
+A world has three difficulty levels, must pass its tests, and is playable from the website
+within 5 minutes. See [decision 0006](docs/design-decisions/0006-create-worlds-with-a-sandboxed-coding-agent.md).
+
 ## Develop
 
 Needs [pixi](https://pixi.sh), [pnpm](https://pnpm.io) and [just](https://just.systems).
