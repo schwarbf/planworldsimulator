@@ -1,0 +1,15 @@
+We are working on this PlanWorldSimulator, can you setup enable entire.io for this session? Its part of the hackathon to try this out and work with it. I already setup Entire in a different session so you should have everything to need to connect.
+
+https://hack.entire.io/agentic-ai-hack-zurich-2026/#connect
+
+---
+
+what if Flo also uses entire for this repo, do we share the state?
+
+---
+
+I think we see it now and connected, can you quickly give me a table of each feature it provides, with one sentence each and how we can use it https://hack.entire.io/agentic-ai-hack-zurich-2026/#connect
+
+---
+
+they said we should use for all the implementations entire "continuous memory" and brain so we would get full points in this regard.
