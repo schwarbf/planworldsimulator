@@ -1,0 +1,180 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4KCGYPEKA2DBH6WJ9KQ5QTJ",
+  "session_id": "816a5fdf-0ce4-49a1-b8fd-b22c9213cd2e",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T17:07:16.660968Z",
+  "branch": "submission/demo-video",
+  "checkpoints_count": 4,
+  "save_step_count": 5,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "c497f198c8b0",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 160,
+    "cache_creation_tokens": 175201,
+    "cache_read_tokens": 9983866,
+    "output_tokens": 66026,
+    "api_call_count": 80
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01RSn9q647PegjDzGJKFqxyN",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "remotion-best-practices"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "02187eeefb98",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 398,
+        "end": 399,
+        "entry_ids": [
+          "aa4eaffd-ae75-448c-9492-a12a0483d87a"
+        ],
+        "tool_use_id": "toolu_01RSn9q647PegjDzGJKFqxyN"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01RSn9q647PegjDzGJKFqxyN"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: remotion-best-practices",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 5688,
+      "user_lines_removed": 0,
+      "agent_lines_added": 82,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        "demo-video/.gitignore": 2,
+        "demo-video/common.py": 10,
+        "demo-video/omni.py": 43,
+        "demo-video/probe.py": 20,
+        "demo-video/record_browser.py": 123,
+        "demo-video/remotion/.gitignore": 7,
+        "demo-video/remotion/.prettierrc": 5,
+        "demo-video/remotion/README.md": 54,
+        "demo-video/remotion/eslint.config.mjs": 3,
+        "demo-video/remotion/package-lock.json": 5281,
+        "demo-video/remotion/package.json": 28,
+        "demo-video/remotion/remotion.config.ts": 12,
+        "demo-video/remotion/src/Composition.tsx": 25,
+        "demo-video/remotion/src/Root.tsx": 9,
+        "demo-video/remotion/src/index.ts": 4,
+        "demo-video/remotion/tsconfig.json": 16,
+        "demo-video/script.json": 10,
+        "demo-video/voice.py": 30
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 5688,
+      "user_lines_removed": 0,
+      "agent_lines_added": 82,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        "demo-video/.gitignore": 2,
+        "demo-video/common.py": 10,
+        "demo-video/omni.py": 43,
+        "demo-video/probe.py": 20,
+        "demo-video/record_browser.py": 123,
+        "demo-video/remotion/.gitignore": 7,
+        "demo-video/remotion/.prettierrc": 5,
+        "demo-video/remotion/README.md": 54,
+        "demo-video/remotion/eslint.config.mjs": 3,
+        "demo-video/remotion/package-lock.json": 5281,
+        "demo-video/remotion/package.json": 28,
+        "demo-video/remotion/remotion.config.ts": 12,
+        "demo-video/remotion/src/Composition.tsx": 25,
+        "demo-video/remotion/src/Root.tsx": 9,
+        "demo-video/remotion/src/index.ts": 4,
+        "demo-video/remotion/tsconfig.json": 16,
+        "demo-video/script.json": 10,
+        "demo-video/voice.py": 30
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 5688,
+      "user_lines_removed": 0,
+      "agent_lines_added": 82,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        "demo-video/.gitignore": 2,
+        "demo-video/common.py": 10,
+        "demo-video/omni.py": 43,
+        "demo-video/probe.py": 20,
+        "demo-video/record_browser.py": 123,
+        "demo-video/remotion/.gitignore": 7,
+        "demo-video/remotion/.prettierrc": 5,
+        "demo-video/remotion/README.md": 54,
+        "demo-video/remotion/eslint.config.mjs": 3,
+        "demo-video/remotion/package-lock.json": 5281,
+        "demo-video/remotion/package.json": 28,
+        "demo-video/remotion/remotion.config.ts": 12,
+        "demo-video/remotion/src/Composition.tsx": 25,
+        "demo-video/remotion/src/Root.tsx": 9,
+        "demo-video/remotion/src/index.ts": 4,
+        "demo-video/remotion/tsconfig.json": 16,
+        "demo-video/script.json": 10,
+        "demo-video/voice.py": 30
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 5688,
+      "user_lines_removed": 0,
+      "agent_lines_added": 82,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.local.json": 6,
+        "demo-video/.gitignore": 2,
+        "demo-video/common.py": 10,
+        "demo-video/omni.py": 43,
+        "demo-video/probe.py": 20,
+        "demo-video/record_browser.py": 123,
+        "demo-video/remotion/.gitignore": 7,
+        "demo-video/remotion/.prettierrc": 5,
+        "demo-video/remotion/README.md": 54,
+        "demo-video/remotion/eslint.config.mjs": 3,
+        "demo-video/remotion/package-lock.json": 5281,
+        "demo-video/remotion/package.json": 28,
+        "demo-video/remotion/remotion.config.ts": 12,
+        "demo-video/remotion/src/Composition.tsx": 25,
+        "demo-video/remotion/src/Root.tsx": 9,
+        "demo-video/remotion/src/index.ts": 4,
+        "demo-video/remotion/tsconfig.json": 16,
+        "demo-video/script.json": 10,
+        "demo-video/voice.py": 30
+      }
+    }
+  ]
+}
