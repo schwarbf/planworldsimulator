@@ -1,0 +1,15 @@
+# One entry per agent. Swap models by adding an entry; no code changes.
+#   model        "<provider>:<model name>"; provider is "google" or "openai" (any OpenAI-compatible API)
+#   base_url     optional endpoint, e.g. a local or hosted OpenAI-compatible server
+#   api_key_env  environment variable that holds the key
+#   settings     optional Pydantic AI model settings, pinned for fair comparison
+
+[gemini-flash]
+model = "google:gemini-3.8-flash"
+api_key_env = "GEMINI_API_KEY"
+settings = { temperature = 0.0, thinking = "low" }
+
+[gemini-pro]
+model = "google:gemini-3.1-pro-preview"
+api_key_env = "GEMINI_API_KEY"
+settings = { temperature = 0.0, thinking = "low" }

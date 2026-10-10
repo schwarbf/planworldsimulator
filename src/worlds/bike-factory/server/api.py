@@ -224,6 +224,13 @@ async def get_state() -> dict[str, Any]:
     return game.state()
 
 
+@app.get("/api/score")
+async def get_score() -> dict[str, Any]:
+    """Score for the harness; not logged, so it does not show up as an agent call."""
+    with game._lock:
+        return to_jsonable({**game.env.score(), "baseline": game.baseline})
+
+
 @app.post("/api/action")
 async def post_action(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
     if not isinstance(body.get("id"), str):

@@ -13,5 +13,6 @@ just = ">=1.51,<2"
 
 [pypi-dependencies]
 planworldsimulator-backend = { path = "src/backend", editable = true }
+planworldsimulator-harness = { path = "src/harness", editable = true }
 pytest-asyncio = ">=1,<2"
 asgi-lifespan = ">=2,<3"

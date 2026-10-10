@@ -23,6 +23,10 @@ class TestRest:
         assert state["world"]["seed"] == "7"
         assert "week" in state
 
+    def test_score_has_contract_fields(self, client):
+        score = client.get("/api/score").json()
+        assert {"score", "baseline", "week", "done"} <= score.keys()
+
     def test_advance_moves_time(self, client):
         before = client.get("/api/state").json()["week"]
         client.post("/api/advance")
