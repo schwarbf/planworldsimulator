@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K4B546Z71MZB79GX414W2Q",
+  "strategy": "manual-commit",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/generator/opencode_generator.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
