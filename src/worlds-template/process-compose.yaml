@@ -1,5 +1,7 @@
 version: "0.5"
-# Ports come from the environment (the launcher sets them); defaults 8000 / 5173.
+# Ports come from the environment (the launcher sets them); defaults 8000 / 5173 / 8090.
+# `harness` is the agent service (decision 0007) from the repo root; one instance serves
+# every world, so when another world already runs it, this one just exits.
 disable_env_expansion: true
 processes:
   server:
@@ -10,3 +12,6 @@ processes:
     command: cd ui && (test -d node_modules || npm install) && npx vite --port ${UI_PORT:-5173} --strictPort
     depends_on:
       server: { condition: process_healthy }
+  harness:
+    command: cd "$(git rev-parse --show-toplevel)" && pixi run harness serve --port ${HARNESS_PORT:-8090}
+    availability: { restart: "no" }

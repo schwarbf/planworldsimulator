@@ -1,5 +1,6 @@
 // Voice narrator (decision 0006): spoken intro with captions, bottom right.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { voice } from "../voice";
 
 /** `POST /api/narration` reply; without audio, `audio_url` is null and `audio_error` says why. */
 interface Narration { text: string; sentences: string[]; audio_url: string | null; audio_error?: string | null }
@@ -47,7 +48,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
   // Load the intro once, then start it.
   useEffect(() => {
     let alive = true;
-    fetch("/api/narration", {
+    fetch("api/narration", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ kind: "intro" }),
@@ -68,7 +69,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
   useEffect(() => {
     if (!intro) return;
     if (intro.audio_url) {
-      const a = new Audio(intro.audio_url);
+      const a = new Audio(new URL(intro.audio_url.replace(/^\//, ""), window.location.href).href);
       a.preload = "auto";
       a.addEventListener("loadedmetadata", () => { if (Number.isFinite(a.duration)) setDuration(a.duration); });
       audio.current = a;
@@ -116,7 +117,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
     if (busy.current.asking || busy.current.intro) return;
     setAsking(true);
     try {
-      const res = await fetch("/api/narration", {
+      const res = await fetch("api/narration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: "commentary" }),
@@ -143,23 +144,36 @@ export function Narrator({ collapse = false, onOpen, week }: {
   }, [week, askComment]);
 
   // Read the update aloud (unless muted), then hide it.
+  const [commentSpeaking, setCommentSpeaking] = useState(false);
   useEffect(() => {
     if (!comment) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
-    const hide = () => { timer = setTimeout(() => setComment(null), COMMENT_HOLD_MS); };
-    let voice: HTMLAudioElement | null = null;
+    const hide = () => {
+      setCommentSpeaking(false);
+      timer = setTimeout(() => setComment(null), COMMENT_HOLD_MS);
+    };
+    let clip: HTMLAudioElement | null = null;
     if (comment.audio_url && !busy.current.muted) {
-      voice = new Audio(comment.audio_url);
-      voice.addEventListener("ended", hide);
-      voice.play().catch(hide);
+      clip = new Audio(new URL(comment.audio_url.replace(/^\//, ""), window.location.href).href);
+      clip.addEventListener("ended", hide);
+      setCommentSpeaking(true);
+      clip.play().catch(hide);
     } else {
       timer = setTimeout(() => setComment(null), Math.max(COMMENT_HOLD_MS, (comment.text.length / CHARS_PER_S) * 1000));
     }
     return () => {
       clearTimeout(timer);
-      voice?.pause();
+      clip?.pause();
+      setCommentSpeaking(false);
     };
   }, [comment]);
+
+  // Tell the agent's note voice when to stay quiet.
+  const introAudible = playing && !muted && !blocked && intro?.audio_url != null;
+  useEffect(() => {
+    voice.narratorSpeaking = introAudible || commentSpeaking;
+    voice.muted = muted;
+  }, [introAudible, commentSpeaking, muted]);
 
   const shown = open && intro !== null;
   useEffect(() => onOpen?.(shown), [shown, onOpen]);
@@ -209,9 +223,15 @@ export function Narrator({ collapse = false, onOpen, week }: {
     const host = el?.parentElement;
     const dock = el?.closest(".app")?.querySelector(".app__dock");
     if (!el || !host || !dock) return;
+    const app = el.closest<HTMLElement>(".app");
     const place = () => {
       const overlap = dock.getBoundingClientRect().right + DOCK_GAP > el.getBoundingClientRect().left;
       host.classList.toggle("app__narrator--lifted", overlap);
+      // Tell the right column how much room the narrator really takes (card or pill).
+      requestAnimationFrame(() => {
+        if (!app) return; // measured against the layout, which can be taller than the window
+        app.style.setProperty("--narrator-space", `${Math.round(app.getBoundingClientRect().bottom - el.getBoundingClientRect().top + DOCK_GAP)}px`);
+      });
     };
     place();
     const watch = new ResizeObserver(place);

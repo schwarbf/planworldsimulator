@@ -1,4 +1,5 @@
 // Connection to the world server (server/api.py, proxied under /api by Vite).
+// URLs are relative so the UI also works behind a path prefix (/api/play/<id>/).
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const POLL_MS = 1000;
@@ -16,7 +17,7 @@ export function useWorldState<T>(mock: T): [T, () => Promise<void>] {
   const last = useRef("");
   const fetchState = useCallback(async (): Promise<boolean> => {
     try {
-      const res = await fetch("/api/state");
+      const res = await fetch("api/state");
       if (!res.ok) return false;
       const text = await res.text();
       if (text !== last.current) {
@@ -70,10 +71,15 @@ async function post(path: string, body: unknown): Promise<Sent> {
 
 /** Send a player action (queued until the next advance) or a UI control. */
 export function sendAction(id: string, args: Record<string, unknown> = {}): Promise<Sent> {
-  return post("/api/action", { id, args });
+  return post("api/action", { id, args });
 }
 
 /** Remove queued action `index` of this step. */
 export function unqueue(index: number): Promise<Sent> {
-  return post("/api/unqueue", { index });
+  return post("api/unqueue", { index });
+}
+
+/** Start a new episode at difficulty level 1-3 (the website opens worlds as `?level=N`). */
+export function resetToLevel(level: number): Promise<Sent> {
+  return post("api/reset", { level });
 }

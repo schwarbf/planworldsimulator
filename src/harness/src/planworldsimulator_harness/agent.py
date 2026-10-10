@@ -26,6 +26,14 @@ Play until the episode is done, then reply with a one-line summary.
 Your budget for the whole episode: {budget}.
 If the budget runs out, you stop and the remaining steps run with no actions."""
 
+# UI runs only (harness serve): the notes are shown on the cursor and read aloud.
+# Benchmarks do not get this, so their prompt and results stay comparable.
+EXPLAIN_PROMPT = """\
+Someone is watching you play and hears your notes read aloud. Think aloud for them:
+before every advance(), call note() at least once and at most 3 times. Each note is
+one or two short sentences (under 25 words) about a major idea: what you noticed,
+what you are testing, or why you take your next actions."""
+
 START_PROMPT = "Play this world. Start with brief()."
 CONTINUE_PROMPT = (
     "Continue playing this world from week {week}; earlier weeks were played "
@@ -38,6 +46,7 @@ class Deps:
     budget: Budget
     started: float = field(default_factory=time.monotonic)
     usage: RunUsage | None = None  # live usage of the run, captured on first request
+    explain: bool = False  # think aloud in notes (UI runs)
 
     def elapsed(self) -> float:
         return time.monotonic() - self.started
@@ -49,6 +58,7 @@ def _instructions(ctx: RunContext[Deps]) -> str:
     return "\n\n".join(
         [
             SYSTEM_PROMPT.format(budget=deps.budget.describe()),
+            *([EXPLAIN_PROMPT] if deps.explain else []),
             deps.budget.status(ctx.usage, deps.elapsed()),
         ]
     )

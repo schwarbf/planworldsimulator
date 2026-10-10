@@ -42,11 +42,24 @@ def get_agent(name: str, path: Path = AGENTS_FILE) -> AgentConfig:
     return agents[name]
 
 
+def api_key(name: str) -> str:
+    """``$NAME``, else the contents of the file at ``$NAME_FILE`` (``~`` allowed)."""
+    key = os.environ.get(name, "").strip()
+    if key:
+        return key
+    path = os.environ.get(f"{name}_FILE", "").strip()
+    if path and Path(path).expanduser().is_file():
+        return Path(path).expanduser().read_text().strip()
+    return ""
+
+
 def build_model(cfg: AgentConfig) -> Model:
     provider, _, name = cfg.model.partition(":")
-    key = os.environ.get(cfg.api_key_env) if cfg.api_key_env else None
+    key = api_key(cfg.api_key_env) if cfg.api_key_env else None
     if cfg.api_key_env and not key:
-        raise RuntimeError(f"agent {cfg.name!r} needs ${cfg.api_key_env}")
+        raise RuntimeError(
+            f"agent {cfg.name!r} needs ${cfg.api_key_env} (or ${cfg.api_key_env}_FILE)"
+        )
     if provider == "google":
         return GoogleModel(
             name, provider=GoogleProvider(api_key=key, base_url=cfg.base_url)

@@ -1,6 +1,6 @@
 // Page layout around the world view. Same in every world; do not edit per world.
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { sendAction, unqueue, useWorldState } from "./api";
+import { resetToLevel, sendAction, unqueue, useWorldState } from "./api";
 import { agentLook, stopAgent, useAgents, type Play } from "./harness";
 import { AgentBanner, FrozenLock } from "./shared/controls/AgentBanner";
 import { AgentCursor } from "./shared/controls/AgentCursor";
@@ -21,6 +21,27 @@ import { mockState, toControls, WorldView } from "./World";
 const MemoWorldView = memo(WorldView);
 const ERROR_MS = 3000;
 const NOBODY: Play = { mode: "you", agent: null };
+const VOICE_NOTES_KEY = "planworld.voiceNotes";
+
+/** "Voice notes" toggle, remembered in this browser (on by default). */
+function useVoiceNotes(): [boolean, (on: boolean) => void] {
+  const [on, setOn] = useState(() => {
+    try {
+      return localStorage.getItem(VOICE_NOTES_KEY) !== "off";
+    } catch {
+      return true;
+    }
+  });
+  const set = useCallback((next: boolean) => {
+    setOn(next);
+    try {
+      localStorage.setItem(VOICE_NOTES_KEY, next ? "on" : "off");
+    } catch {
+      // storage blocked: keep it for this visit only
+    }
+  }, []);
+  return [on, set];
+}
 const ignore: OnAction = () => {};
 
 export default function App() {
@@ -31,6 +52,7 @@ export default function App() {
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [narratorOpen, setNarratorOpen] = useState(false);
+  const [voiceNotes, setVoiceNotes] = useVoiceNotes();
   const model = useMemo(() => toControls(state, selectedId), [state, selectedId]);
   const queued = (state as { queued?: QueuedAction[] }).queued ?? [];
   const score = (state as { score?: ScoreInfo }).score;
@@ -41,6 +63,16 @@ export default function App() {
   const { agents, offline } = useAgents();
   const look = agentLook(agents, play.agent);
 
+  // `?level=N` (from the website's Play links) starts the world at that difficulty.
+  useEffect(() => {
+    const level = Number(new URLSearchParams(window.location.search).get("level"));
+    if (Number.isInteger(level) && level >= 1 && level <= 3) {
+      void resetToLevel(level).then((sent) => {
+        if (!sent.ok) setError(sent.error ?? "Could not select difficulty");
+        return refresh();
+      });
+    }
+  }, [refresh]);
   useEffect(() => setPending(null), [model.dock.active]);
   useEffect(() => {
     if (!error) return;
@@ -107,7 +139,7 @@ export default function App() {
       </div>
       <div className="app__right">
         <Goal goal={model.goal} score={score} />
-        <AgentPanel agent={model.agent} play={play} agents={agents} offline={offline} week={score?.week ?? 1} onChanged={onAgentChanged} />
+        <AgentPanel agent={model.agent} play={play} agents={agents} offline={offline} week={score?.week ?? 1} onChanged={onAgentChanged} voiceNotes={voiceNotes} onVoiceNotes={setVoiceNotes} />
       </div>
       <div className={`app__dock${playing ? " frozen" : ""}`}>
         {playing && <FrozenLock />}
@@ -115,7 +147,7 @@ export default function App() {
       </div>
       <div className="app__narrator"><Narrator collapse={playing} onOpen={setNarratorOpen} week={score?.week} /></div>
       {playing && <AgentBanner look={look} timeLabel={model.topBar.timeLabel} onStop={takeOver} />}
-      <AgentCursor look={look} active={playing} onTarget={setSelectedId} />
+      <AgentCursor look={look} active={playing} onTarget={setSelectedId} voiceNotes={voiceNotes} />
     </div>
   );
 }
