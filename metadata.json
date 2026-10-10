@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K3NW1RZZG9XH8JCXGT8DBG",
   "strategy": "manual-commit",
   "branch": "feat/world-creation-agent",
-  "checkpoints_count": 3,
+  "checkpoints_count": 5,
   "files_touched": [
     ".gitignore",
     ".mcp.json",
@@ -69,6 +69,20 @@
       "compact_transcript": "/1/transcript.jsonl",
       "content_hash": "/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/2/metadata.json",
+      "transcript": "/2/full.jsonl",
+      "compact_transcript": "/2/transcript.jsonl",
+      "content_hash": "/2/content_hash.txt",
+      "prompt": ""
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 4835,
+    "cache_read_tokens": 2057879,
+    "output_tokens": 1788,
+    "api_call_count": 5
+  }
 }

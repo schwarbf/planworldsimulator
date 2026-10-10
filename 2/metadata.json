@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K3NW1RZZG9XH8JCXGT8DBG",
+  "session_id": "5d8d31be-3c40-40b6-a359-c1d8fbdb4a06",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:32:40.912639Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "27bc845a21fc",
+  "checkpoint_transcript_start": 1311,
+  "transcript_lines_at_start": 1311,
+  "compact_transcript_start": 205,
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 4835,
+    "cache_read_tokens": 2057879,
+    "output_tokens": 1788,
+    "api_call_count": 5
+  },
+  "session_metrics": {
+    "turn_count": 8
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 318,
+      "agent_lines_removed": 0
+    }
+  ]
+}
