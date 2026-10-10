@@ -20,7 +20,7 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/opt/playwright \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends nodejs npm ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
-    && npm install -g opencode-ai \
+    && npm install -g opencode-ai@1.18.35 \
     && pip install playwright \
     && playwright install --with-deps chromium \
     && rm -rf /var/lib/apt/lists/*

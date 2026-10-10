@@ -73,7 +73,8 @@ def test_agent_may_only_edit_its_files(tmp_path: Path) -> None:
     edit = config["permission"]["edit"]
     assert edit["*"] == "deny"
     root = str(tmp_path.resolve()).lstrip("/")
-    assert edit[f"{root}/brief.md"] == "allow"
+    assert edit[f"{root}/brief.md"] == "allow"  # OpenCode before 1.18
+    assert edit["brief.md"] == "allow"  # OpenCode 1.18+: relative to the world
     assert config["permission"]["external_directory"] == "deny"
     assert config["permission"]["bash"] == "deny"
 

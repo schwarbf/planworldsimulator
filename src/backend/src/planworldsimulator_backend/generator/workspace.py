@@ -125,10 +125,21 @@ def stray_files(template_dir: Path, world_dir: Path) -> list[str]:
 def agent_config(world_dir: Path, writable: tuple[str, ...]) -> dict:
     """OpenCode permissions for one agent track.
 
-    Edit patterns are matched against the absolute path without its leading slash.
+    OpenCode matches edit patterns against the path relative to the enclosing git
+    repository, or against the absolute path without its leading slash when there
+    is none (e.g. /worlds in Docker). Worlds generated inside this repository sit
+    in src/worlds/<id>/, so every form is listed; each still allows only `writable`.
     """
-    root = str(world_dir.resolve()).lstrip("/")
-    edit = {"*": "deny"} | {f"{root}/{rel}": "allow" for rel in writable}
+    world = world_dir.resolve()
+    bases = {str(world).lstrip("/"), ""}
+    git_root = next((d for d in (world, *world.parents) if (d / ".git").exists()), None)
+    if git_root is not None:
+        bases.add(str(world.relative_to(git_root)))
+    edit = {"*": "deny"} | {
+        f"{base}/{rel}".lstrip("/") if base and base != "." else rel: "allow"
+        for base in sorted(bases)
+        for rel in writable
+    }
     return {
         "$schema": "https://opencode.ai/config.json",
         "share": "disabled",
