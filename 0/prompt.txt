@@ -1,0 +1,87 @@
+We are in a hackathon and we need to use entire.io for our implementation - can you use Continuous Memory / Brain for our coding session? Can you quickly check if you have access? It should be setup now https://hack.entire.io/agentic-ai-hack-zurich-2026/#connect
+
+---
+
+does this brain get commited also to my partners session (he is in codex) if I do entire brain setup?
+
+---
+
+so entire also runs tokens for this brain?
+
+---
+
+what is the billing on that can you check - we are currently in a hackathon (I assume it should be free for us?)
+
+---
+
+So local subscription is fine for me - so entire does not have a separate billing correct? So we can just do entire brain setup?
+
+---
+
+Alright lets start working with entire in the background. Our task is to build the Agent Harness with Pydantic AI and Gemini API Key (Google is the second design partner) and we have a API key for this to use their models, so I would benchmark directly with them.
+
+So goal is that we have the agent working with the MCP server the world generator creates. And then benchmarking it + making sure that it is restricted in some sense (token limits  / time limits? ) so we can make fair comparison. I think for benchmarking we would take fixed environments (those we pushed into the repo) and for general checking if the MCP control works we can just use any (to start with). So for now since we only have one environement I would say we start building with that. Can you plan a file tree / plan proposal for that?
+
+---
+
+and agent should be easy swappable by different models, so we can really benchmark it easily. So swap API endpoint + Key then we can benchmark it against our world. Or also if we are in the web frontend we should be able to choose an agent (later not now) so we can visualize how the agent would work in this harness.
+
+Does this work with this plan suggestion?
+
+In general the text above was too much to review, keep everything short with just the information needed. Short sentences and only the most essential part to get quick iteration.
+
+---
+
+can you put this into a decision file so I can review again the file tree and the whole setup (keep the one line explanation of what every file does)
+
+---
+
+what is the benchmarks folder for?
+
+---
+
+should things like "world.py" also be in the harness? or does sstarting world server on a free port only belong to the benchmarks?
+
+---
+
+yes update 0005 that way
+
+---
+
+why is the "bench/" folder inside the harness and not inside the benchmarks folder? In one sentence each what do we use it for?
+
+---
+
+I was thinking why not have this "bench" files not in benchmarks itself - why do we have it in harness (its again benchmark specific code)
+
+---
+
+ok no keep in src/hardness under benchmarks folder - maybe the question for me was more why is server.py and benchmark.py not also in the benchmarks folder?
+
+---
+
+why do you mean by  Any world in smoke file - which world would it pick right now?
+
+---
+
+I would start with 1 configuration only (so lets just keep a simple smoke config for now)
+
+---
+
+how would the budgets work - will there be a reasoning token limit / is the model able to make multiple mcp calls (to explore the data) before it runs out of budget there is some sentence "now you have to make a decision" - or is this already integrated in Pydantic AI?
+
+---
+
+should the cap be per episode step or for the whole?
+
+---
+
+And maybe we need to advertise this budget at the start so the model knows it has limited budget. And gets updates of the budget throughout the benchmark.
+
+---
+
+I would not add this: At 80% used, the line adds: Budget low. Prioritize decisions
+
+This could drift the model into some direction. So I would keep it general as yo udid here:
+
+Budget left: 212/300 tool calls, 0.8M/2M tokens, 6:10 min.

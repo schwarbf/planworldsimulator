@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K05GC77M0W9QVEDDYSPN1H",
+  "strategy": "manual-commit",
+  "branch": "docs/agent-harness-decision",
+  "checkpoints_count": 20,
+  "files_touched": [
+    "docs/design-decisions/0005-define-the-agent-harness-and-benchmark.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 92,
+    "cache_creation_tokens": 97136,
+    "cache_read_tokens": 5432606,
+    "output_tokens": 22257,
+    "api_call_count": 46
+  }
+}
