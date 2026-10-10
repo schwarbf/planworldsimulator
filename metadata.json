@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K4R8T61AM7YVDNWYAK8XVD",
+  "strategy": "manual-commit",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "pixi.lock",
+    "src/backend/pyproject.toml",
+    "src/backend/src/planworldsimulator_backend/api/worlds.py",
+    "src/backend/src/planworldsimulator_backend/generator/base.py",
+    "src/backend/src/planworldsimulator_backend/generator/fake.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_generator.py",
+    "src/backend/src/planworldsimulator_backend/generator/opencode_runner.py",
+    "src/backend/src/planworldsimulator_backend/generator/prompts/polish.md",
+    "src/backend/src/planworldsimulator_backend/generator/screenshots.py",
+    "src/backend/src/planworldsimulator_backend/schemas.py",
+    "src/backend/tests/test_generator.py",
+    "src/backend/tests/test_worlds_api.py",
+    "src/web/src/api/client.ts",
+    "src/web/src/components/ExistingWorlds.test.tsx",
+    "src/web/src/components/ExistingWorlds.tsx",
+    "src/web/src/pages/WorldDetail.test.tsx",
+    "src/web/src/pages/WorldDetail.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
