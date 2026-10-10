@@ -1,0 +1,17 @@
+does one see this queue of actions somewhere, so when I am doing this in the UI - and click a wrong action could I still reverse it from the stack?
+
+---
+
+yes add it and build the UI fix
+
+---
+
+is it also possible to reduce the number of weeks or would you not advise that since 52 steps is rather fixed and otherwise it gets too short? We could also do 12 Months for example (no changes please, just thinking)
+
+---
+
+is 20 minutes for a benchmark reasonable - how long does something like vendorbench or similar run?
+
+---
+
+make tokens the main cap, 30 min safety, then push and merge everything
