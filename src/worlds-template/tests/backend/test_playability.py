@@ -33,7 +33,10 @@ def _table() -> str:
         "Mean score over 10 seeds:\n" + "\n".join(rows) + "\n"
         "Wanted: baseline between 0.2 and 0.9 on easy, above 0.02 and below 0.98 on every level, "
         "never better on a harder level, and better than doing nothing. "
-        "Tune the score target, costs and prices in rules.py/env.py (not the tests)."
+        "Tune the score target, costs and prices in rules.py/env.py (not the tests). "
+        "Higher levels must be harder for a naive player: switch on more hidden penalties, "
+        "demand factors, shocks, lead times or costs with the level in rules.py, so the "
+        "baseline drops by at least 0.05 from easy to hard."
     )
 
 
@@ -71,6 +74,7 @@ def test_the_baseline_does_not_get_better_at_higher_levels():
     means = [_mean(d) for d in Env.DIFFICULTIES]
     for easier, harder in zip(means, means[1:]):
         assert harder <= easier + 0.05, _table()
+    assert means[-1] <= means[0] - 0.05, _table()
 
 
 def test_the_seed_changes_the_outcome():

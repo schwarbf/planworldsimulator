@@ -93,7 +93,7 @@ async def run_backend_gate(
             "pytest",
             "tests/backend",
             "-q",
-            "-x",
+            "--maxfail=8",
             "--tb=short",
             "-p",
             "no:cacheprovider",

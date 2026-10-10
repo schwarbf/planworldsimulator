@@ -29,13 +29,15 @@ class WorldState:
     model: DemandModel
     found: set[str]  # demand factors whose effect has been seen
     new_found: list[Factor]  # found in the last step
+    decay: float  # share of the capacity that wears out each week; rises with the level
 
 
 def initial_state(rng: np.random.Generator, level: int) -> WorldState:
     """``level`` is 1 (easy) … 3 (hard); the seed only draws values (here: the base demand)."""
     model = demand_config.build(base=float(rng.integers(20, 40)), level=level)
     demand, _ = model.detail({"week": 0}, rng)
-    return WorldState(0, START_CASH, 10.0, demand, model, set(), [])
+    decay = (0.0, 0.05, 0.1)[level - 1]
+    return WorldState(0, START_CASH, 10.0, demand, model, set(), [], decay)
 
 
 def step_world(rng: np.random.Generator, w: WorldState, invest: int) -> float:
@@ -43,6 +45,7 @@ def step_world(rng: np.random.Generator, w: WorldState, invest: int) -> float:
     w.capacity += 2 * invest
     sold = min(w.demand, w.capacity)
     profit = sold * PRICE - invest * INVEST_COST
+    w.capacity *= 1.0 - w.decay
     w.cash += profit
     w.week += 1
     w.demand, mults = w.model.detail({"week": w.week}, rng)
