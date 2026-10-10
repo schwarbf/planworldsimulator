@@ -1,0 +1,41 @@
+Can you create a plan for a new design decision that shows how to enable entire please? 
+
+Here's the recipe
+
+
+
+<pasted_content id="2b5e">
+*Enable Entire for Codex and Claude Code*
+
+First, install Entire and sign in with GitHub:
+
+```sh
+curl -fsSL https://entire.io/install.sh | bash
+entire login
+```
+
+Then run this inside your local repository:
+
+```sh
+cd /path/to/your/repository
+
+entire enable --agent codex --telemetry=false --absolute-git-hook-path
+entire agent add claude-code
+
+entire agent list
+entire status
+```
+
+Start fresh Codex or Claude Code sessions after setup. Make a small change, review it, and commit the changed files. Choose *yes* if prompted to link the commit to session context.
+
+Verify the checkpoint:
+
+```sh
+entire checkpoint list
+entire checkpoint explain HEAD
+```
+
+Push the commit to GitHub to upload the checkpoint. For sessions to appear in Entire, the repository owner/admin must also connect the repository through the Entire GitHub App.
+
+Each person needs to run the local setup in their own clone.
+</pasted_content id="2b5e">

@@ -1,0 +1,90 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4JQSJTE7ER46NF68XV0WCDS",
+  "session_id": "c6c80034-d71e-43d0-93f6-87884bd1c9c2",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T11:04:59.346877Z",
+  "branch": "feat/enable-entire-for-this-codebase",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "docs/design-decisions/0002-enable-entire-to-capture-agent-sessions-as-checkpoints.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "8b72d1069703",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 14,
+    "cache_creation_tokens": 24691,
+    "cache_read_tokens": 244747,
+    "output_tokens": 3479,
+    "api_call_count": 6
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-claude-code-create-commits-2026-10-10T11:04:49.095594Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "create-commits"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "8b72d1069703",
+      "timestamp": "2026-10-10T11:04:49.095594Z",
+      "native": {
+        "command": "/create-commits"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/create-commits",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T11:04:59.340599Z",
+    "agent_lines": 111,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 111,
+    "total_lines_changed": 111,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 229,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.json": 101,
+        ".codex/hooks.json": 88,
+        ".cursor/hooks.json": 40
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 229,
+      "user_lines_removed": 0,
+      "agent_lines_added": 111,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".claude/settings.json": 101,
+        ".codex/hooks.json": 88,
+        ".cursor/hooks.json": 40
+      }
+    }
+  ]
+}
