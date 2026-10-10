@@ -1,0 +1,17 @@
+[workspace]
+channels = ["conda-forge"]
+name = "planbench"
+platforms = ["osx-arm64", "linux-64"]
+version = "0.1.0"
+
+[dependencies]
+python = ">=3.13,<3.14"
+ruff = ">=0.14,<0.15"
+pyright = ">=1.1.408,<1.2"
+pytest = ">=9.0,<10"
+just = ">=1.51,<2"
+
+[pypi-dependencies]
+planbench-backend = { path = "src/backend", editable = true }
+pytest-asyncio = ">=1,<2"
+asgi-lifespan = ">=2,<3"

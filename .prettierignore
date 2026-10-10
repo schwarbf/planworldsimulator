@@ -1,0 +1,9 @@
+node_modules
+dist
+.pixi
+src/worlds
+src/worlds-template
+src/backend
+pixi.lock
+pnpm-lock.yaml
+docs
