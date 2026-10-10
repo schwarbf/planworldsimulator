@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_015JZ42VGfPFkoFFupdWeH5K",
+  "agent_id": "a7682546f9a838dc4",
+  "subagent_type": "general-purpose",
+  "task_description": "Build agent cursor feature",
+  "token_usage": {
+    "input_tokens": 232,
+    "cache_creation_tokens": 228870,
+    "cache_read_tokens": 19095020,
+    "output_tokens": 20614,
+    "api_call_count": 116
+  },
+  "started_at": "2026-10-10T16:44:42.54602+02:00",
+  "completed_at": "2026-10-10T17:07:51.072739+02:00"
+}
