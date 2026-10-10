@@ -102,9 +102,19 @@ async def test_names_without_letters_still_get_an_id(client: httpx.AsyncClient) 
     assert (await create(client, "!!"))["id"].startswith("world-")
 
 
-async def test_same_name_gets_distinct_ids(client: httpx.AsyncClient) -> None:
-    ids = {(await create(client, "Twin"))["id"] for _ in range(3)}
-    assert len(ids) == 3
+async def test_a_name_can_only_be_used_once(client: httpx.AsyncClient) -> None:
+    first = await create(client, "Twin")
+    for again in ("Twin", "  twin ", "TWIN!"):
+        response = await client.post("/worlds", json={"name": again, "prompt": PROMPT})
+        assert response.status_code == 409
+        assert response.headers["x-existing-world"] == first["id"]
+
+
+async def test_a_failed_world_does_not_hold_its_name(client: httpx.AsyncClient) -> None:
+    first = await create(client, "Retry me")
+    await wait(client)
+    await set_status(client, first["id"], "failed")
+    assert (await create(client, "Retry me"))["id"] != first["id"]
 
 
 async def test_unknown_world_is_404(client: httpx.AsyncClient) -> None:

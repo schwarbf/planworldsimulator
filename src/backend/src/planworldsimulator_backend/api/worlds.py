@@ -16,6 +16,7 @@ from planworldsimulator_backend.api.deps import (
 )
 from planworldsimulator_backend.db.models import World, WorldEvent
 from planworldsimulator_backend.generator import GenerationRequest
+from planworldsimulator_backend.generator.exists import name_owner
 from planworldsimulator_backend.schemas import (
     EventOut,
     WorldCreate,
@@ -67,6 +68,14 @@ async def create_world(
     new_token = token is None
     if token is None:
         token = secrets.token_urlsafe(24)
+
+    owner = await name_owner(state.sessions, body.name)
+    if owner is not None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"A world called “{body.name}” already exists.",
+            headers={"X-Existing-World": owner},
+        )
 
     world = World(
         id=f"{_slug(body.name)}-{secrets.token_hex(3)}",

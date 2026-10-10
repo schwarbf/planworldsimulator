@@ -41,6 +41,8 @@ class GenerationRunner:
                     )
                     world = await session.get(World, request.world_id)
                     if world is not None:
+                        if event.duplicate_of is not None:
+                            world.duplicate_of = event.duplicate_of
                         if event.storyline is not None:
                             world.storyline = event.storyline
                         if event.path is not None:
@@ -60,7 +62,12 @@ class GenerationRunner:
                 await session.commit()
             await self._update(request.world_id, status="failed")
             return
-        await self._update(request.world_id, status="ready")
+        await self._update(request.world_id, status=await self._final_status(request))
+
+    async def _final_status(self, request: GenerationRequest) -> str:
+        async with self.sessions() as session:
+            world = await session.get(World, request.world_id)
+            return "exists" if world is not None and world.duplicate_of else "ready"
 
     async def _update(self, world_id: str, **fields: object) -> None:
         async with self.sessions() as session:

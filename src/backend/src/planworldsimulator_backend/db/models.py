@@ -19,10 +19,11 @@ class World(Base):
     title: Mapped[str] = mapped_column(String(200))
     prompt: Mapped[str] = mapped_column(Text)
     seed: Mapped[int] = mapped_column(Integer)
-    # queued | generating | ready | failed
+    # queued | generating | ready | failed | exists (the name was taken)
     status: Mapped[str] = mapped_column(String(16), default="queued")
     storyline: Mapped[str | None] = mapped_column(Text, nullable=True)
     path: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    duplicate_of: Mapped[str | None] = mapped_column(String(32), nullable=True)
     running: Mapped[bool] = mapped_column(default=False)
     featured: Mapped[bool] = mapped_column(default=False)
     play_count: Mapped[int] = mapped_column(Integer, default=0)

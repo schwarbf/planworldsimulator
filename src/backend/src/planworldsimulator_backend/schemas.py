@@ -30,6 +30,7 @@ class WorldOut(BaseModel):
     status: str
     storyline: str | None
     path: str | None
+    duplicate_of: str | None = None
     running: bool
     port: int | None
     featured: bool

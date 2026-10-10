@@ -15,7 +15,9 @@ from planworldsimulator_backend.db.session import (
     run_migrations,
 )
 from planworldsimulator_backend.featured import seed_featured
-from planworldsimulator_backend.generator import FakeGenerator
+from planworldsimulator_backend.generator import FakeGenerator, Generator
+from planworldsimulator_backend.generator.exists import name_owner
+from planworldsimulator_backend.generator.opencode_generator import OpenCodeGenerator
 from planworldsimulator_backend.launcher import FakeLauncher
 from planworldsimulator_backend.limits import SlidingWindowLimiter
 from planworldsimulator_backend.reaper import reap_loop
@@ -32,9 +34,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine = make_engine(settings.database_url)
         sessions = make_session_factory(engine)
         settings.worlds_dir.mkdir(parents=True, exist_ok=True)
-        generator = FakeGenerator(
-            settings.worlds_dir, settings.template_dir, settings.step_delay_seconds
-        )
+        generator: Generator
+        if settings.generator == "opencode":
+            generator = OpenCodeGenerator(
+                settings, lambda title, own: name_owner(sessions, title, own)
+            )
+        else:
+            generator = FakeGenerator(
+                settings.worlds_dir, settings.template_dir, settings.step_delay_seconds
+            )
         app.state.settings = settings
         app.state.sessions = sessions
         app.state.runner = GenerationRunner(sessions, generator)

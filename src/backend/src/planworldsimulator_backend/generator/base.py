@@ -2,14 +2,12 @@ from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from typing import Protocol
 
-# The fake generator walks through the first four; the real one through all of them.
 STEPS = (
     "check_exists",
-    "design",
     "copy_template",
+    "design",
     "fill",
     "tests",
-    "polish",
     "smoke",
     "publish",
 )

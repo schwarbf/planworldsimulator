@@ -32,15 +32,6 @@ class FakeGenerator:
         await asyncio.sleep(self.delay)
         yield GenerationEvent("check_exists", "done", "The name is free")
 
-        yield GenerationEvent("design", "started", "Writing the storyline")
-        await asyncio.sleep(self.delay)
-        storyline = (
-            f"{request.title}. A hidden-dynamics planning world generated from: "
-            f"“{request.prompt.strip()}” (seed {request.seed}, "
-            f"{len(LEVELS)} difficulty levels)."
-        )
-        yield GenerationEvent("design", "done", "Storyline ready", storyline)
-
         yield GenerationEvent("copy_template", "started", "Copying the base template")
         await asyncio.sleep(self.delay)
         if _template_has_content(self.template_dir):
@@ -53,6 +44,15 @@ class FakeGenerator:
             )
             note = "Template is empty, wrote a stub"
         yield GenerationEvent("copy_template", "done", note, path=str(world_dir))
+
+        yield GenerationEvent("design", "started", "Writing the storyline")
+        await asyncio.sleep(self.delay)
+        storyline = (
+            f"{request.title}. A hidden-dynamics planning world generated from: "
+            f"“{request.prompt.strip()}” (seed {request.seed}, "
+            f"{len(LEVELS)} difficulty levels)."
+        )
+        yield GenerationEvent("design", "done", "Storyline ready", storyline)
 
         yield GenerationEvent("fill", "started", "Filling the template")
         await asyncio.sleep(self.delay)
@@ -73,7 +73,6 @@ class FakeGenerator:
 
         for step, started, done in (
             ("tests", "Running tests", "All checks passed"),
-            ("polish", "Polishing the look", "Looks good"),
             ("smoke", "Booting the world", "The world starts"),
             ("publish", "Publishing", "Published"),
         ):
