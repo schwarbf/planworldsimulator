@@ -18,8 +18,10 @@ from planworldsimulator_backend.api.deps import (
 from planworldsimulator_backend.db.models import World, WorldEvent
 from planworldsimulator_backend.generator import GenerationRequest
 from planworldsimulator_backend.generator.exists import name_owner
+from planworldsimulator_backend.generator.models import DEFAULT_MODEL, MODELS
 from planworldsimulator_backend.schemas import (
     EventOut,
+    ModelOut,
     WorldCreate,
     WorldOut,
     WorldPage,
@@ -43,6 +45,7 @@ def _request(world: World) -> GenerationRequest:
         prompt=world.prompt,
         seed=world.seed,
         attempt=world.generation_attempt,
+        model=world.generation_model or "",
     )
 
 
@@ -87,6 +90,7 @@ async def create_world(
             title=body.name,
             prompt=body.prompt.strip(),
             seed=body.seed if body.seed is not None else secrets.randbelow(10_000),
+            generation_model=body.model or DEFAULT_MODEL,
             status="queued",
             creator_hash=hash_token(token),
         )
@@ -125,6 +129,15 @@ async def create_world(
             secure=settings.cookie_secure,
         )
     return _out(world, hash_token(token))
+
+
+@router.get("/models", response_model=list[ModelOut])
+async def list_models() -> list[ModelOut]:
+    """Models the generator can use, for the model picker."""
+    return [
+        ModelOut(id=m.id, label=m.label, note=m.note, default=m.id == DEFAULT_MODEL)
+        for m in MODELS.values()
+    ]
 
 
 @router.get("", response_model=WorldPage)

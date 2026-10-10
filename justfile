@@ -34,6 +34,10 @@ test:
     pixi run pytest src/backend
     pixi run pnpm --filter @planworldsimulator/web run test
 
+[group('checks')]
+test-e2e:                   # offline end to end, no API key: real OpenCode with a scripted model, the full pipeline with a fake agent, a scripted agent playing through the website
+    pixi run pytest src/backend/tests/test_opencode_contract.py src/backend/tests/test_generator.py src/backend/tests/test_play_integration.py -q
+
 [group('development')]
 start:                      # everything on this machine: website, API (generator + launcher), agent service
     #!/usr/bin/env bash
@@ -72,7 +76,7 @@ world-setup:                # once: the shared world environment the generator a
     pixi install --manifest-path src/worlds-template/pixi.toml
     cd src/worlds-template/ui && npm ci
     pixi run playwright install chromium
-    @command -v opencode >/dev/null || echo "Install OpenCode too: npm i -g opencode-ai (or brew install sst/tap/opencode)"
+    @command -v opencode >/dev/null || echo "Install OpenCode too: npm i -g opencode-ai@1.18.35"
 
 [group('generator')]
 generate name prompt:       # generate one world with the real agent (needs GEMINI_API_KEY), no website

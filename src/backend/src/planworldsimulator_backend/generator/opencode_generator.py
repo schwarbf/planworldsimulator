@@ -4,13 +4,14 @@ import asyncio
 import contextlib
 import json
 import logging
+import re
 import shutil
 import time
 from collections.abc import AsyncIterator, Awaitable, Callable
 
 from planworldsimulator_backend import worldproc
 from planworldsimulator_backend.config import Settings
-from planworldsimulator_backend.generator import gates, prompts, workspace
+from planworldsimulator_backend.generator import gates, models, prompts, workspace
 from planworldsimulator_backend.generator.base import (
     LEVELS,
     GenerationEvent,
@@ -92,6 +93,38 @@ async def together(*coroutines):
         await asyncio.gather(*tasks, return_exceptions=True)
 
 
+TRACE_CHARS = 200
+TOOL_VERBS = {"write": "Writing", "edit": "Editing", "read": "Reading"}
+
+
+def trace_line(event: AgentEvent) -> tuple[str, str] | None:
+    """An OpenCode event as (kind, text) for the live log, or None to skip it."""
+    if event.kind == "text":
+        text = " ".join(
+            re.sub(r"\*\*|__|`", "", event.text).split()
+        )  # plain, no markdown
+        return ("text", text) if text else None
+    if event.kind != "tool" or event.status not in ("completed", "error"):
+        return None
+    verb = TOOL_VERBS.get(event.tool)
+    target = f"{verb} {event.path}" if verb and event.path else f"Using {event.tool}"
+    if event.status == "error":
+        return "bad", f"{target} failed: {' '.join(event.text.split())[:120]}"
+    return (event.tool if verb else "run"), target
+
+
+def gate_line(result: gates.GateResult) -> tuple[str, str]:
+    """A gate result as (kind, text): which check passed, or which tests failed."""
+    if result.ok:
+        return "ok", f"{result.name} passed"
+    failed = re.findall(r"FAILED \S+::(\w+)", result.output)
+    if failed:
+        more = f" and {len(failed) - 3} more" if len(failed) > 3 else ""
+        return "bad", f"{result.name}: {', '.join(failed[:3])}{more} failed"
+    last = next((x for x in reversed(result.output.splitlines()) if x.strip()), "")
+    return "bad", f"{result.name} failed: {last.strip()[:120]}"
+
+
 class OpenCodeGenerator:
     def __init__(self, settings: Settings, name_lookup: NameLookup) -> None:
         self.settings = settings
@@ -139,7 +172,8 @@ class OpenCodeGenerator:
             )
 
         try:
-            async with asyncio.timeout(self.settings.generation_deadline_seconds):
+            limit = models.resolve(request.model, self.settings).deadline_seconds
+            async with asyncio.timeout(limit):
                 await self._generate(request, step, metrics)
             metrics["ok"] = True
         except TimeoutError as exc:
@@ -167,7 +201,8 @@ class OpenCodeGenerator:
 
     async def _generate(self, request, step, metrics) -> None:
         s = self.settings
-        deadline = Deadline(s.generation_deadline_seconds)
+        model = models.resolve(request.model, s)
+        deadline = Deadline(model.deadline_seconds)
         world_dir = (s.worlds_dir / request.world_id).resolve()
         template = s.template_dir.resolve()
         python = worldproc.resolve_world_python(template, s.world_python)
@@ -214,14 +249,21 @@ class OpenCodeGenerator:
         def agent(writable):
             return AgentConfig(
                 binary=s.opencode_bin,
-                model=s.generator_model,
-                variant=s.generator_variant,
+                model=model.opencode,
+                variant=model.variant,
                 gemini_api_key=s.gemini_api_key,
                 config=workspace.agent_config(world_dir, writable),
             )
 
+        def trace(name, kind, text):
+            """One line of the live log under the running step (decision 0008)."""
+            step(name, "trace", text[:TRACE_CHARS], metrics={"trace": kind})
+
         def progress(name):
             def on_event(event: AgentEvent):
+                line = trace_line(event)
+                if line:
+                    trace(name, *line)
                 if (
                     event.kind == "tool"
                     and event.tool in ("write", "edit")
@@ -239,7 +281,10 @@ class OpenCodeGenerator:
 
         sessions: dict[str, str | None] = {}
 
-        async def call(name, prompt, writable, cap, repair=False, attachments=()):
+        async def call(
+            name, prompt, writable, cap, repair=False, attachments=(), report=None
+        ):
+            """`report`: the step that shows its progress (default: `name`)."""
             result = await run_agent(
                 prompt,
                 cwd=world_dir,
@@ -248,7 +293,7 @@ class OpenCodeGenerator:
                 max_tool_calls=s.max_tool_calls,
                 session_id=sessions.get(name) if repair else None,
                 files=attachments,
-                on_event=progress(name),
+                on_event=progress(report or name),
             )
             sessions[name] = result.session_id
             metrics["agents"].append(
@@ -473,6 +518,8 @@ class OpenCodeGenerator:
                     results = await (
                         validate_sim() if track == "sim" else validate_ui()
                     )
+                for r in results:
+                    trace(track, *gate_line(r))
                 failed = [r for r in results if not r.ok]
                 if not failed:
                     dependencies = files[track] + (
@@ -508,6 +555,10 @@ class OpenCodeGenerator:
             except (ScreenshotUnavailable, RuntimeError) as exc:
                 step("polish", "done", f"Skipped the look check ({exc})")
                 return
+            except Exception as exc:  # e.g. a browser timeout: the look is optional
+                log.warning("look check failed: %s", exc)
+                step("polish", "done", "Skipped the look check (screenshots failed)")
+                return
             view = world_dir / files["ui"][0]
             original = view.read_text()
             kit = prompts.read(world_dir, "ui/src/shared/kit/README.md")
@@ -525,6 +576,7 @@ class OpenCodeGenerator:
                 POLISH_SECONDS,
                 repair=True,
                 attachments=tuple(shots),
+                report="polish",  # the look step edits the world view; keep it done
             )
             guard()
             if view.read_text() == original:
@@ -591,7 +643,7 @@ class OpenCodeGenerator:
                     "seed": request.seed,
                     "levels": list(LEVELS),
                     "storyline": spec.storyline,
-                    "model": s.generator_model,
+                    "model": model.opencode,
                     "gates": report.as_json(),
                 },
                 indent=2,

@@ -51,7 +51,9 @@ async def capture_levels(
                 )
                 for level in levels:
                     await page.goto(f"http://127.0.0.1:{port}/?level={level}")
-                    await page.wait_for_load_state("networkidle")
+                    # Not "networkidle": world UIs poll state, stream agent events and
+                    # load the narrator, so the network never goes quiet.
+                    await page.wait_for_load_state("load")
                     await page.wait_for_timeout(SETTLE_MS)
                     path = out_dir / f"level-{level}.png"
                     await page.screenshot(path=path)

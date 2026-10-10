@@ -130,3 +130,37 @@ test("shows reconnect and retry errors", async () => {
   await screen.findByText("Capacity reached");
   expect(screen.getByText("Factory")).toBeInTheDocument();
 });
+test("the running step shows its newest live-log line and the full trace", async () => {
+  const line = (id: number, kind: string, message: string): WorldEvent => ({
+    ...event(id, "sim", "trace"),
+    kind,
+    message,
+  });
+  vi.mocked(api.listEvents).mockResolvedValue([
+    event(1, "sim", "started"),
+    line(2, "write", "Writing sim/env.py"),
+    line(3, "bad", "backend tests: test_seed failed"),
+  ]);
+  mount();
+  const trace = await screen.findByRole("log", { name: "Simulator trace" });
+  expect(trace).toHaveTextContent("Writing sim/env.py");
+  expect(trace).toHaveTextContent("2 events");
+  // The newest line is also shown under the step, and does not change the step text.
+  expect(screen.getAllByText("backend tests: test_seed failed")).toHaveLength(
+    2,
+  );
+  expect(screen.getByText("sim started")).toBeInTheDocument();
+  act(() => Stream.all[0].emit("step", line(4, "ok", "backend tests passed")));
+  expect(screen.getAllByText("backend tests passed")).toHaveLength(2);
+});
+test("a published world shows every step it went through as done", async () => {
+  vi.mocked(api.getWorld).mockResolvedValue(world({ status: "ready" }));
+  vi.mocked(api.listEvents).mockResolvedValue([
+    event(1, "ui", "done"),
+    event(2, "ui", "started"), // e.g. the look step edited the world view again
+    event(3, "publish", "done"),
+  ]);
+  mount();
+  await screen.findByText("publish done");
+  expect(document.querySelectorAll(".animate-pulse")).toHaveLength(0);
+});

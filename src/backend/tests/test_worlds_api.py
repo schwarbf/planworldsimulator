@@ -354,3 +354,43 @@ async def test_thumbnail_is_served_when_the_world_has_one(
     picture = await client.get(f"/worlds/{world['id']}/thumbnail")
     assert picture.status_code == 200
     assert picture.headers["content-type"] == "image/png"
+
+
+async def test_models_for_the_picker(client: httpx.AsyncClient) -> None:
+    models = (await client.get("/worlds/models")).json()
+    ids = [m["id"] for m in models]
+    assert "gemini-3.5-flash" in ids and "gemini-3.1-pro-preview" in ids
+    assert [m["id"] for m in models if m["default"]] == ["gemini-3.5-flash"]
+
+
+async def test_a_world_remembers_its_model(client: httpx.AsyncClient) -> None:
+    body = {"name": "Pro world", "prompt": PROMPT, "model": "gemini-3.1-pro-preview"}
+    created = (await client.post("/worlds", json=body)).json()
+    assert created["generation_model"] == "gemini-3.1-pro-preview"
+    assert (await create(client, "Default world"))["generation_model"] == (
+        "gemini-3.5-flash"
+    )
+    bad = {"name": "Odd world", "prompt": PROMPT, "model": "gpt-9"}
+    assert (await client.post("/worlds", json=bad)).status_code == 422
+
+
+async def test_live_log_lines_carry_their_kind(client: httpx.AsyncClient) -> None:
+    from planworldsimulator_backend.db.models import WorldEvent
+
+    created = await create(client, "Traced world")
+    await wait(client)
+    async with app_of(client).state.sessions() as session:
+        session.add(
+            WorldEvent(
+                world_id=created["id"],
+                step="sim",
+                state="trace",
+                message="Writing sim/env.py",
+                metrics=json.dumps({"trace": "write"}),
+            )
+        )
+        await session.commit()
+    events = (await client.get(f"/worlds/{created['id']}/events")).json()
+    line = next(e for e in events if e["state"] == "trace")
+    assert line["kind"] == "write" and line["message"] == "Writing sim/env.py"
+    assert all(e["kind"] is None for e in events if e["state"] != "trace")

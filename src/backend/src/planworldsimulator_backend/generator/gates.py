@@ -77,8 +77,18 @@ async def _run(
     return GateResult(name, ok, text[-TAIL:], time.monotonic() - started, track)
 
 
+# Gate output is shown on the website and sent to the fix agent, so the world's tests
+# run without secrets: no API key (or *_API_KEY_FILE path) can end up in a log.
+SECRET_MARKERS = ("API_KEY", "TOKEN", "SECRET", "PASSWORD")
+
+
 def _env(world_dir: Path) -> dict[str, str]:
-    return {**os.environ, "PYTHONPATH": str(world_dir), "CI": "1"}
+    env = {
+        k: v
+        for k, v in os.environ.items()
+        if not any(marker in k.upper() for marker in SECRET_MARKERS)
+    }
+    return {**env, "PYTHONPATH": str(world_dir), "CI": "1"}
 
 
 async def run_backend_gate(
