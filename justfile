@@ -55,6 +55,7 @@ dev:                        # run with live reload in the foreground (web on :51
 world-setup:                # once: the shared world environment the generator and launcher use
     pixi install --manifest-path src/worlds-template/pixi.toml
     cd src/worlds-template/ui && npm ci
+    pixi run playwright install chromium
     @command -v opencode >/dev/null || echo "Install OpenCode too: npm i -g opencode-ai (or brew install sst/tap/opencode)"
 
 [group('generator')]

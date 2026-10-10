@@ -35,7 +35,7 @@ The Docker stack uses a fake generator. To let a coding agent (OpenCode with Gem
 worlds on your machine, put `GEMINI_API_KEY` in `.env` and run:
 
 ```sh
-just world-setup                       # once: shared world environment, OpenCode check
+just world-setup                       # once: world environment, Chromium, OpenCode check
 just generate "Lemonade" "A lemonade stand ..."   # one world from the command line
 just api-local                         # or: the API with the real generator and launcher
 just web-local                         # the website on http://localhost:5173
