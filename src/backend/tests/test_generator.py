@@ -94,6 +94,44 @@ def test_base_files_are_guarded(tmp_path: Path) -> None:
     assert workspace.changed_base_files(template, world) == ["server/api.py"]
 
 
+def test_runtime_narration_cache_does_not_fail_publication(tmp_path: Path) -> None:
+    template = tmp_path / "template"
+    (template / "server").mkdir(parents=True)
+    (template / "server" / "api.py").write_text("base")
+    world = tmp_path / "world"
+    workspace.copy_template(template, world, None)
+    cache = world / ".narration"
+    cache.mkdir()
+    for name in ("intro.txt", "intro.wav", "commentary-7-1.txt", "commentary-7-1.wav"):
+        (cache / name).write_bytes(b"cached narration")
+
+    assert workspace.changed_base_files(template, world) == []
+    assert workspace.stray_files(template, world) == []
+    (world / "extra.txt").write_text("stray")
+    assert workspace.stray_files(template, world) == ["extra.txt"]
+    (world / "server" / "api.py").write_text("tampered")
+    assert workspace.changed_base_files(template, world) == ["server/api.py"]
+
+
+def test_copy_template_excludes_narration_from_template_and_reference(
+    tmp_path: Path,
+) -> None:
+    template = tmp_path / "template"
+    reference = tmp_path / "source-reference"
+    for source in (template, reference):
+        (source / ".narration").mkdir(parents=True)
+        (source / ".narration" / "intro.txt").write_text("Another world's intro")
+        (source / "brief.md").write_text("World brief")
+    world = tmp_path / "world"
+    workspace.copy_template(template, world, reference)
+
+    assert (world / "brief.md").is_file()
+    assert (world / "reference" / "brief.md").is_file()
+    assert not (world / ".narration").exists()
+    assert not (world / "reference" / ".narration").exists()
+    assert ".narration/intro.txt" not in workspace.base_files(template)
+
+
 # ---------- the agent process ----------
 
 

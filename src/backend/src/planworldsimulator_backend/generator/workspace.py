@@ -29,6 +29,7 @@ SKIP_DIRS = {
     ".ruff_cache",
     "__samples__",
     ".vite-cache",
+    ".narration",  # runtime text/audio cache populated by browser checks
     "reference",
     ".opencode",
 }
