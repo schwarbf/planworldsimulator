@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K0VRFF4WM0DEE028RE3ZNB",
+  "session_id": "765262ff-e225-4979-abd6-8227d6d01ea7",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T13:43:28.790627Z",
+  "branch": "feat/agent-harness",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/harness/src/planworldsimulator_harness/budget.py"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "4bdfe7319d21",
+  "checkpoint_transcript_start": 609,
+  "transcript_lines_at_start": 609,
+  "compact_transcript_start": 95,
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 4802,
+    "cache_read_tokens": 1119443,
+    "output_tokens": 4088,
+    "api_call_count": 6
+  },
+  "session_metrics": {
+    "turn_count": 23
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T13:43:28.760362Z",
+    "agent_lines": 8,
+    "agent_removed": 10,
+    "human_added": 18,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 26,
+    "total_lines_changed": 52,
+    "agent_percentage": 34.61538461538461,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}

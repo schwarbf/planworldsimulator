@@ -1,0 +1,5 @@
+why do we limit the tool calls (we could say that the tool calls add to the token limit instead?)
+
+---
+
+yes change it that way
