@@ -404,3 +404,10 @@ async def test_failed_spec_prevents_fill_calls(harness, monkeypatch):
         await run()
     # The design and two correction rounds; no simulator or UI work follows.
     assert calls == ["design"] * 3
+
+
+@pytest.mark.parametrize("field", ["queued", "score", "play"])
+def test_design_cannot_override_shared_controls(spec_data, field):
+    spec_data["state_fields"][field] = {"type": "number"}
+    with pytest.raises(ValueError, match="additional world fields"):
+        WorldSpec.model_validate(spec_data)

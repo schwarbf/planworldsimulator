@@ -43,3 +43,5 @@ $placeholders
 $state_contract
 
 The state must satisfy every declared field, enum, array item type and nullability on every difficulty, including after advance and completion. Action argument names and limits must match design.json exactly.
+
+The `score()` result must also include `formula`: a short explanation of the raw outcome divided by the calibrated target, for the shared Goal card.

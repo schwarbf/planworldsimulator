@@ -35,3 +35,10 @@ test("no ?level means no reset", () => {
   render(<App />);
   expect(fetchMock.mock.calls.some(([url]) => url === "api/reset")).toBe(false);
 });
+
+
+test("out-of-range ?level does not reset", () => {
+  window.history.replaceState({}, "", "/?level=4");
+  render(<App />);
+  expect(fetchMock.mock.calls.some(([url]) => url === "api/reset")).toBe(false);
+});

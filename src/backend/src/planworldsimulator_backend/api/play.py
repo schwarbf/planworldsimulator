@@ -3,16 +3,24 @@ from datetime import UTC, datetime
 
 import httpx
 from fastapi import APIRouter, HTTPException, Query, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from sqlalchemy import func, select
+from starlette.background import BackgroundTask
 
 from planworldsimulator_backend.db.models import World
 from planworldsimulator_backend.launcher import ProcessLauncher, WorldUnavailable
 
 router = APIRouter(prefix="/play", tags=["play"])
 
-FORWARDED_REQUEST_HEADERS = ("content-type", "accept", "accept-language")
-FORWARDED_RESPONSE_HEADERS = ("content-type", "cache-control")
+FORWARDED_REQUEST_HEADERS = (
+    "content-type",
+    "accept",
+    "accept-language",
+    "mcp-session-id",
+    "mcp-protocol-version",
+    "last-event-id",
+)
+FORWARDED_RESPONSE_HEADERS = ("content-type", "cache-control", "mcp-session-id")
 
 
 def _placeholder(world: World, level: int | None) -> HTMLResponse:
@@ -68,7 +76,7 @@ async def _ensure_running(request: Request, world_id: str, first_hit: bool) -> W
         return world
 
 
-@router.api_route("/{world_id}/{path:path}", methods=["GET", "HEAD", "POST"])
+@router.api_route("/{world_id}/{path:path}", methods=["GET", "HEAD", "POST", "DELETE"])
 async def play(
     world_id: str,
     path: str,
@@ -83,7 +91,7 @@ async def play(
 
     target = f"http://127.0.0.1:{world.port}/{path}"
     try:
-        upstream = await request.app.state.http.request(
+        outgoing = request.app.state.http.build_request(
             request.method,
             target,
             params=request.query_params,
@@ -94,6 +102,25 @@ async def play(
                 if k.lower() in FORWARDED_REQUEST_HEADERS
             },
         )
+        # Narration can call two providers sequentially; MCP SSE stays open.
+        outgoing.extensions["timeout"] = {
+            "connect": 10,
+            "read": None if path == "mcp" else 150,
+            "write": 30,
+            "pool": 30,
+        }
+        upstream = await request.app.state.http.send(outgoing, stream=path == "mcp")
+        if path == "mcp":
+            return StreamingResponse(
+                upstream.aiter_bytes(),
+                status_code=upstream.status_code,
+                headers={
+                    k: v
+                    for k, v in upstream.headers.items()
+                    if k.lower() in FORWARDED_RESPONSE_HEADERS
+                },
+                background=BackgroundTask(upstream.aclose),
+            )
     except httpx.HTTPError:
         launcher = request.app.state.launcher
         if isinstance(launcher, ProcessLauncher):

@@ -359,7 +359,7 @@ async def get_narration_audio(kind: str) -> FileResponse:
 # The browser never has to know a server-internal URL or the harness port.
 @app.api_route("/harness/{operation}", methods=["GET", "POST"])
 async def harness(operation: str, request: Request) -> Response:
-    methods = {"agents": "GET", "status": "GET", "run": "POST", "stop": "POST"}
+    methods = {"agents": "GET", "status": "GET", "run": "POST", "stop": "POST", "pace": "POST"}
     if methods.get(operation) != request.method:
         raise HTTPException(404, "Unknown harness operation")
     world_url = f"http://127.0.0.1:{os.environ.get('PORT', '8000')}"

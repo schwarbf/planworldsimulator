@@ -43,6 +43,8 @@ async def start_world(
         "127.0.0.1",
         "--port",
         str(port),
+        "--timeout-graceful-shutdown",
+        "2",
         "--log-level",
         "warning",
         cwd=world_dir,

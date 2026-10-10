@@ -128,3 +128,41 @@ def test_sliding_window_limiter() -> None:
     assert limiter.hit("a", now=2) == 9
     assert limiter.hit("b", now=2) is None  # separate key
     assert limiter.hit("a", now=10.5) is None  # first event left the window
+
+
+async def test_play_preserves_mcp_sessions_and_methods(client):
+    world_id = await ready_world(client)
+    seen = []
+
+    def upstream(request):
+        seen.append(request)
+        return httpx.Response(
+            200,
+            stream=httpx.ByteStream(b'{"jsonrpc":"2.0","id":1,"result":{}}'),
+            headers={
+                "mcp-session-id": "world-session",
+                "content-type": "application/json",
+            },
+        )
+
+    await app_of(client).state.http.aclose()
+    app_of(client).state.http = httpx.AsyncClient(
+        transport=httpx.MockTransport(upstream)
+    )
+    headers = {
+        "mcp-session-id": "world-session",
+        "mcp-protocol-version": "2025-03-26",
+        "accept": "application/json, text/event-stream",
+    }
+    response = await client.post(
+        f"/play/{world_id}/mcp", json={"id": 1}, headers=headers
+    )
+    assert response.status_code == 200
+    assert response.headers["mcp-session-id"] == "world-session"
+    assert response.json()["id"] == 1
+    assert seen[-1].headers["mcp-session-id"] == "world-session"
+    assert seen[-1].headers["mcp-protocol-version"] == "2025-03-26"
+    assert (
+        await client.delete(f"/play/{world_id}/mcp", headers=headers)
+    ).status_code == 200
+    assert seen[-1].method == "DELETE"

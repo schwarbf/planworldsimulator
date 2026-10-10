@@ -50,7 +50,7 @@ just web-local                         # the website on http://localhost:5173
 ```
 
 A world has three difficulty levels, must pass its tests, and is playable from the website.
-See [decision 0006](docs/design-decisions/0006-create-worlds-with-a-sandboxed-coding-agent.md).
+See [decision 0008](docs/design-decisions/0008-create-worlds-with-a-sandboxed-coding-agent.md).
 
 ## Develop
 

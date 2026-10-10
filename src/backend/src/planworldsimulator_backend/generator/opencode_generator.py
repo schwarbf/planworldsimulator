@@ -408,8 +408,9 @@ class OpenCodeGenerator:
                 try:
                     for rel in SAMPLES:
                         value = json.loads((world_dir / rel).read_text())
-                        # `queued` is the shared action queue, not part of the design.
-                        value.pop("queued", None)
+                        # Shared controls come from the base server, not the design.
+                        for field in ("queued", "score", "play"):
+                            value.pop(field, None)
                         spec.state.check(value)
                         if value["weeks"] != spec.weeks:
                             raise ValueError(

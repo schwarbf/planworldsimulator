@@ -177,7 +177,7 @@ class WorldSpec(StrictModel):
 
     @model_validator(mode="after")
     def consistent(self):
-        if set(self.state_fields) & set(BASE_STATE):
+        if set(self.state_fields) & (set(BASE_STATE) | {"queued", "score", "play"}):
             raise ValueError("state_fields must contain only additional world fields")
         self.state.check(self.state_sample)
         if self.state_sample["weeks"] != self.weeks:
