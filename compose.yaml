@@ -1,0 +1,41 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: src/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: .
+      dockerfile: src/backend/Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PLANBENCH_STEP_DELAY_SECONDS: ${PLANBENCH_STEP_DELAY_SECONDS:-1.0}
+    ports:
+      - "8000:8000"
+    volumes:
+      - data:/data
+      - ./src/worlds:/worlds
+      - ./src/worlds-template:/worlds-template:ro
+    # To use Postgres instead of SQLite, uncomment the db service below and set
+    # PLANBENCH_DATABASE_URL=postgresql+asyncpg://planbench:planbench@db/planbench
+    # (add asyncpg to src/backend/pyproject.toml).
+
+  # db:
+  #   image: postgres:17-alpine
+  #   environment:
+  #     POSTGRES_USER: planbench
+  #     POSTGRES_PASSWORD: planbench
+  #     POSTGRES_DB: planbench
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+
+volumes:
+  data:
+  # pgdata:

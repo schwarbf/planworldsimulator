@@ -1,0 +1,23 @@
+# Usage: docker compose -f compose.yaml -f compose.dev.yaml up --build   (just dev)
+services:
+  api:
+    volumes:
+      - ./src/backend/src:/app/src/backend/src
+    command: >
+      uvicorn planbench_backend.main:create_app --factory --reload
+      --reload-dir /app/src/backend/src --host 0.0.0.0 --port 8000
+
+  web:
+    image: node:24-slim
+    build: !reset null
+    working_dir: /app
+    environment:
+      API_PROXY_TARGET: http://api:8000
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @planbench/web dev"
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      # Keep Linux node_modules inside the container, apart from the host's.
+      - /app/node_modules
+      - /app/src/web/node_modules
