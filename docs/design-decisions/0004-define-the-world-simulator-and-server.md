@@ -13,7 +13,7 @@ things in the same world.
 
 ### Simulator (`sim/env.py`)
 
-- Gymnasium env; one `step` = one day.
+- Gymnasium env; one `step` = one week.
 - **Difficulty** (constructor) fixes the structure: number of buildings, kinds
   of instances (e.g. competitors, weather) and available actions.
 - **Seed** (`reset`) only changes values: positions, lead times, demand,
@@ -22,19 +22,19 @@ things in the same world.
 
 ### Server (`server/`)
 
-One process (port 8000) with one shared `Game` (env, today's queued actions,
+One process (port 8000) with one shared `Game` (env, this week's queued actions,
 event log). REST for the UI and MCP for the agent both call the same `Game`
 methods.
 
 ```
 Agent (Gemini) ──▶ /mcp  tools ─┐
-                                ├──▶ Game: env, today's actions, event log
+                                ├──▶ Game: env, this week's actions, event log
 UI (browser)   ──▶ /api  REST ──┘
 ```
 
 | | UI (REST) | Agent (MCP) |
 |---|---|---|
-| Read | `GET /api/state`: whole visible state at once | `brief()`, `observe()`, `observe(site)`, `score()` |
+| Read | `GET /api/state`: whole visible state at once | `brief()`, `observe()`, `observe_site(site)`, `score()` |
 | Act | `POST /api/action`, `POST /api/advance`, `POST /api/reset` | `order()`, `expand()`, `probe()`, `advance()` |
 | Extra | `WS /api/events`: every MCP call, for the agent panel | `note(text)`: records a hypothesis |
 
@@ -47,7 +47,7 @@ UI (browser)   ──▶ /api  REST ──┘
 ### Example (Bike Factory, Medium)
 
 MCP tools: `brief`, `observe`, `order(site, qty)`, `expand(site)`,
-`probe(site)`, `note(text)`, `advance(days=1)`, `score`.
+`probe(site)`, `note(text)`, `advance(weeks=1)`, `score`.
 
 Agent:
 
