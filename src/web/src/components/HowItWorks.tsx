@@ -44,7 +44,7 @@ export function HowItWorks() {
       <figure className="mt-12">
         <img
           src="/showcase/fission-ops.png"
-          alt="Fission Ops control room, a generated PlanBench world"
+          alt="Fission Ops control room, a generated PlanWorldSimulator world"
           className="w-full rounded-xl border border-line shadow-card"
           loading="lazy"
         />

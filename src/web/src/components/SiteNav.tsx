@@ -17,8 +17,8 @@ export function SiteNav() {
         aria-label="Main"
         className="flex h-16 items-center gap-8 px-5 sm:px-8 lg:px-12"
       >
-        <Link to="/" aria-label="PlanBench home">
-          <Logo />
+        <Link to="/" aria-label="PlanWorldSimulator home">
+          <Logo compact />
         </Link>
         <ul className="ml-auto hidden items-center gap-7 text-sm md:flex">
           {LINKS.map((link) => (
@@ -33,7 +33,7 @@ export function SiteNav() {
           href={GITHUB_URL}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="PlanBench on GitHub"
+          aria-label="PlanWorldSimulator on GitHub"
           className="ml-auto flex items-center gap-2 rounded-md border border-line px-3 py-1.5 text-sm hover:border-ink md:ml-0"
         >
           <GithubIcon className="size-4" />

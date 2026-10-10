@@ -22,12 +22,12 @@ lint:
 [group('checks')]
 typecheck:
     pixi run pyright
-    pnpm --filter @planbench/web run typecheck
+    pnpm --filter @planworldsimulator/web run typecheck
 
 [group('checks')]
 test:
     pixi run pytest src/backend
-    pnpm --filter @planbench/web run test
+    pnpm --filter @planworldsimulator/web run test
 
 [group('development')]
 build:                      # build the web and api images
@@ -36,7 +36,7 @@ build:                      # build the web and api images
 [group('development')]
 up: build                   # start the stack in the background and wait until it is healthy
     {{compose}} up --detach --wait
-    @echo "PlanBench: http://localhost:8080  (API: http://localhost:8000/docs)"
+    @echo "PlanWorldSimulator: http://localhost:8080  (API: http://localhost:8000/docs)"
 
 [group('development')]
 down:                       # stop the stack (data and generated worlds are kept)

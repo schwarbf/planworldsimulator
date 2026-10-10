@@ -14,7 +14,9 @@ test("nav and footer link to the public GitHub repository", () => {
     </MemoryRouter>,
   );
 
-  const nav = screen.getByRole("link", { name: /planbench on github/i });
+  const nav = screen.getByRole("link", {
+    name: /planworldsimulator on github/i,
+  });
   expect(nav).toHaveAttribute("href", REPO);
   expect(nav).toHaveAttribute("rel", expect.stringContaining("noopener"));
   expect(

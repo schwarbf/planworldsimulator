@@ -1,7 +1,7 @@
 import asyncio
 
 from alembic import context
-from planbench_backend.db.models import Base
+from planworldsimulator_backend.db.models import Base
 from sqlalchemy.ext.asyncio import create_async_engine
 
 config = context.config

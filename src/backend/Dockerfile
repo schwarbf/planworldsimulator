@@ -4,9 +4,9 @@ WORKDIR /app
 COPY src/backend /app/src/backend
 RUN pip install --no-cache-dir /app/src/backend
 
-ENV PLANBENCH_DATABASE_URL=sqlite+aiosqlite:////data/planbench.db \
-    PLANBENCH_WORLDS_DIR=/worlds \
-    PLANBENCH_TEMPLATE_DIR=/worlds-template
+ENV PLANWORLDSIMULATOR_DATABASE_URL=sqlite+aiosqlite:////data/planworldsimulator.db \
+    PLANWORLDSIMULATOR_WORLDS_DIR=/worlds \
+    PLANWORLDSIMULATOR_TEMPLATE_DIR=/worlds-template
 
 EXPOSE 8000
-CMD ["planbench-backend"]
+CMD ["planworldsimulator-backend"]

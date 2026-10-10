@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from planbench_backend.generator import LEVELS
+from planworldsimulator_backend.generator import LEVELS
 
 
 class WorldCreate(BaseModel):

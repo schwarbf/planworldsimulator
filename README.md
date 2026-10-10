@@ -1,4 +1,4 @@
-# PlanBench world generator
+# PlanWorldSimulator world generator
 
 Describe a planning benchmark in plain language and generate a playable world from it.
 See [docs/design-decisions](docs/design-decisions) for the architecture.

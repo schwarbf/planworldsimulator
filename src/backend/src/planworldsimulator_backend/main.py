@@ -5,16 +5,16 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 
-from planbench_backend.api.worlds import router as worlds_router
-from planbench_backend.config import Settings
-from planbench_backend.db.session import (
+from planworldsimulator_backend.api.worlds import router as worlds_router
+from planworldsimulator_backend.config import Settings
+from planworldsimulator_backend.db.session import (
     make_engine,
     make_session_factory,
     run_migrations,
 )
-from planbench_backend.generator import FakeGenerator
-from planbench_backend.launcher import FakeLauncher
-from planbench_backend.runner import GenerationRunner
+from planworldsimulator_backend.generator import FakeGenerator
+from planworldsimulator_backend.launcher import FakeLauncher
+from planworldsimulator_backend.runner import GenerationRunner
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -38,7 +38,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await app.state.runner.wait_idle()
         await engine.dispose()
 
-    app = FastAPI(title="PlanBench", lifespan=lifespan)
+    app = FastAPI(title="PlanWorldSimulator", lifespan=lifespan)
 
     @app.get("/healthz")
     async def healthz() -> dict[str, str]:
@@ -51,7 +51,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 def cli() -> None:
     settings = Settings()
     uvicorn.run(
-        "planbench_backend.main:create_app",
+        "planworldsimulator_backend.main:create_app",
         factory=True,
         host=settings.host,
         port=settings.port,

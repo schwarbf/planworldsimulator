@@ -36,7 +36,7 @@ export function SiteFooter() {
         </ul>
       </div>
       <p className="border-t border-line px-5 py-4 font-mono text-xs text-muted sm:px-8 lg:px-12">
-        © 2026 PlanBench
+        © 2026 PlanWorldSimulator
       </p>
     </footer>
   );

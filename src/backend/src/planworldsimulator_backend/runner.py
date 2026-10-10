@@ -3,8 +3,8 @@ import logging
 
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from planbench_backend.db.models import World, WorldEvent
-from planbench_backend.generator import GenerationRequest, Generator
+from planworldsimulator_backend.db.models import World, WorldEvent
+from planworldsimulator_backend.generator import GenerationRequest, Generator
 
 log = logging.getLogger(__name__)
 

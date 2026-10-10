@@ -37,12 +37,23 @@ export function LogoMark({ className, base = "var(--color-ink)" }: MarkProps) {
   );
 }
 
-export function Logo({ className }: { className?: string }) {
+interface LogoProps {
+  className?: string;
+  /** Show only the mark on phones; the name stays available to screen readers. */
+  compact?: boolean;
+}
+
+export function Logo({ className, compact }: LogoProps) {
   return (
     <span className={cx("inline-flex items-center gap-2.5", className)}>
-      <LogoMark className="size-7" />
-      <span className="font-display text-[26px] leading-none tracking-tight">
-        PlanBench
+      <LogoMark className="size-7 shrink-0" />
+      <span
+        className={cx(
+          "font-display text-[26px] leading-none tracking-tight",
+          compact && "max-sm:sr-only",
+        )}
+      >
+        PlanWorldSimulator
       </span>
     </span>
   );

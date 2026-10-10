@@ -1,6 +1,6 @@
 [workspace]
 channels = ["conda-forge"]
-name = "planbench"
+name = "planworldsimulator"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"
 
@@ -12,6 +12,6 @@ pytest = ">=9.0,<10"
 just = ">=1.51,<2"
 
 [pypi-dependencies]
-planbench-backend = { path = "src/backend", editable = true }
+planworldsimulator-backend = { path = "src/backend", editable = true }
 pytest-asyncio = ">=1,<2"
 asgi-lifespan = ">=2,<3"

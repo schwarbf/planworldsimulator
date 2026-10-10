@@ -4,7 +4,7 @@ services:
     volumes:
       - ./src/backend/src:/app/src/backend/src
     command: >
-      uvicorn planbench_backend.main:create_app --factory --reload
+      uvicorn planworldsimulator_backend.main:create_app --factory --reload
       --reload-dir /app/src/backend/src --host 0.0.0.0 --port 8000
 
   web:
@@ -13,7 +13,7 @@ services:
     working_dir: /app
     environment:
       API_PROXY_TARGET: http://api:8000
-    command: sh -c "corepack enable && pnpm install && pnpm --filter @planbench/web dev"
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @planworldsimulator/web dev"
     ports:
       - "5173:5173"
     volumes:

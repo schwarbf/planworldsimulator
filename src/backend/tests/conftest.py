@@ -4,8 +4,8 @@ from pathlib import Path
 import httpx
 import pytest
 from asgi_lifespan import LifespanManager
-from planbench_backend.config import Settings
-from planbench_backend.main import create_app
+from planworldsimulator_backend.config import Settings
+from planworldsimulator_backend.main import create_app
 
 
 @pytest.fixture

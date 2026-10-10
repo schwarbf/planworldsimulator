@@ -219,7 +219,7 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# PlanBench
+# PlanWorldSimulator
 src/worlds/*
 !src/worlds/.gitkeep
 data/

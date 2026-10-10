@@ -7,9 +7,9 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 
-from planbench_backend.db.models import World, WorldEvent
-from planbench_backend.generator import GenerationRequest
-from planbench_backend.schemas import EventOut, WorldCreate, WorldOut
+from planworldsimulator_backend.db.models import World, WorldEvent
+from planworldsimulator_backend.generator import GenerationRequest
+from planworldsimulator_backend.schemas import EventOut, WorldCreate, WorldOut
 
 router = APIRouter(prefix="/worlds", tags=["worlds"])
 
