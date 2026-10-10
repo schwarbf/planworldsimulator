@@ -1,6 +1,6 @@
 // Page layout around the world view. Same in every world; do not edit per world.
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { sendAction, unqueue, useWorldState } from "./api";
+import { resetToLevel, sendAction, unqueue, useWorldState } from "./api";
 import { agentLook, stopAgent, useAgents, type Play } from "./harness";
 import { AgentBanner, FrozenLock } from "./shared/controls/AgentBanner";
 import { AgentCursor } from "./shared/controls/AgentCursor";
@@ -63,6 +63,16 @@ export default function App() {
   const { agents, offline } = useAgents();
   const look = agentLook(agents, play.agent);
 
+  // `?level=N` (from the website's Play links) starts the world at that difficulty.
+  useEffect(() => {
+    const level = Number(new URLSearchParams(window.location.search).get("level"));
+    if (Number.isInteger(level) && level >= 1 && level <= 3) {
+      void resetToLevel(level).then((sent) => {
+        if (!sent.ok) setError(sent.error ?? "Could not select difficulty");
+        return refresh();
+      });
+    }
+  }, [refresh]);
   useEffect(() => setPending(null), [model.dock.active]);
   useEffect(() => {
     if (!error) return;

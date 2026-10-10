@@ -2,9 +2,6 @@
 // Same in every world; do not edit per world. See decision 0007.
 import { useEffect, useState } from "react";
 
-/** The world server as the harness reaches it (set by vite.config.ts). */
-declare const __WORLD_URL__: string;
-const WORLD_URL = typeof __WORLD_URL__ === "string" ? __WORLD_URL__ : "http://127.0.0.1:8000";
 const OFFLINE_RETRY_MS = 10000;
 
 /** One agent from agents.toml. */
@@ -33,7 +30,7 @@ export function useAgents(): { agents: AgentInfo[]; offline: boolean } {
     let timer: ReturnType<typeof setTimeout>;
     const load = async () => {
       try {
-        const res = await fetch("/harness/agents");
+        const res = await fetch("harness/agents");
         if (!res.ok) throw new Error(String(res.status));
         const list = (await res.json()) as AgentInfo[];
         if (alive) { setAgents(list); setOffline(false); }
@@ -60,25 +57,25 @@ async function post(path: string, body: unknown): Promise<{ ok: boolean; error?:
 
 /** Let `agent` play from the current week (no reset, fresh budget). */
 export function startAgent(agent: string) {
-  return post("/harness/run", { world_url: WORLD_URL, agent });
+  return post("harness/run", { agent });
 }
 
 /** Stop the agent and take over by hand. Without a harness, unlock the world directly. */
 export async function stopAgent() {
-  const sent = await post("/harness/stop", { world_url: WORLD_URL });
+  const sent = await post("harness/stop", {});
   if (sent.ok) return sent;
-  return post("/api/action", { id: "mode", args: { mode: "you" } });
+  return post("api/action", { id: "mode", args: { mode: "you" } });
 }
 
 /** Seconds the agent waits before each tool call; changes a running agent at once. */
 export function setPace(seconds: number) {
-  return post("/harness/pace", { world_url: WORLD_URL, seconds });
+  return post("harness/pace", { seconds });
 }
 
 /** Current pace for this world, or null without a harness. */
 export async function getPace(): Promise<number | null> {
   try {
-    const res = await fetch(`/harness/status?world_url=${encodeURIComponent(WORLD_URL)}`);
+    const res = await fetch("harness/status");
     return res.ok ? ((await res.json()) as { pace: number }).pace : null;
   } catch {
     return null;
@@ -88,7 +85,7 @@ export async function getPace(): Promise<number | null> {
 /** How the last agent run on this world ended, or null. */
 export async function lastRun(): Promise<LastRun | null> {
   try {
-    const res = await fetch(`/harness/status?world_url=${encodeURIComponent(WORLD_URL)}`);
+    const res = await fetch("harness/status");
     return res.ok ? ((await res.json()) as { last: LastRun | null }).last : null;
   } catch {
     return null;

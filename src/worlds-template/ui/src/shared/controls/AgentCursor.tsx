@@ -11,6 +11,8 @@ const MIN_MOVE_MS = 180;
 const PULSE_MS = 260;
 const READ_MS = 900;
 const RECONNECT_MS = 2000;
+const POLL_MS = 800; // without a WebSocket (e.g. behind a plain HTTP proxy such as /play/<id>/)
+const WS_SILENT_MS = 3000; // a working socket sends recent history at once
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -32,6 +34,7 @@ export function RobotBadge({ color, size = 22 }: { color: string; size?: number 
 const NOTE_CHARS = 70;
 const NOTE_GAP_MS = 6000; // pause after a spoken note ends; only the newest note is read, however often the agent writes
 const NOTE_TICK_MS = 1000;
+const NOTE_WATCH_MS = 150; // how fast a playing note yields to the narrator
 const clip = (text: string, n: number) => (text.length > n ? `${text.slice(0, n - 1)}…` : text);
 
 /** Visible name of a target: its `data-label` (dock verb or map object), else the raw id. */
@@ -113,12 +116,20 @@ function useNoteVoice(enabled: boolean, active: boolean) {
         body: JSON.stringify({ kind: "note", text }),
       });
       const n = res.ok ? ((await res.json()) as { audio_url: string | null }) : null;
-      if (n?.audio_url && on.current && !voice.muted) {
+      if (n?.audio_url && on.current && !voice.muted && !voice.narratorSpeaking) {
         const clip = new Audio(new URL(n.audio_url.replace(/^\//, ""), window.location.href).href);
         setSpeaking(true);
         await new Promise<void>((done) => {
-          clip.addEventListener("ended", () => done());
-          clip.play().catch(() => done());
+          // The narrator (intro or progress update) always wins: stop the agent at once.
+          const watch = setInterval(() => {
+            if (voice.narratorSpeaking || voice.muted || !on.current) {
+              clip.pause();
+              finish();
+            }
+          }, NOTE_WATCH_MS);
+          const finish = () => { clearInterval(watch); done(); };
+          clip.addEventListener("ended", finish);
+          clip.play().catch(finish);
         });
       }
     } catch {
@@ -220,7 +231,10 @@ export function AgentCursor({ look, active, onTarget, voiceNotes = false }: {
       const url = new URL("api/events", window.location.href);
       url.protocol = `${proto}:`;
       ws = new WebSocket(url);
+      // A proxy that cannot upgrade leaves the socket hanging: fall back to polling.
+      const silent = setTimeout(() => ws?.close(), WS_SILENT_MS);
       ws.onmessage = (msg) => {
+        clearTimeout(silent);
         const e = JSON.parse(String(msg.data)) as WorldEvent;
         if (e.seq <= lastSeq) return; // history sent on connect
         lastSeq = e.seq;
@@ -244,7 +258,7 @@ export function AgentCursor({ look, active, onTarget, voiceNotes = false }: {
           void drain();
         }
       } catch { /* Retry while the world server is unavailable. */ }
-      if (alive) timer = setTimeout(poll, RECONNECT_MS);
+      if (alive) timer = setTimeout(poll, POLL_MS);
     };
 
     const start = async () => {

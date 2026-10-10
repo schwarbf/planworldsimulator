@@ -12,27 +12,43 @@ default:
 [group('setup')]
 install:
     pixi install
-    pnpm install
+    pixi run pnpm install
 
 [group('checks')]
 format:
     pixi run ruff format .
-    pnpm run format
+    pixi run pnpm run format
 
 [group('checks')]
 lint:
     pixi run ruff check .
-    pnpm run lint
+    pixi run pnpm run lint
 
 [group('checks')]
 typecheck:
     pixi run pyright
-    pnpm --filter @planworldsimulator/web run typecheck
+    pixi run pnpm --filter @planworldsimulator/web run typecheck
 
 [group('checks')]
 test:
     pixi run pytest src/backend
-    pnpm --filter @planworldsimulator/web run test
+    pixi run pnpm --filter @planworldsimulator/web run test
+
+[group('development')]
+start:                      # everything on this machine: website, API (generator + launcher), agent service
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # Keys from .env, the environment, or files: GEMINI_API_KEY_FILE=~/keys/gemini.txt
+    for name in GEMINI_API_KEY GRADIUM_API_KEY; do
+        file_var="${name}_FILE"
+        if [ -z "${!name:-}" ] && [ -n "${!file_var:-}" ]; then
+            export "$name=$(tr -d '[:space:]' < "${!file_var/#\~/$HOME}")"
+        fi
+    done
+    [ -n "${GEMINI_API_KEY:-}" ] || echo "No GEMINI_API_KEY: agents and real world generation are off." >&2
+    [ -n "${GRADIUM_API_KEY:-}" ] || echo "No GRADIUM_API_KEY: the narrator shows text only." >&2
+    echo "PlanWorldSimulator: http://localhost:5173  (API :{{api_port}}, agents :8090)"
+    exec pixi run process-compose -f process-compose.yaml up --no-server
 
 [group('development')]
 build:                      # build the web and api images
@@ -69,7 +85,7 @@ api-local:                  # run the API on this machine with the real generato
 
 [group('generator')]
 web-local:                  # the website with live reload, talking to `just api-local`
-    API_PROXY_TARGET=http://localhost:{{api_port}} pnpm --filter @planworldsimulator/web run dev
+    API_PROXY_TARGET=http://localhost:{{api_port}} pixi run pnpm --filter @planworldsimulator/web run dev
 
 [group('development')]
 logs *services:             # follow logs, optionally for named services (e.g. `just logs api`)

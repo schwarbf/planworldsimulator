@@ -1,0 +1,33 @@
+version: "0.5"
+# `just start`: the whole app on this machine, out of the box.
+#   web      the website (Vite, live reload)                      :5173
+#   api      backend: world generator, launcher, /play/<id>/      :8400
+#   harness  agent service: agents play worlds from the world UI  :8090
+# Worlds are started on demand by the launcher (each on a free port) and inherit
+# the keys (GEMINI_API_KEY, GRADIUM_API_KEY) for narrator, voice and agents.
+disable_env_expansion: true
+processes:
+  featured-ui:
+    # The launcher serves each world's built UI (ui/dist); generated worlds build their
+    # own, the featured world is built here.
+    command: cd src/worlds/bike-factory/ui && (test -d node_modules || npm ci) && npx vite build --logLevel warn
+    availability: { restart: "no" }
+  api:
+    command: >-
+      mkdir -p data &&
+      PLANWORLDSIMULATOR_GENERATOR=${PLANWORLDSIMULATOR_GENERATOR:-auto}
+      PLANWORLDSIMULATOR_LAUNCHER=process
+      PLANWORLDSIMULATOR_DATABASE_URL=sqlite+aiosqlite:///./data/local.db
+      PLANWORLDSIMULATOR_HOST=127.0.0.1
+      PLANWORLDSIMULATOR_PORT=${PLANWORLDSIMULATOR_API_PORT:-8400}
+      planworldsimulator-backend
+    readiness_probe:
+      exec: { command: "curl -fs http://127.0.0.1:${PLANWORLDSIMULATOR_API_PORT:-8400}/healthz > /dev/null" }
+    depends_on:
+      featured-ui: { condition: process_completed_successfully }
+  web:
+    command: API_PROXY_TARGET=http://localhost:${PLANWORLDSIMULATOR_API_PORT:-8400} pnpm --filter @planworldsimulator/web run dev
+    depends_on:
+      api: { condition: process_healthy }
+  harness:
+    command: harness serve --port ${HARNESS_PORT:-8090}

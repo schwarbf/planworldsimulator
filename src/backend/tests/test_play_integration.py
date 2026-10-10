@@ -108,8 +108,8 @@ uvicorn.run(
             )
             assert commentary.is_success and commentary.json()["text"]
             # A cached WAV proves audio is reachable beneath the same prefix.
-            cache = folder / ".narration"
-            cache.mkdir(exist_ok=True)
+            cache = folder / ".narration" / "v2"  # narration.CACHE_DIR in the world
+            cache.mkdir(parents=True, exist_ok=True)
             (cache / "intro.wav").write_bytes(b"RIFFfake")
             narrated = (
                 await client.post(base + "api/narration", json={"kind": "intro"})

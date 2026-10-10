@@ -7,6 +7,9 @@ Same in every world; do not edit per world. World-specific parts come from
 from __future__ import annotations
 
 import asyncio
+import os
+
+import httpx
 import secrets
 import threading
 import time
@@ -14,12 +17,13 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, HTTPException, Request, Response, WebSocket, WebSocketDisconnect
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 from server import narration
 from server.mcp import build_mcp
-from sim.helpers import to_jsonable, world
+from sim.helpers import difficulty_for_level, to_jsonable, world
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_EVENTS = 500
@@ -263,6 +267,11 @@ def _bad_request(fn, *args):
         raise HTTPException(status_code=400, detail=str(e)) from e
 
 
+@app.get("/healthz")
+async def healthz() -> dict[str, bool]:
+    return {"ok": True}
+
+
 @app.get("/api/state")
 async def get_state() -> dict[str, Any]:
     return game.state()
@@ -302,7 +311,10 @@ async def post_advance(body: dict[str, Any] | None = Body(None)) -> dict[str, An
 async def post_reset(body: dict[str, Any] | None = Body(None)) -> dict[str, Any]:
     _player_only()
     body = body or {}
-    return _bad_request(game.reset, body.get("seed"), body.get("difficulty"), "ui")
+    difficulty = body.get("difficulty")
+    if difficulty is None and body.get("level") is not None:
+        difficulty = _bad_request(difficulty_for_level, body["level"])
+    return _bad_request(game.reset, body.get("seed"), difficulty, "ui")
 
 
 @app.get("/api/events")
@@ -346,4 +358,34 @@ async def get_narration_audio(kind: str) -> FileResponse:
     return FileResponse(path, media_type=narration.AUDIO_TYPE)
 
 
-app.mount("/", mcp_app)  # last, so /api routes win; MCP lives at /mcp
+# The world server supplies its own address: generated worlds use dynamic ports.
+# The browser never has to know a server-internal URL or the harness port.
+@app.api_route("/harness/{operation}", methods=["GET", "POST"])
+async def harness(operation: str, request: Request) -> Response:
+    methods = {"agents": "GET", "status": "GET", "run": "POST", "stop": "POST", "pace": "POST"}
+    if methods.get(operation) != request.method:
+        raise HTTPException(404, "Unknown harness operation")
+    world_url = f"http://127.0.0.1:{os.environ.get('PORT', '8000')}"
+    harness_url = os.environ.get("HARNESS_URL", f"http://127.0.0.1:{os.environ.get('HARNESS_PORT', '8090')}")
+    kwargs = {}
+    if request.method == "POST":
+        body = await request.json()
+        kwargs["json"] = {**body, "world_url": world_url}
+    elif operation == "status":
+        kwargs["params"] = {"world_url": world_url}
+    try:
+        async with httpx.AsyncClient(timeout=30) as http:
+            upstream = await http.request(request.method, f"{harness_url.rstrip('/')}/{operation}", **kwargs)
+    except httpx.HTTPError as exc:
+        raise HTTPException(503, "No connection to the agent harness") from exc
+    return Response(upstream.content, status_code=upstream.status_code,
+                    headers={"content-type": upstream.headers.get("content-type", "application/json")})
+
+
+# MCP lives at /mcp. Its routes are added directly (not mounted at "/") so the built UI
+# can be served from "/" after them.
+app.router.routes.extend(mcp_app.routes)
+
+# The built UI (`pixi run build-ui`); without it, `pixi run ui` serves the UI in dev.
+if (ROOT / "ui" / "dist").is_dir():
+    app.mount("/", StaticFiles(directory=ROOT / "ui" / "dist", html=True), name="ui")

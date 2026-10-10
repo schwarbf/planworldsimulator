@@ -48,7 +48,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
   // Load the intro once, then start it.
   useEffect(() => {
     let alive = true;
-    fetch("/api/narration", {
+    fetch("api/narration", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ kind: "intro" }),
@@ -69,7 +69,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
   useEffect(() => {
     if (!intro) return;
     if (intro.audio_url) {
-      const a = new Audio(intro.audio_url);
+      const a = new Audio(new URL(intro.audio_url.replace(/^\//, ""), window.location.href).href);
       a.preload = "auto";
       a.addEventListener("loadedmetadata", () => { if (Number.isFinite(a.duration)) setDuration(a.duration); });
       audio.current = a;
@@ -117,7 +117,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
     if (busy.current.asking || busy.current.intro) return;
     setAsking(true);
     try {
-      const res = await fetch("/api/narration", {
+      const res = await fetch("api/narration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ kind: "commentary" }),
@@ -154,7 +154,7 @@ export function Narrator({ collapse = false, onOpen, week }: {
     };
     let clip: HTMLAudioElement | null = null;
     if (comment.audio_url && !busy.current.muted) {
-      clip = new Audio(comment.audio_url);
+      clip = new Audio(new URL(comment.audio_url.replace(/^\//, ""), window.location.href).href);
       clip.addEventListener("ended", hide);
       setCommentSpeaking(true);
       clip.play().catch(hide);

@@ -48,6 +48,7 @@ function Terminal({ text }: { text: string }) {
     if (!el) return;
     const toBottom = () => { if (stick.current) el.scrollTop = el.scrollHeight; };
     toBottom();
+    if (typeof ResizeObserver === "undefined") return; // e.g. jsdom in tests
     const watch = new ResizeObserver(toBottom); // the panel gives it more or less room
     watch.observe(el);
     return () => watch.disconnect();
