@@ -1,0 +1,259 @@
+For this hackathon, I would like to score very very high up on the leaderboard for entire. How do I do that?
+
+
+
+<pasted_content id="686a">
+Entire at Agentic AI Hack Zürich 2026
+Entire team on site
+
+J
+Joseph Katsioloudes
+Developer Relations
+01
+What is Entire?
+Entire is the git forge for AI-native teams. The Entire CLI captures every AI coding agent session, so the reasoning behind the code stays with the git repo, right next to your code. Then, Continuous Memory (Entire Graph + Entire Brain) turns those sessions into living knowledge for your agents. Your repo learns from every attempt, every fix, every decision, and your agents get smarter because of it.
+
+Learn more from our docs 
+
+02
+Features you can build with
+Checkpoints
+Connect a Git commit to the agent sessions and decisions behind it.
+
+Agentic Search
+You or your agent can search semantically through previous commits, sessions, and decisions, or literal source text, across pushed, indexed repositories.
+
+Entire Graph
+Hands your agent a map of your codebase and can save up to 71% in token spend. Analyzes local code to find implementations, trace relationships, and investigate potential change impact.
+
+Entire Brain
+The memory layer that lives in your repo, not in one agent. Start a session in Claude Code, pick it up in Codex, and the context carries over.
+
+Agent integrations
+Capture work from supported coding agents, or add another through the Agent Integration Protocol.
+
+03
+Ideas to build
+01
+Hand off work between agents without losing context
+Start a feature in Claude Code and finish it in Codex. Use Brain to carry the decisions and rejected approaches across, and Graph to point both agents at the same code. Show the second agent picking up the work without being re-briefed.
+
+02
+Prove what Continuous Memory saves
+Run the same set of tasks with and without Graph and Brain. Compare tokens, time and correctness, using entire graph stats for the token savings, and publish the results with links to the sessions behind each run.
+
+03
+A debugger for agent mistakes
+Start with a failing test or bug, inspect the affected code with Graph, and trace relevant checkpoints to find where an incorrect assumption entered the implementation. Show the evidence behind the diagnosis.
+
+04
+A reviewer that checks intent
+Compare the original request with the committed change. Flag missed requirements, unexpected behavior, and claims that lack test evidence, with links to the relevant transcript and code.
+
+05
+A "before you build" assistant
+Search previous sessions for similar attempts and rejected approaches, then use Graph to locate reusable code. Produce a short briefing before the agent starts editing.
+
+06
+An architecture drift detector
+Compare Graph snapshots across commits to spot new dependencies or unexpected coupling. Attach checkpoint context explaining why each change was introduced.
+
+07
+An onboarding guide you can question
+Let a new teammate ask, "How does authentication work, and why was it designed this way?" Combine current code relationships with historical decisions and source links.
+
+08
+A regression test scout
+Use a checkpoint's changes and Graph relationships to suggest behaviors that need tests. Consult session context for edge cases the agent discussed but may not have covered.
+
+09
+A checkpoint-to-demo generator
+Turn a checkpoint into a concise walkthrough: the problem, key decisions, implementation, and recorded validation. Generate a shareable page with links back to the evidence.
+
+10
+An integration for your favorite unsupported agent
+Build an adapter that captures its sessions and connects them to commits. Ship it with lifecycle tests and a working checkpoint demo.
+
+Other
+Feel free to be creative and impress!
+
+04
+Connect your repository
+Sign in
+Everyone on the team signs in to Entire with Sign in with GitHub and authorizes the Entire GitHub App when prompted. You can do this at any time, before or after the next step.
+
+GitHub organization admin: import the repository
+A GitHub organization admin installs the Entire GitHub App on the organization by following the onboarding. Nothing repository-related appears for anyone in the team until this step is done.
+
+Sign-in order doesn't matter, but the repository and its sessions only show up after the admin has configured access.
+
+Once the admin has imported the repository, it appears for the whole team. No invites and no permission setup: access follows the GitHub collaborator list, so everyone keeps the same roles they have on GitHub.
+
+Changes can take up to an hour to sync. If the repository is missing from your list, ask your organization admin.
+Next: install the CLI and start your first checkpoint (following section).
+
+05
+Push your first agent session
+Install Entire, then enable it from your repository
+Shell
+
+Copy
+# macOS/Linux:
+curl -fsSL https://entire.io/install.sh | bash
+
+# Windows:
+irm https://entire.io/install.ps1 | iex
+
+cd your-repo
+entire enable
+Work as normal by starting a new agent session, ask your agent to make a focused change, and review the result.
+
+Commit the change
+Shell
+
+Copy
+git add path/to/changed-file
+git commit -m "Build my first feature with Entire"
+Choose yes if prompted to link the commit to session context.
+
+Inspect your checkpoint
+Shell
+
+Copy
+entire checkpoint list
+entire checkpoint explain HEAD
+A normal committed checkpoint needs both captured agent context and a Git commit. Full walkthrough 
+
+06
+Turn on Trails
+This is how Entire reimagines Code Review in the AI era. You'll see Trails in action during our demo. To use it in your own repository:
+
+Request access from an Entiron after you onboard on Entire
+Trails is behind a feature flag. Once you've signed up, fill in the Trails access form and someone from the Entire team will enable Trails for you.
+
+Enable Trails in your repository
+Open your repository in Entire, go to Settings → General, and turn on Runners, Auto build on push, and Trails. This requires admin permission on the repository.
+
+Each Trail is currently backed by a GitHub PR for CI.
+Add the default Runners
+Runners evaluate each Trail and publish findings. From the repository root, run:
+
+Shell
+
+Copy
+entire runner setup -y
+Then commit and push the generated .entire/ files.
+
+You or your agent: create a Trail and work normally
+Your coding agent already knows how to use Trails through the CLI, so just ask it to create one. Or run:
+
+Shell
+
+Copy
+entire trail create
+Commit and push to the Trail branch as usual. The Trail updates automatically, Runners evaluate each push, and your team can review and merge from the Trail.
+
+07
+Continuous Memory
+Optional
+Optional: only if you are building with Entire Graph/Brain.
+
+A
+Install and activate entire-graph
+You or your agents can install the entire-graph plugin. Activate it once per repository:
+
+Shell
+
+Copy
+entire plugin install graph
+entire graph init-agents --repo .
+The second command creates .entire/graph-agent.md with the agent instructions, and adds a short block to your AGENTS.md and CLAUDE.md telling your agents to use entire-graph.
+
+Commit those three files so it applies to your whole team, then start a fresh agent session. You'll know it worked when your agent's first move is entire-graph search instead of a grep.
+
+Start using entire-graph
+Restart the agent so it picks up the new instructions, then ask in plain language: Where is request routing implemented? The agent runs graph queries, reads the code the graph points to, and answers with citations.
+
+To see what it saved you, run:
+
+Shell
+
+Copy
+entire graph stats --repo .
+It reads your Claude Code session transcripts, counts how many times your agent used the graph instead of grepping and reading files, and estimates the tokens it saved. For how entire-graph works, installation, and troubleshooting, see the Graph docs .
+
+B
+Install entire-brain
+Make sure the Entire CLI and entire-graph are installed first (steps above).
+
+Without entire-graph, setup reports the semantic index as unavailable; sessions, docs and facts still work. Without the Entire CLI there are no sessions to read, and entire-brain falls back to code, docs and Git history.
+Shell
+
+Copy
+curl -fsSL https://raw.githubusercontent.com/entireio/entire-brain/main/scripts/get-brain.sh | bash
+The script downloads a prebuilt binary, checks it against the release checksums, and registers it with the CLI as the entire-brain plugin.
+
+Or build from source
+Activate your agent
+From your project repository, install the agent instructions:
+
+Shell
+
+Copy
+entire brain init-agents
+This embeds your existing sessions (if any) and creates or updates the agent instructions at .entire/agent-guide.md. Rerunning the command replaces this file. It also updates AGENTS.md and CLAUDE.md with references to the guide inside managed blocks; your text outside those blocks is preserved.
+
+Review the generated files and commit them together when the instructions should apply to your team. When entire-graph is installed, the guide tells agents to use entire-brain for prior decisions and entire-graph to locate and inspect code. Restart your agent or reload its repository instructions so it picks up the guide.
+
+Using an MCP client?
+Print this repository's configuration:
+
+Shell
+
+Copy
+entire brain mcp --print-config
+Then register it with an MCP-capable client. For example, in Claude Code:
+
+Shell
+
+Copy
+claude mcp add entire-brain -- entire brain mcp
+See the agent integration guide and coordination contract for more setup details.
+
+08
+Let your agent help
+Your coding agent can fix setup problems and look up the Entire docs for you, so you don't have to leave the terminal.
+
+Something not working? Ask your agent to run doctor
+If a session doesn't show up or checkpoints look wrong, ask your agent to run entire doctor. It checks the repository for stuck sessions, hook config drift and disconnected checkpoint branches, then reports each issue and how to fix it.
+
+Shell
+
+Copy
+entire doctor
+Add --force to fix every issue without prompting. What doctor checks 
+
+Give your agent the Entire docs
+The docs are served as an MCP server, so your agent can search them and answer questions about Entire while you build. For example, in Claude Code:
+
+Shell
+
+Copy
+claude mcp add --transport http entire-docs https://docs.entire.io/mcp
+Not using MCP? Point your agent at docs.entire.io/llms.txt, an index of every docs page in Markdown.
+</pasted_content id="686a">
+
+
+Can you come up with a plan please?
+
+---
+
+Can you create a design-doc please and specify what additional setup steps are needed?
+
+---
+
+Can you do the setup for me for claude-code, codex and cursor please?
+
+---
+
+/create-commits and continue please
