@@ -1,0 +1,12 @@
+version: "0.5"
+# Ports come from the environment (the launcher sets them); defaults 8000 / 5173.
+disable_env_expansion: true
+processes:
+  server:
+    command: uvicorn server.api:app --host 127.0.0.1 --port ${PORT:-8000}
+    readiness_probe:
+      exec: { command: "curl -fs http://127.0.0.1:${PORT:-8000}/api/state > /dev/null" }
+  ui:
+    command: cd ui && (test -d node_modules || npm install) && npx vite --port ${UI_PORT:-5173} --strictPort
+    depends_on:
+      server: { condition: process_healthy }

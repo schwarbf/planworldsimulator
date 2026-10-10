@@ -222,6 +222,7 @@ __marimo__/
 # PlanWorldSimulator
 src/worlds/*
 !src/worlds/.gitkeep
+!src/worlds/bike-factory/
 data/
 node_modules/
 src/web/dist/
