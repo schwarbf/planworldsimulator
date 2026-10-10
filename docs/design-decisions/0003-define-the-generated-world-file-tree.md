@@ -32,9 +32,11 @@ worlds/<slug>/
 │  ├─ api.ts              [base] Connection to the server: state, actions, agent events.
 │  └─ World.tsx           [gen]  How this world is drawn, plus its config (inspector fields, verbs, goal bars).
 └─ tests/
-   ├─ test_env.py         [base] Gymnasium `check_env` and determinism for every difficulty.
-   ├─ test_rules.py       [gen]  World-specific invariants.
-   └─ test_run.py         [base] Optional: one agent run end to end.
+   ├─ sim/test_env.py     [base] Gymnasium `check_env` and determinism for every difficulty.
+   ├─ sim/test_rules.py   [gen]  World-specific invariants.
+   ├─ server/test_mcp.py  [base] MCP tools match the unlocked actions; advance, observe and score work.
+   ├─ ui/App.test.tsx     [base] Vitest: renders `World.tsx` with mock state without crashing.
+   └─ e2e/test_run.py     [base] Optional: one agent run end to end.
 ```
 
 - **Difficulty** is set in the env constructor and defines the available actions.
