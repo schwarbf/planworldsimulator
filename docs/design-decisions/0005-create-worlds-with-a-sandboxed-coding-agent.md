@@ -366,7 +366,7 @@ What differs from the plan above, and what is still open.
   same design prompt (about 90 s against 14 s), which cannot fit 5 minutes. Switch with
   `PLANWORLDSIMULATOR_GENERATOR_MODEL`.
 - **Steps:** `check_exists`, `copy_template`, `design`, `sim` and `ui` (in parallel), `tests`,
-  `smoke`, `publish`. The copy comes before the design because the agent writes into the folder.
+  `polish`, `smoke`, `publish`. The copy comes before the design because the agent writes into the folder.
 - **Design is data:** the agent writes `design.json`, validated by `WorldSpec`
   (`generator/spec.py`); an invalid file gets up to two correction rounds. From it the pipeline
   writes `design.md` and `ui/src/WorldState.ts` (the typed state contract), which the agent may
@@ -385,12 +385,21 @@ What differs from the plan above, and what is still open.
 - **Names:** a name can be used once (`409` with `X-Existing-World`); duplicates end as `exists`.
 - **Local use:** `just world-setup`, `just generate`, `just api-local`, `just web-local`. The
   Docker image has no OpenCode or world environment, so the real generator runs on the host.
-- **Measured:** a lemonade-stand world was published in 134 s with all gates green. Harder
-  prompts needed more repair rounds and sometimes did not finish in 5 minutes; fixes for the
-  causes found (broken JSON, the `queued` field, an over-hard baseline gate) were not re-run
-  against real prompts.
-- **Not built:** the screenshot-critique `polish` step, thumbnails, Docker support for the real
-  generator, and a recorded success rate over several prompts.
+- **Look check (`polish`):** Playwright screenshots of all three levels go to the agent once; it
+  may rewrite `World.tsx`, and the change is kept only if type check, build and UI tests still
+  pass (otherwise the first view is restored). It is skipped when under 75 s remain or Chromium
+  is missing (`pixi run playwright install chromium`). The model often answers "already looks
+  good", so it has little effect so far.
+- **Thumbnails:** a level 1 screenshot is saved as `thumbnail.png` at publish, served by
+  `GET /worlds/<id>/thumbnail` and shown on the catalogue card (`has_thumbnail`).
+- **Measured end to end:** a lemonade world went through the API and the process launcher in
+  144 s: published, thumbnail served, played through `/play/<id>/?level=3` (the UI reset the
+  world to hard). This found and fixed a bug: relative interpreter and world paths broke the
+  launcher. Harder prompts (harbor, power grid, cold chain) failed in an earlier round; their
+  causes (broken JSON, the shared `queued` field, an over-hard baseline gate) were fixed but not
+  re-run, so there is no success rate yet.
+- **Not built:** Docker support for the real generator, and a recorded success rate over several
+  prompts.
 
 ## Consequences
 

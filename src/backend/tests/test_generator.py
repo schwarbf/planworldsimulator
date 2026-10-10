@@ -253,3 +253,18 @@ async def test_pipeline_asks_the_agent_to_correct_a_broken_design(
     events = [e async for e in generator.run(REQUEST)]
     assert any(e.message == "Correcting the design" for e in events)
     assert events[-1].step == "publish" and events[-1].state == "done"
+
+
+@needs_template_env
+async def test_process_launcher_works_with_relative_paths(
+    tmp_path: Path, monkeypatch
+) -> None:
+    """Settings default to relative paths; the world server must still start."""
+    monkeypatch.chdir(REPO)
+    python = worldproc.resolve_world_python(Path("src/worlds-template"), None)
+    launcher = ProcessLauncher(Path("src/worlds"), python)
+    port = await launcher.start("worlds-template", "src/worlds-template")
+    try:
+        assert port > 0
+    finally:
+        await launcher.stop("worlds-template")

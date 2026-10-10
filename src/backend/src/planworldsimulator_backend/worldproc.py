@@ -26,12 +26,13 @@ def resolve_world_python(template_dir: Path, configured: Path | None) -> Path:
             f"world interpreter not found at {python}; run "
             "`pixi install --manifest-path src/worlds-template/pixi.toml`"
         )
-    return python
+    return python.absolute()
 
 
 async def start_world(
     world_dir: Path, python: Path, port: int
 ) -> asyncio.subprocess.Process:
+    world_dir = world_dir.resolve()  # the server runs with this as its cwd
     env = {**os.environ, "PYTHONPATH": str(world_dir), "PORT": str(port)}
     return await asyncio.create_subprocess_exec(
         str(python),
