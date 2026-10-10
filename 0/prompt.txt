@@ -1,0 +1,50 @@
+For this repository, I would like to set up the following:
+
+04
+Connect your repository
+Sign in
+Everyone on the team signs in to Entire with Sign in with GitHub and authorizes the Entire GitHub App when prompted. You can do this at any time, before or after the next step.
+
+GitHub organization admin: import the repository
+A GitHub organization admin installs the Entire GitHub App on the organization by following the onboarding. Nothing repository-related appears for anyone in the team until this step is done.
+
+Sign-in order doesn't matter, but the repository and its sessions only show up after the admin has configured access.
+
+Once the admin has imported the repository, it appears for the whole team. No invites and no permission setup: access follows the GitHub collaborator list, so everyone keeps the same roles they have on GitHub.
+
+Changes can take up to an hour to sync. If the repository is missing from your list, ask your organization admin.
+Next: install the CLI and start your first checkpoint (following section).
+
+05
+Push your first agent session
+Install Entire, then enable it from your repository
+Shell
+
+Copy
+# macOS/Linux:
+curl -fsSL https://entire.io/install.sh | bash
+
+# Windows:
+irm https://entire.io/install.ps1 | iex
+
+cd your-repo
+entire enable
+Work as normal by starting a new agent session, ask your agent to make a focused change, and review the result.
+
+Commit the change
+Shell
+
+Copy
+git add path/to/changed-file
+git commit -m "Build my first feature with Entire"
+Choose yes if prompted to link the commit to session context.
+
+Inspect your checkpoint
+Shell
+
+Copy
+entire checkpoint list
+entire checkpoint explain HEAD
+A normal committed checkpoint needs both captured agent context and a Git commit. Full walkthrough 
+
+Can you make a plan to enable entire please?
