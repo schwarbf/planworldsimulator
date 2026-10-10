@@ -64,6 +64,7 @@ generate name prompt:       # generate one world with the real agent (needs GEMI
 
 [group('generator')]
 api-local:                  # run the API on this machine with the real generator and launcher
+    mkdir -p data
     PLANWORLDSIMULATOR_GENERATOR=opencode PLANWORLDSIMULATOR_DATABASE_URL=sqlite+aiosqlite:///./data/local.db PLANWORLDSIMULATOR_PORT={{api_port}} pixi run planworldsimulator-backend
 
 [group('generator')]
