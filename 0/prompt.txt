@@ -1,0 +1,41 @@
+# AGENTS.md instructions for /Users/florianschwarb/code/personal/planworldsimulator
+
+<INSTRUCTIONS>
+Use the `quaerum` MCP server to search indexed code when code context is needed beyond the current working tree. Call `list_indexed_repositories` if the repository is unknown; use `search_code` with `repository` when known. Prefer direct file search for uncommitted changes and exact literal matches.
+
+--- project-doc ---
+
+
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
+
+</INSTRUCTIONS>
+
+---
+
+<environment_context>
+  <cwd>/Users/florianschwarb/code/personal/planworldsimulator</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-10-10</current_date>
+  <timezone>Europe/Zurich</timezone>
+  <filesystem><workspace_roots><root>/Users/florianschwarb/code/personal/planworldsimulator</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/florianschwarb/code/personal/planworldsimulator</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.git</path></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.agents</path></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.codex</path></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.aws</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
+
+---
+
+Can you work on the branch from ~/code/personal/planworldsimulator-worldgen feat/world-creation-agent?
+
+---
+
+Can you checkout main and check what you have to do in order to rebase this new worktree onto main?
+
+---
+
+Can you make a plan to rebase such that nothing of both functionalities break?
+
+---
+
+you can implement it now
