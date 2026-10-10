@@ -1,0 +1,13 @@
+# AGENTS.md instructions
+
+<INSTRUCTIONS>
+Use the `quaerum` MCP server to search indexed code when code context is needed beyond the current working tree. Call `list_indexed_repositories` if the repository is unknown; use `search_code` with `repository` when known. Prefer direct file search for uncommitted changes and exact literal matches.
+</INSTRUCTIONS>
+
+<environment_context>
+  <cwd>/Users/florianschwarb/code/personal/planworldsimulator</cwd>
+  <shell>zsh</shell>
+  <current_date>2026-10-10</current_date>
+  <timezone>Europe/Zurich</timezone>
+  <filesystem><workspace_roots><root>/Users/florianschwarb/code/personal/planworldsimulator</root></workspace_roots><permission_profile type="managed"><file_system type="restricted"><entry access="read"><special>:root</special></entry><entry access="write"><path>/Users/florianschwarb/code/personal/planworldsimulator</path></entry><entry access="write"><special>:slash_tmp</special></entry><entry access="write"><special>:tmpdir</special></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.git</path></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.agents</path></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.codex</path></entry><entry access="read"><path>/Users/florianschwarb/code/personal/planworldsimulator/.aws</path></entry></file_system></permission_profile></filesystem>
+</environment_context>
