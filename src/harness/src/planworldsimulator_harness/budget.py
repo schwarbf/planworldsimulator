@@ -14,7 +14,7 @@ class Budget:
     """One cap for the whole episode. Tokens include tool calls and thinking."""
 
     tokens: int = 2_000_000
-    seconds: float = 600
+    seconds: float = 1800  # loose safety cap; tokens are the main budget
 
     def usage_limits(self) -> UsageLimits:
         return UsageLimits(

@@ -65,7 +65,8 @@ Suites reference agents by name.
 
 ### Budget
 
-- One hard cap for the whole episode: tokens and seconds.
+- Tokens are the main cap for the whole episode.
+- Time (30 min) is only a loose safety cap: wall-clock depends on API latency, so it is not fair as a budget.
 - Tool calls and thinking count through their tokens; no separate tool-call cap.
 - A hidden safety limit (2,000 tool calls) only catches loops.
 - Thinking level is pinned per agent (`thinking` setting).
@@ -111,7 +112,7 @@ Suites reference agents by name.
 4. Later: agent picker in the web UI.
 
 Models: `gemini-3.8-flash`, `gemini-3.1-pro-preview` (Gemini 2.5 is retired for
-new keys). Open: starting budget (proposal: 2M tokens, 10 min per episode).
+new keys). Budget: 2M tokens, 30 min safety cap per episode (smoke run: 1.1M tokens for 44 weeks).
 
 ## Supersedes
 
