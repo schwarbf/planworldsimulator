@@ -1,1 +1,9 @@
+<image name=[Image #1] path="/var/folders/47/3s03z0gd0t71ffrh0n1z0srw0000gn/T/codex-clipboard-jhZYkR.png">
+
+---
+
+</image>
+
+---
+
 can you make a PR to fix the following? [Image #1]
