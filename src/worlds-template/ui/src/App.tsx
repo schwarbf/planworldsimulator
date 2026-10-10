@@ -7,6 +7,7 @@ import { Brand } from "./shared/controls/Brand";
 import { Discoveries } from "./shared/controls/Discoveries";
 import { Goal } from "./shared/controls/Goal";
 import { Inspector } from "./shared/controls/Inspector";
+import { Narrator } from "./shared/controls/Narrator";
 import { Queue } from "./shared/controls/Queue";
 import { StoryToast } from "./shared/controls/StoryToast";
 import { TopBar } from "./shared/controls/TopBar";
@@ -88,6 +89,7 @@ export default function App() {
         <AgentPanel agent={model.agent} onAction={onAction} />
       </div>
       <div className="app__dock"><ActionDock dock={dock} onAction={onDock} /></div>
+      <div className="app__narrator"><Narrator /></div>
     </div>
   );
 }

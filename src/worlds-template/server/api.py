@@ -15,7 +15,9 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import FileResponse
 
+from server import narration
 from server.mcp import build_mcp
 from sim.helpers import to_jsonable, world
 
@@ -288,6 +290,23 @@ async def ws_events(ws: WebSocket) -> None:
         pass
     finally:
         game.unsubscribe(q)
+
+
+# ---------- narrator (decision 0006) ----------
+
+@app.post("/api/narration")
+async def post_narration(body: dict[str, Any] | None = Body(None)) -> dict[str, Any]:
+    """Narrator text, sentences and audio URL; first call per world runs Gemini + Gradium."""
+    kind = (body or {}).get("kind", "intro")
+    return await asyncio.to_thread(_bad_request, narration.narrate, kind)
+
+
+@app.get("/api/narration/{kind}/audio")
+async def get_narration_audio(kind: str) -> FileResponse:
+    path = narration.audio_path(kind)
+    if path is None:
+        raise HTTPException(status_code=404, detail="no narration audio")
+    return FileResponse(path, media_type=narration.AUDIO_TYPE)
 
 
 app.mount("/", mcp_app)  # last, so /api routes win; MCP lives at /mcp

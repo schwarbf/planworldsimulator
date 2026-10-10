@@ -21,6 +21,7 @@ pixi run test   # backend tests
 | `sim/rules.py` | [gen] dynamics and hidden rules |
 | `sim/helpers.py` | [base] observation → JSON, `register_world` |
 | `server/api.py` | [base] FastAPI app, generic `Game`, `/api` routes, `/mcp` mount |
+| `server/narration.py` | [base] voice narrator: Gemini intro text + Gradium TTS, cached in `.narration/` |
 | `server/mcp.py` | [gen] `build_mcp(game) -> FastMCP` with the world's tools |
 | `ui/src/World.tsx` | [gen] world view and controls config; the rest of `ui/` is [base] |
 | `tests/backend/test_rules.py` | [gen] world invariants; all other tests are [base] |
@@ -54,4 +55,6 @@ pixi run test   # backend tests
 | `POST /api/advance {steps?}` | apply queued actions and step |
 | `POST /api/reset {seed?, difficulty?}` | new episode |
 | `GET /api/events?after=` · `WS /api/events` | event log: MCP calls, UI actions, advances |
+| `POST /api/narration {kind}` | narrator (`kind: "intro"`): `{text, sentences, audio_url}`; Gemini rewrites `brief.md`, Gradium speaks it; cached in `.narration/`. Without `GEMINI_API_KEY` / `GRADIUM_API_KEY`: brief captions, `audio_url` null |
+| `GET /api/narration/{kind}/audio` | cached narrator audio (`audio/wav`) |
 | `/mcp` | MCP, streamable HTTP |
