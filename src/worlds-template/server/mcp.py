@@ -29,6 +29,11 @@ def build_mcp(game: Any) -> FastMCP:
         return game.observe(None, source="agent")
 
     @mcp.tool()
+    def cancel(index: int) -> dict[str, Any]:
+        """Remove queued action `index` (0-based, as listed in observe()["queued"]) before advance()."""
+        return game.unqueue(index, source="agent")
+
+    @mcp.tool()
     def note(text: str) -> dict[str, Any]:
         """Record a hypothesis you are testing; it is shown in the agent panel."""
         return game.note(text, source="agent")

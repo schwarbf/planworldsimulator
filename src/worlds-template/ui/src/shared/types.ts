@@ -43,5 +43,8 @@ export interface ControlsModel {
   dock: { verbs: Verb[]; active?: string; unlocked: number; total: number };
 }
 
+/** One queued action of this step, from `state.queued` (added by the base server). */
+export type QueuedAction = { action: string } & Record<string, unknown>;
+
 /** Called by controls; App forwards it to the world server. */
 export type OnAction = (id: string, args?: Record<string, unknown>) => void;

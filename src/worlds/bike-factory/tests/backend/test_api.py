@@ -27,6 +27,16 @@ class TestRest:
         score = client.get("/api/score").json()
         assert {"score", "baseline", "week", "done"} <= score.keys()
 
+    def test_unqueue_removes_action_from_state(self, client):
+        from server.api import game
+
+        client.post("/api/reset", json={"seed": 7, "difficulty": DIFFICULTY})
+        game.queued.append((game.env.actions[0], {}))
+        assert len(client.get("/api/state").json()["queued"]) == 1
+        assert client.post("/api/unqueue", json={"index": 0}).json()["queued"] == 0
+        assert client.get("/api/state").json()["queued"] == []
+        assert client.post("/api/unqueue", json={"index": 0}).status_code == 400
+
     def test_advance_moves_time(self, client):
         before = client.get("/api/state").json()["week"]
         client.post("/api/advance")

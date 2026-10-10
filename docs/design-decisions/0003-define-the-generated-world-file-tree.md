@@ -27,7 +27,7 @@ src/worlds/<id>/
 │  ├─ rules.py            [gen]  World dynamics and hidden rules.
 │  └─ helpers.py          [base] Observation → JSON, env registration.
 ├─ server/
-│  ├─ mcp.py              [gen]  Core tools (brief, observe, note, advance, score) plus one tool per world action.
+│  ├─ mcp.py              [gen]  Core tools (brief, observe, note, advance, score, cancel) plus one tool per world action.
 │  └─ api.py              [base] REST/WebSocket for the UI and the agent event log; same process as MCP.
 ├─ ui/src/
 │  ├─ shared/             [base] Branding, shared controls and the SVG kit (see below).

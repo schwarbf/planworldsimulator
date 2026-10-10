@@ -111,6 +111,17 @@ class Game:
             self._log(source, "advance", "advance", {"steps": steps}, result)
             return result
 
+    def unqueue(self, index: int, source: str = "ui") -> dict[str, Any]:
+        """Remove one queued action of this step (0-based, in queue order)."""
+        with self._lock:
+            if not 0 <= index < len(self.queued):
+                raise ValueError(f"no queued action {index}; {len(self.queued)} queued")
+            verb, args = self.queued.pop(index)
+            self.active = self.queued[-1][0] if self.queued else None
+            result = {"status": "removed", "action": verb, **args, "queued": len(self.queued)}
+            self._log(source, "action", "cancel", {"index": index}, result)
+            return result
+
     def note(self, text: str, source: str = "agent") -> dict[str, Any]:
         with self._lock:
             self.notes.append(text)
@@ -158,7 +169,9 @@ class Game:
                     "code": "\n".join(_call_line(e) for e in agent_calls) or "# no agent calls yet",
                 },
             }
-            return to_jsonable(self.env.ui_state(ctx))
+            ui = self.env.ui_state(ctx)
+            ui["queued"] = ctx["queued"]  # base contract: the UI queue panel reads this
+            return to_jsonable(ui)
 
     # ---------- events ----------
 
@@ -236,6 +249,13 @@ async def post_action(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
     if not isinstance(body.get("id"), str):
         raise HTTPException(status_code=400, detail="body needs {id, args}")
     return _bad_request(game.act, body["id"], body.get("args") or {}, "ui")
+
+
+@app.post("/api/unqueue")
+async def post_unqueue(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    if not isinstance(body.get("index"), int):
+        raise HTTPException(status_code=400, detail="body needs {index}")
+    return _bad_request(game.unqueue, body["index"], "ui")
 
 
 @app.post("/api/advance")
