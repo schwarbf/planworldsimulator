@@ -3,7 +3,7 @@
   "checkpoint_id": "01M4K2JFW5FPPK674W3R5G9YBT",
   "strategy": "manual-commit",
   "branch": "feat/world-creation-agent",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "src/backend/src/planworldsimulator_backend/api/worlds.py",
     "src/backend/tests/test_generator.py",
@@ -21,13 +21,20 @@
       "compact_transcript": "/0/transcript.jsonl",
       "content_hash": "/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/1/metadata.json",
+      "transcript": "/1/full.jsonl",
+      "compact_transcript": "/1/transcript.jsonl",
+      "content_hash": "/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 1
+    "input_tokens": 18,
+    "cache_creation_tokens": 11602,
+    "cache_read_tokens": 3005078,
+    "output_tokens": 5828,
+    "api_call_count": 10
   }
 }

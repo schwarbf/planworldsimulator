@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K2JFW5FPPK674W3R5G9YBT",
+  "session_id": "5d8d31be-3c40-40b6-a359-c1d8fbdb4a06",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:13:22.521123Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/api/worlds.py",
+    "src/backend/tests/test_generator.py",
+    "src/web/src/api/client.ts",
+    "src/web/src/components/ExistingWorlds.test.tsx",
+    "src/web/src/components/PromptWindow.test.tsx",
+    "src/web/src/components/PromptWindow.tsx",
+    "src/web/src/components/ui.tsx",
+    "src/web/src/pages/WorldDetail.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5-5",
+  "turn_id": "6979ba67869a",
+  "checkpoint_transcript_start": 957,
+  "transcript_lines_at_start": 957,
+  "compact_transcript_start": 144,
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 11602,
+    "cache_read_tokens": 3005078,
+    "output_tokens": 5828,
+    "api_call_count": 9
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T14:13:22.45925Z",
+    "agent_lines": 117,
+    "agent_removed": 21,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 117,
+    "total_lines_changed": 138,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
