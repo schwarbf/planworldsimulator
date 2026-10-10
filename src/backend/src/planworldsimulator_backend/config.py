@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     opencode_bin: str = "opencode"
     # Hard cap for one world, all steps together.
     generation_deadline_seconds: float = 300
-    fix_rounds: int = 3
+    fix_rounds: int = 5  # also bounded by the deadline
     max_tool_calls: int = 60
     # Interpreter for world servers and tests; default: the template's pixi env.
     world_python: Path | None = None
