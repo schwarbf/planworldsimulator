@@ -1,0 +1,59 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K9XWAMJ9C4A7PE49AWFP0F",
+  "strategy": "manual-commit",
+  "branch": "feat/terminal-intro-actions",
+  "checkpoints_count": 13,
+  "files_touched": [
+    "src/harness/src/planworldsimulator_harness/agent.py",
+    "src/harness/src/planworldsimulator_harness/agents.py",
+    "src/harness/src/planworldsimulator_harness/episode.py",
+    "src/harness/src/planworldsimulator_harness/serve.py",
+    "src/harness/tests/test_budget.py",
+    "src/harness/tests/test_episode.py",
+    "src/worlds-template/process-compose.yaml",
+    "src/worlds-template/server/api.py",
+    "src/worlds-template/server/narration.py",
+    "src/worlds-template/tests/backend/test_narration.py",
+    "src/worlds-template/ui/src/App.tsx",
+    "src/worlds-template/ui/src/shared/controls/AgentCursor.tsx",
+    "src/worlds-template/ui/src/shared/controls/AgentPanel.tsx",
+    "src/worlds-template/ui/src/shared/controls/Narrator.tsx",
+    "src/worlds-template/ui/src/shared/theme.css",
+    "src/worlds-template/ui/src/shared/voice.ts",
+    "src/worlds/bike-factory/process-compose.yaml",
+    "src/worlds/bike-factory/server/api.py",
+    "src/worlds/bike-factory/server/narration.py",
+    "src/worlds/bike-factory/tests/backend/test_narration.py",
+    "src/worlds/bike-factory/ui/src/App.tsx",
+    "src/worlds/bike-factory/ui/src/World.tsx",
+    "src/worlds/bike-factory/ui/src/shared/controls/AgentCursor.tsx",
+    "src/worlds/bike-factory/ui/src/shared/controls/AgentPanel.tsx",
+    "src/worlds/bike-factory/ui/src/shared/controls/Narrator.tsx",
+    "src/worlds/bike-factory/ui/src/shared/theme.css",
+    "src/worlds/bike-factory/ui/src/shared/voice.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 706,
+    "cache_creation_tokens": 440519,
+    "cache_read_tokens": 104910489,
+    "output_tokens": 210088,
+    "api_call_count": 341,
+    "subagent_tokens": {
+      "input_tokens": 372,
+      "cache_creation_tokens": 464941,
+      "cache_read_tokens": 25854424,
+      "output_tokens": 36569,
+      "api_call_count": 181
+    }
+  }
+}
