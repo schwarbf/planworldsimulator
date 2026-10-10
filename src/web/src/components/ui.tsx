@@ -26,24 +26,6 @@ export function Label({ children }: { children: ReactNode }) {
   );
 }
 
-interface ChipProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  active?: boolean;
-}
-
-export function Chip({ active, className, ...props }: ChipProps) {
-  return (
-    <button
-      type="button"
-      className={cx(
-        "rounded-chip px-[11px] py-[7px] text-xs font-bold transition-colors",
-        active ? "bg-ink text-white" : "bg-sand text-ink hover:bg-line",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
-
 type ButtonVariant = "primary" | "dark" | "soft";
 
 const VARIANTS: Record<ButtonVariant, string> = {

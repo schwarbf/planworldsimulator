@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 
 import { api, type World } from "../api/client";
-import { Button, Card, StatusChip } from "./ui";
+import { Section } from "./Section";
+import { StatusChip } from "./ui";
 
 const POLL_MS = 2000;
 
@@ -32,30 +33,34 @@ export function WorldsList() {
   }
 
   return (
-    <section>
-      <h2 className="mb-4 font-display text-xl font-bold">Your worlds</h2>
+    <Section
+      id="worlds"
+      index="05"
+      label="Your worlds"
+      title={<>What you have generated.</>}
+    >
       {worlds === null ? (
         <p className="text-sm text-muted">Loading…</p>
       ) : worlds.length === 0 ? (
-        <Card className="p-6 text-sm text-muted">
-          No worlds yet. Describe one above and hit Generate.
-        </Card>
+        <p className="rounded-lg border border-dashed border-line p-8 text-sm text-muted">
+          No worlds yet. Describe one at the top of the page and hit Generate.
+        </p>
       ) : (
-        <Card className="divide-y divide-line">
+        <ul className="border-t border-ink">
           {worlds.map((world) => (
-            <div
+            <li
               key={world.id}
-              className="flex flex-wrap items-center gap-3 px-5 py-4"
+              className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-line py-4"
             >
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 basis-64">
                 <Link
                   to={`/worlds/${world.id}`}
-                  className="block truncate font-semibold hover:underline"
+                  className="block truncate font-display text-2xl hover:underline"
                 >
                   {world.title}
                 </Link>
-                <p className="text-xs text-muted">
-                  Seed #{world.seed} · L{world.difficulty}
+                <p className="font-mono text-xs text-muted">
+                  seed #{world.seed} · {world.levels.length} levels
                   {world.running && world.port
                     ? ` · running on :${world.port}`
                     : ""}
@@ -64,23 +69,23 @@ export function WorldsList() {
               <StatusChip status={world.status} />
               <Link
                 to={`/worlds/${world.id}`}
-                className="rounded-xl bg-sand px-3 py-2 text-xs font-semibold hover:bg-line"
+                className="text-sm font-semibold underline-offset-4 hover:underline"
               >
                 Open
               </Link>
               {world.status === "ready" && (
-                <Button
-                  variant={world.running ? "soft" : "dark"}
-                  className="px-3 py-2 text-xs"
+                <button
+                  type="button"
                   onClick={() => toggle(world)}
+                  className="rounded-md border border-ink px-3 py-1.5 text-sm font-semibold hover:bg-ink hover:text-white"
                 >
                   {world.running ? "Stop" : "Start"}
-                </Button>
+                </button>
               )}
-            </div>
+            </li>
           ))}
-        </Card>
+        </ul>
       )}
-    </section>
+    </Section>
   );
 }

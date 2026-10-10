@@ -1,5 +1,14 @@
 import { SHOWCASE } from "../data/showcase";
-import { Button, Card } from "./ui";
+import { cx } from "./ui";
+import { Section } from "./Section";
+
+// Alternating column spans give an asymmetric two-row layout on wide screens.
+const SPANS = [
+  "lg:col-span-7",
+  "lg:col-span-5",
+  "lg:col-span-5",
+  "lg:col-span-7",
+];
 
 export function ShowcaseGallery({
   onUse,
@@ -7,35 +16,39 @@ export function ShowcaseGallery({
   onUse: (prompt: string) => void;
 }) {
   return (
-    <section>
-      <h2 className="font-display text-xl font-bold">Worlds people build</h2>
-      <p className="mb-4 text-sm text-muted">
-        Every world shares the PlanBench look and controls. Start from one of
-        these.
-      </p>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {SHOWCASE.map((world) => (
-          <Card key={world.name} className="flex flex-col overflow-hidden">
+    <Section
+      id="examples"
+      index="04"
+      label="Examples"
+      title={<>Worlds to start from.</>}
+    >
+      <div className="grid gap-x-8 gap-y-12 lg:grid-cols-12">
+        {SHOWCASE.map((world, i) => (
+          <article key={world.name} className={cx("flex flex-col", SPANS[i])}>
             <img
               src={world.image}
               alt={`${world.name} world preview`}
-              className="aspect-[8/5] w-full object-cover"
+              className="aspect-[8/5] w-full rounded-lg border border-line object-cover"
               loading="lazy"
             />
-            <div className="flex flex-1 flex-col gap-2 p-4">
-              <h3 className="font-display text-base font-bold">{world.name}</h3>
-              <p className="flex-1 text-xs text-muted">{world.premise}</p>
-              <Button
-                variant="soft"
-                className="py-2 text-xs"
+            <div className="mt-4 flex items-start justify-between gap-6">
+              <div>
+                <h3 className="font-display text-3xl">{world.name}</h3>
+                <p className="mt-1 max-w-md text-sm text-muted">
+                  {world.premise}
+                </p>
+              </div>
+              <button
+                type="button"
                 onClick={() => onUse(world.prompt)}
+                className="shrink-0 pt-2 text-sm font-semibold underline-offset-4 hover:underline"
               >
-                Use this prompt
-              </Button>
+                Use this prompt →
+              </button>
             </div>
-          </Card>
+          </article>
         ))}
       </div>
-    </section>
+    </Section>
   );
 }

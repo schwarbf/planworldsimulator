@@ -5,7 +5,7 @@ export interface World {
   title: string;
   prompt: string;
   seed: number;
-  difficulty: number;
+  levels: number[];
   status: WorldStatus;
   storyline: string | null;
   path: string | null;
@@ -26,7 +26,6 @@ export interface WorldEvent {
 export interface CreateWorld {
   prompt: string;
   seed?: number;
-  difficulty: number;
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {

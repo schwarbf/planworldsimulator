@@ -67,7 +67,7 @@ export function WorldDetail() {
 
   if (missing) {
     return (
-      <main className="mx-auto max-w-3xl px-4 pb-20">
+      <main className="mx-auto max-w-3xl px-5 pb-20">
         <p className="text-sm text-muted">World not found.</p>
         <Link to="/" className="text-sm font-semibold underline">
           Back to start
@@ -77,23 +77,24 @@ export function WorldDetail() {
   }
   if (!world) {
     return (
-      <main className="mx-auto max-w-3xl px-4 text-sm text-muted">
+      <main className="mx-auto max-w-3xl px-5 text-sm text-muted">
         Loading…
       </main>
     );
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-5 px-4 pb-20">
+    <main className="mx-auto flex max-w-3xl flex-col gap-5 px-5 pt-10 pb-20">
       <Link to="/" className="text-sm text-muted hover:underline">
         ← All worlds
       </Link>
       <Card className="flex flex-col gap-4 p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="font-display text-2xl font-bold">{world.title}</h1>
+            <h1 className="font-display text-4xl">{world.title}</h1>
             <p className="text-xs text-muted">
-              World {world.id} · Seed #{world.seed} · L{world.difficulty}
+              World {world.id} · Seed #{world.seed} · {world.levels.length}{" "}
+              difficulty levels
             </p>
           </div>
           <StatusChip status={world.status} />

@@ -20,9 +20,15 @@ test("shows the hero, the showcase and an empty worlds list", async () => {
   );
 
   expect(
-    screen.getByRole("heading", { name: /describe a planning world/i }),
+    screen.getByRole("heading", {
+      level: 1,
+      name: /describe a planning world/i,
+    }),
   ).toBeInTheDocument();
   expect(screen.getByAltText(/fission ops control room/i)).toBeInTheDocument();
+  expect(
+    screen.getByRole("heading", { name: /four levels in every world/i }),
+  ).toBeInTheDocument();
   expect(await screen.findByText(/no worlds yet/i)).toBeInTheDocument();
 });
 
