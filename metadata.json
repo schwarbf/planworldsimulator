@@ -13,9 +13,11 @@
     "src/backend/src/planworldsimulator_backend/generator/opencode_generator.py",
     "src/backend/src/planworldsimulator_backend/generator/prompts/fill_sim.md",
     "src/backend/src/planworldsimulator_backend/generator/spec.py",
+    "src/backend/src/planworldsimulator_backend/worldproc.py",
     "src/backend/tests/test_generation.py",
     "src/backend/tests/test_play.py",
     "src/backend/tests/test_play_integration.py",
+    "src/worlds-template/server/api.py",
     "src/worlds-template/tests/backend/test_harness.py",
     "src/worlds-template/ui/src/App.test.tsx",
     "src/worlds-template/ui/src/Routing.test.tsx",
@@ -33,10 +35,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 55711,
+    "input_tokens": 16443,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 3601920,
-    "output_tokens": 14613,
-    "api_call_count": 27
+    "cache_read_tokens": 1017472,
+    "output_tokens": 5324,
+    "api_call_count": 6
   }
 }
