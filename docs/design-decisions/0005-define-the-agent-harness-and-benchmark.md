@@ -23,7 +23,7 @@ src/harness/                        Python package, same layout as src/backend
 │  ├─ agents.py                     Load agents.toml; build a Pydantic AI model from model + base_url + key.
 │  ├─ client.py                     Connect to a running world by URL: reset(seed, difficulty), score, events.
 │  ├─ agent.py                      Generic agent: system prompt, world MCP as tools, history trimming.
-│  ├─ budget.py                     Budget (requests, tokens, tool calls, seconds) → UsageLimits + timeout.
+│  ├─ budget.py                     Budget (tokens, seconds) → UsageLimits + timeout.
 │  ├─ episode.py                    Run one episode on a world URL, finish remaining weeks, return EpisodeResult.
 │  ├─ benchmarks/
 │  │  ├─ servers.py                 Start N world servers on free ports; stop them after.
@@ -65,18 +65,22 @@ Suites reference agents by name.
 
 ### Budget
 
-- One hard cap for the whole episode: tool calls, tokens (incl. thinking), seconds.
-- Thinking is also capped per request (`thinking_budget`).
+- Tokens are the main cap for the whole episode.
+- Time (30 min) is only a loose safety cap: wall-clock depends on API latency, so it is not fair as a budget.
+- Tool calls and thinking count through their tokens; no separate tool-call cap.
+- A hidden safety limit (2,000 tool calls) only catches loops.
+- Thinking level is pinned per agent (`thinking` setting).
 - The system prompt states the full budget at the start.
 - Before each model request, a history processor adds a status line:
-  `Budget left: 212/300 tool calls, 0.8M/2M tokens, 6:10 min.`
+  `Budget left: 0.8M/2.0M tokens, 6:10 min.`
 - The line is neutral numbers only; no advice, so it does not steer the model.
 - Cap hit: Pydantic AI stops the run; the harness plays out remaining weeks with no actions.
 
 ### Fairness
 
 - Same seeds, difficulty, prompt and budget for every agent.
-- Temperature and thinking budget pinned per agent.
+- Temperature and thinking level pinned per agent.
+- Token counts differ slightly between providers (tokenizers); fine for Gemini vs Gemini.
 - The agent cannot reset (no MCP tool) and never sees `secret.md`.
 - One server per episode; parallel runs use separate ports.
 
@@ -107,8 +111,8 @@ Suites reference agents by name.
 3. `benchmarks/` (servers, benchmark, report, suites).
 4. Later: agent picker in the web UI.
 
-Open: which models to compare; starting budget (proposal: 300 tool calls, 2M
-tokens, 10 min per episode).
+Models: `gemini-3.8-flash`, `gemini-3.1-pro-preview` (Gemini 2.5 is retired for
+new keys). Budget: 2M tokens, 30 min safety cap per episode (smoke run: 1.1M tokens for 44 weeks).
 
 ## Supersedes
 

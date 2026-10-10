@@ -1,0 +1,71 @@
+"""Generic agent: system prompt, world MCP as tools, budget line, history trimming."""
+
+import time
+from dataclasses import dataclass, field
+from typing import Any
+
+from pydantic_ai import Agent, RunContext
+from pydantic_ai.capabilities import ProcessHistory
+from pydantic_ai.mcp import MCPToolset
+from pydantic_ai.messages import ModelMessage, ModelResponse
+from pydantic_ai.models import Model
+from pydantic_ai.usage import RunUsage
+
+from planworldsimulator_harness.budget import Budget
+
+KEEP_MESSAGES = 40
+
+SYSTEM_PROMPT = """\
+You play a simulated world. You act only through the world's tools.
+Start with brief(). It explains the story, the goal and the actions.
+Actions are queued; advance() applies them and moves time forward.
+Use note() to record the hypothesis you are testing.
+Play until the episode is done, then reply with a one-line summary.
+Your budget for the whole episode: {budget}.
+If the budget runs out, you stop and the remaining steps run with no actions."""
+
+START_PROMPT = "Play this world. Start with brief()."
+
+
+@dataclass
+class Deps:
+    budget: Budget
+    started: float = field(default_factory=time.monotonic)
+    usage: RunUsage | None = None  # live usage of the run, captured on first request
+
+    def elapsed(self) -> float:
+        return time.monotonic() - self.started
+
+
+def _instructions(ctx: RunContext[Deps]) -> str:
+    deps = ctx.deps
+    deps.usage = ctx.usage
+    return "\n\n".join(
+        [
+            SYSTEM_PROMPT.format(budget=deps.budget.describe()),
+            deps.budget.status(ctx.usage, deps.elapsed()),
+        ]
+    )
+
+
+def trim_history(messages: list[ModelMessage]) -> list[ModelMessage]:
+    """Keep the first prompt and the last messages, cut before a model response."""
+    if len(messages) <= KEEP_MESSAGES:
+        return messages
+    cut = len(messages) - KEEP_MESSAGES
+    while cut < len(messages) and not isinstance(messages[cut], ModelResponse):
+        cut += 1
+    return [messages[0], *messages[cut:]]
+
+
+def build_agent(
+    model: Model, mcp_url: str, settings: dict[str, Any] | None = None
+) -> Agent[Deps, str]:
+    return Agent(
+        model,
+        deps_type=Deps,
+        instructions=_instructions,
+        toolsets=[MCPToolset(mcp_url)],
+        model_settings=settings or None,  # type: ignore[arg-type]
+        capabilities=[ProcessHistory(trim_history)],
+    )

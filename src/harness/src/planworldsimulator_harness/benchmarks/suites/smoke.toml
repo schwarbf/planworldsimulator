@@ -1,0 +1,9 @@
+# Smoke benchmark: does MCP control work end to end?
+world = "bike-factory"
+difficulty = "medium"
+seeds = [1]
+agents = ["gemini-flash"]
+
+[budget]
+tokens = 2_000_000
+seconds = 1800  # safety cap; tokens are the main budget

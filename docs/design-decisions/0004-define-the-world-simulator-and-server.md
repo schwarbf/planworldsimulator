@@ -35,7 +35,7 @@ UI (browser)   ──▶ /api  REST ──┘
 | | UI (REST) | Agent (MCP) |
 |---|---|---|
 | Read | `GET /api/state`: whole visible state at once | `brief()`, `observe()`, `observe_site(site)`, `score()` |
-| Act | `POST /api/action`, `POST /api/advance`, `POST /api/reset` | `order()`, `expand()`, `probe()`, `advance()` |
+| Act | `POST /api/action`, `POST /api/unqueue`, `POST /api/advance`, `POST /api/reset` | `order()`, `expand()`, `probe()`, `cancel()`, `advance()` |
 | Extra | `WS /api/events`: every MCP call, for the agent panel | `note(text)`: records a hypothesis |
 
 - Same actions for both, so "Agent vs You" is fair.

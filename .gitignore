@@ -228,3 +228,6 @@ node_modules/
 src/web/dist/
 .env
 !.env.example
+
+# Agent harness benchmark results
+src/harness/src/planworldsimulator_harness/benchmarks/results/

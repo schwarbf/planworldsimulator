@@ -7,11 +7,11 @@ extend-exclude = ["src/worlds", "src/worlds-template"]
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.pyright]
-include = ["src/backend"]
+include = ["src/backend", "src/harness"]
 pythonVersion = "3.13"
 typeCheckingMode = "standard"
 
 [tool.pytest.ini_options]
 python_files = ["test_*.py", "*_test.py"]
-testpaths = ["src/backend"]
+testpaths = ["src/backend", "src/harness"]
 asyncio_mode = "auto"

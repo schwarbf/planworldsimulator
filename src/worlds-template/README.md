@@ -39,7 +39,7 @@ pixi run test   # backend tests
 - `baseline_action() -> action` — naive policy for the baseline score.
 - `ui_state(ctx) -> dict` — at least `world {name, seed, difficulty}` and `week`; **same shape as `mockState` in `World.tsx`**. `ctx` has `seed`, `story`, `discoveries`, `active`, `queued`, `agent`.
 
-**`server/mcp.py`** — `build_mcp(game)`. Core tools `brief`, `observe`, `note`, `advance`, `score`, plus one tool per verb in `env.actions`. Each tool calls `game.*(…, source="agent")`.
+**`server/mcp.py`** — `build_mcp(game)`. Core tools `brief`, `observe`, `note`, `advance`, `score`, `cancel`, plus one tool per verb in `env.actions`. Each tool calls `game.*(…, source="agent")`.
 
 **`ui/src/World.tsx`** — exports `mockState`, `toControls(state, selectedId)`, `WorldView({ state, selectedId, onSelect })`. Draw with `shared/kit` (see `shared/kit/README.md`).
 
@@ -47,8 +47,10 @@ pixi run test   # backend tests
 
 | Route | |
 |---|---|
-| `GET /api/state` | `env.ui_state(...)` |
+| `GET /api/state` | `env.ui_state(...)` plus `queued` (this step's actions) |
+| `GET /api/score` | `env.score()` plus `baseline`; not logged (for the harness) |
 | `POST /api/action {id, args}` | world verb (queued) or UI control: `play`, `fast`, `pause`, `stats`, `new_world`, `mode {mode}` |
+| `POST /api/unqueue {index}` | remove one queued action |
 | `POST /api/advance {steps?}` | apply queued actions and step |
 | `POST /api/reset {seed?, difficulty?}` | new episode |
 | `GET /api/events?after=` · `WS /api/events` | event log: MCP calls, UI actions, advances |

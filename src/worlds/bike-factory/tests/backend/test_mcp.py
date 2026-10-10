@@ -9,7 +9,7 @@ from server.api import Game
 from server.mcp import build_mcp
 from sim.helpers import world
 
-CORE = {"brief", "observe", "note", "advance", "score"}
+CORE = {"brief", "observe", "note", "advance", "score", "cancel"}
 
 
 @pytest.fixture
@@ -51,6 +51,13 @@ class TestTools:
         assert 0 <= (await _call(server, "score"))["score"] <= 1
         await _call(server, "note", {"text": "testing a hypothesis"})
         assert game.state()["agent"]["now"] == "testing a hypothesis"
+
+    @pytest.mark.anyio
+    async def test_cancel_removes_a_queued_action(self, game):
+        server = build_mcp(game)
+        game.queued.append((game.env.actions[0], {}))
+        assert (await _call(server, "cancel", {"index": 0}))["queued"] == 0
+        assert game.queued == []
 
     @pytest.mark.anyio
     async def test_every_call_is_logged(self, game):
