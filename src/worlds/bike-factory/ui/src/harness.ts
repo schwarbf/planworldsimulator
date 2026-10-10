@@ -70,6 +70,21 @@ export async function stopAgent() {
   return post("/api/action", { id: "mode", args: { mode: "you" } });
 }
 
+/** Seconds the agent waits before each tool call; changes a running agent at once. */
+export function setPace(seconds: number) {
+  return post("/harness/pace", { world_url: WORLD_URL, seconds });
+}
+
+/** Current pace for this world, or null without a harness. */
+export async function getPace(): Promise<number | null> {
+  try {
+    const res = await fetch(`/harness/status?world_url=${encodeURIComponent(WORLD_URL)}`);
+    return res.ok ? ((await res.json()) as { pace: number }).pace : null;
+  } catch {
+    return null;
+  }
+}
+
 /** How the last agent run on this world ended, or null. */
 export async function lastRun(): Promise<LastRun | null> {
   try {

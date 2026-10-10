@@ -81,7 +81,36 @@ class TestNarration:
         assert res["audio_url"] is None and res["text"].startswith("Welcome to ")
 
     def test_unknown_kind_is_rejected(self, client, fake_apis):
-        assert client.post("/api/narration", json={"kind": "commentary"}).status_code == 400
+        assert client.post("/api/narration", json={"kind": "gossip"}).status_code == 400
+
+    def test_commentary_is_based_on_the_current_game(self, client, fake_apis, monkeypatch):
+        with_keys(monkeypatch)
+        prompts: list[str] = []
+        real = narration._gemini
+        monkeypatch.setattr(narration, "_gemini", lambda key, prompt: prompts.append(prompt) or real(key, prompt))
+        client.post("/api/reset", json={"seed": 7})
+        res = client.post("/api/narration", json={"kind": "commentary"}).json()
+        assert res["text"] == INTRO
+        assert res["audio_url"] == "/api/narration/commentary-7-1/audio"
+        assert client.get(res["audio_url"]).content == WAV
+        assert '"score"' in prompts[0] and '"discoveries"' in prompts[0]
+
+    def test_commentary_once_per_week(self, client, fake_apis, monkeypatch):
+        with_keys(monkeypatch)
+        client.post("/api/reset", json={"seed": 7})
+        client.post("/api/narration", json={"kind": "commentary"})
+        client.post("/api/narration", json={"kind": "commentary"})
+        client.post("/api/advance", json={"steps": 1})
+        client.post("/api/narration", json={"kind": "commentary"})
+        assert fake_apis.count(narration.GEMINI_URL) == 2
+
+    def test_commentary_without_keys_reads_the_numbers(self, client, fake_apis, monkeypatch):
+        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+        monkeypatch.delenv("GRADIUM_API_KEY", raising=False)
+        client.post("/api/reset", json={"seed": 7})
+        res = client.post("/api/narration", json={"kind": "commentary"}).json()
+        assert res["text"].startswith("Week 1")
+        assert "score" in res["text"] and res["audio_url"] is None
 
     def test_missing_audio_is_404(self, client, fake_apis):
         assert client.get("/api/narration/intro/audio").status_code == 404

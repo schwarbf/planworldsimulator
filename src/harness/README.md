@@ -26,6 +26,7 @@ Benchmarks and `harness play` stay at full speed.
 | `GET /agents` | agents from `agents.toml`: `name, label, color, model` |
 | `POST /run {world_url, agent}` | start a background run on that world (409 if one is running) |
 | `POST /stop {world_url}` | stop it; the world goes back to `mode = "you"` |
+| `POST /pace {world_url, seconds}` | change the pace, also while an agent plays (0–5 s) |
 | `GET /status?world_url=` | `running, agent, seconds, pace, last` (how the last run ended) |
 
 **Add an agent:** add an entry to `agents.toml` (model, base_url, api_key_env, settings; `label` and `color` for the world UI).

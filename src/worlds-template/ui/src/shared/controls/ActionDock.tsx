@@ -25,7 +25,7 @@ export function ActionDock({ dock, onAction, running = "play" }: { dock: Control
   return (
     <div className="dock">
       {dock.verbs.map((v) => (
-        <button key={v.id} data-target={`verb:${v.id}`} className={`verb${dock.active === v.id ? " on" : ""}`} disabled={v.disabled} onClick={() => onAction(v.id)}>
+        <button key={v.id} data-target={`verb:${v.id}`} data-label={v.label} className={`verb${dock.active === v.id ? " on" : ""}`} disabled={v.disabled} onClick={() => onAction(v.id)}>
           <Icon name={v.disabled ? "lock" : v.icon} size={14} />
           {v.label}
           <kbd>{v.key}</kbd>

@@ -152,6 +152,25 @@ class Game:
             self._log(source, "read", "score", {}, sc)
             return sc
 
+    def narration_context(self) -> dict[str, Any]:
+        """What the narrator's progress update is based on (not logged as a read)."""
+        with self._lock:
+            obs = to_jsonable(self.env.observe(None))
+            recent = [{"by": e["source"], "did": e["name"], **e["args"]}
+                      for e in self.events[-40:] if e["kind"] in ("action", "advance", "note")][-12:]
+            return {
+                "brief": (ROOT / "brief.md").read_text()[:3000],
+                "seed": self.seed,
+                "difficulty": self.difficulty,
+                "weeks": obs.get("weeks"),
+                "score": to_jsonable({**self.env.score(), "baseline": self.baseline}),
+                "state": obs,
+                "discoveries": list(self.discoveries),
+                "notes": self.notes[-3:],
+                "player": self.agent or "you",
+                "recent_actions": to_jsonable(recent),
+            }
+
     def state(self) -> dict[str, Any]:
         """Visible state for the UI (shape defined by the world's ui_state / World.tsx mockState)."""
         with self._lock:
@@ -312,7 +331,8 @@ async def ws_events(ws: WebSocket) -> None:
 async def post_narration(body: dict[str, Any] | None = Body(None)) -> dict[str, Any]:
     """Narrator text, sentences and audio URL; first call per world runs Gemini + Gradium."""
     kind = (body or {}).get("kind", "intro")
-    return await asyncio.to_thread(_bad_request, narration.narrate, kind)
+    context = game.narration_context() if kind == "commentary" else None
+    return await asyncio.to_thread(_bad_request, narration.narrate, kind, context)
 
 
 @app.get("/api/narration/{kind}/audio")

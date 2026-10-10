@@ -17,6 +17,7 @@ from planworldsimulator_harness.agent import (
     CONTINUE_PROMPT,
     START_PROMPT,
     Deps,
+    Pace,
     build_agent,
 )
 from planworldsimulator_harness.agents import AgentConfig, build_model
@@ -57,7 +58,7 @@ async def run_episode(
     *,
     reset: bool = True,
     finish: bool = True,
-    pace: float = 0.0,
+    pace: Pace = 0.0,
 ) -> EpisodeResult:
     """Play one episode.
 

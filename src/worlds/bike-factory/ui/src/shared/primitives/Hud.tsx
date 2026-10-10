@@ -21,7 +21,7 @@ interface HudProps {
 export function Hud({ x, y, label, level, pct, color, tag, selected, alert, onClick, target }: HudProps) {
   const cls = ["hud", selected && "hud--selected", alert && "hud--alert"].filter(Boolean).join(" ");
   return (
-    <div className={cls} style={{ left: `${x}%`, top: `${y}%` }} onClick={onClick} data-target={target ? `map:${target}` : undefined}>
+    <div className={cls} style={{ left: `${x}%`, top: `${y}%` }} onClick={onClick} data-target={target ? `map:${target}` : undefined} data-label={target ? label.split(" · ")[0] : undefined}>
       {level != null && <span className="hud__lv">{level}</span>}
       <span>{label}</span>
       {pct != null && !alert && <Bar pct={pct} color={color} />}

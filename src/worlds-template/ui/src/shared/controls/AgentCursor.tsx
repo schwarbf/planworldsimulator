@@ -28,6 +28,38 @@ export function RobotBadge({ color, size = 22 }: { color: string; size?: number 
   );
 }
 
+const NOTE_CHARS = 70;
+const clip = (text: string, n: number) => (text.length > n ? `${text.slice(0, n - 1)}…` : text);
+
+/** Visible name of a target: its `data-label` (dock verb or map object), else the raw id. */
+function labelOf(selector: string, fallback: string): string {
+  return document.querySelector(selector)?.getAttribute("data-label") ?? fallback;
+}
+
+/**
+ * What the agent is doing, in words, from its MCP call alone (no model reasoning):
+ * "Order 60 · Warehouse", "Checking Store B", "Next week". World-independent:
+ * names come from `data-label` on the dock verbs and map objects.
+ */
+export function describe(e: WorldEvent): string {
+  const strings = Object.values(e.args).filter((v): v is string => typeof v === "string");
+  const site = strings.map((v) => labelOf(`[data-target="map:${CSS.escape(v)}"][data-label]`, "")).find(Boolean);
+  if (e.kind === "action") {
+    if (e.name === "cancel") return "Removing a queued action";
+    const verb = labelOf(`[data-target="verb:${CSS.escape(e.name)}"]`, e.name.charAt(0).toUpperCase() + e.name.slice(1));
+    const amount = Object.values(e.args).find((v) => typeof v === "number");
+    return [verb + (amount != null ? ` ${amount}` : ""), site].filter(Boolean).join(" · ");
+  }
+  if (e.kind === "advance") {
+    const steps = Number(e.args.steps ?? 1);
+    return steps > 1 ? `Skipping ahead ${steps} weeks` : "Next week";
+  }
+  if (e.kind === "note") return "Writing down a hypothesis";
+  if (e.name === "brief") return "Reading the brief";
+  if (e.name === "score") return "Checking the score";
+  return site ? `Checking ${site}` : "Checking the state";
+}
+
 /** Where the cursor points at for an element: its centre, in viewport pixels. */
 function centre(el: Element): [number, number] {
   const r = el.getBoundingClientRect();
@@ -53,7 +85,8 @@ function mapTarget(args: Record<string, unknown>): { id: string; el: Element } |
 export function AgentCursor({ look, active, onTarget }: { look: AgentLook; active: boolean; onTarget?: (id: string) => void }) {
   const [pos, setPos] = useState<[number, number]>(() => [window.innerWidth / 2, window.innerHeight / 2]);
   const [moveMs, setMoveMs] = useState(MOVE_MS);
-  const [bubble, setBubble] = useState<string | null>(null);
+  const [doing, setDoing] = useState<string | null>(null); // tag above the cursor
+  const [testing, setTesting] = useState<string | null>(null); // last note() hypothesis
   const [pulse, setPulse] = useState(0);
   const queue = useRef<WorldEvent[]>([]);
   const running = useRef(false);
@@ -84,10 +117,10 @@ export function AgentCursor({ look, active, onTarget }: { look: AgentLook; activ
     };
 
     const play = async (e: WorldEvent) => {
+      setDoing(describe(e));
+      if (e.kind === "note" && typeof e.args.text === "string") setTesting(e.args.text);
       if (e.kind === "read" || e.kind === "note") {
-        setBubble(e.kind === "note" ? "noting…" : "reading…");
         await sleep(queue.current.length > 2 ? READ_MS / 2 : READ_MS);
-        setBubble(null);
       } else if (e.kind === "advance") {
         await move(document.querySelector('[data-target="time:play"]'));
         await click();
@@ -159,7 +192,12 @@ export function AgentCursor({ look, active, onTarget }: { look: AgentLook; activ
         <RobotBadge color={look.color} />
         <span className="acursor__name">{look.label}</span>
       </span>
-      {bubble && <span className="acursor__bubble">{bubble}</span>}
+      {doing && (
+        <span className="acursor__think">
+          <span className="acursor__doing"><i className="acursor__dots" />{doing}</span>
+          {testing && <span className="acursor__why">Testing: {clip(testing, NOTE_CHARS)}</span>}
+        </span>
+      )}
     </div>
   );
 }

@@ -7,7 +7,9 @@ interface Narration { text: string; sentences: string[]; audio_url: string | nul
 const TICK_MS = 100;
 const CHARS_PER_S = 15; // caption pace without audio (about 150 words per minute)
 const COLLAPSE_MS = 2500;
-const DOCK_GAP = 12; // after the intro ends, shrink to the "Replay intro" pill
+const DOCK_GAP = 12;
+const COMMENT_EVERY_WEEKS = 8; // progress update after this many weeks of play
+const COMMENT_HOLD_MS = 5000; // keep the update visible after it was read // after the intro ends, shrink to the "Replay intro" pill
 const BARS = Array.from({ length: 22 }, (_, k) => 0.25 + 0.75 * Math.abs(Math.sin(k * 1.7) * Math.cos(k * 0.45)));
 
 const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
@@ -17,7 +19,14 @@ const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).p
  * while it plays, so the intro also works muted, without audio, or while the
  * browser blocks autoplay (then audio starts on the first click or key press).
  */
-export function Narrator() {
+export function Narrator({ collapse = false, onOpen, week }: {
+  /** Shrink to the small pill (e.g. while an agent plays), so the Agent panel has room. */
+  collapse?: boolean;
+  /** Current week; every COMMENT_EVERY_WEEKS weeks the narrator gives a progress update. */
+  week?: number;
+  /** Tells the layout whether the full card is shown. */
+  onOpen?: (open: boolean) => void;
+} = {}) {
   const [intro, setIntro] = useState<Narration | null>(null);
   const [t, setT] = useState(0);
   const [playing, setPlaying] = useState(false);
@@ -92,6 +101,69 @@ export function Narrator() {
     return () => clearTimeout(timer);
   }, [done, playing]);
 
+  useEffect(() => {
+    if (collapse) setOpen(false);
+  }, [collapse]);
+
+  // Progress updates (`kind: "commentary"`): every few weeks, or on "How am I doing?".
+  const [comment, setComment] = useState<Narration | null>(null);
+  const [asking, setAsking] = useState(false);
+  const lastComment = useRef<number | null>(null);
+  const busy = useRef({ asking: false, intro: false, muted: false });
+  busy.current = { asking, intro: playing, muted };
+
+  const askComment = useCallback(async () => {
+    if (busy.current.asking || busy.current.intro) return;
+    setAsking(true);
+    try {
+      const res = await fetch("/api/narration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "commentary" }),
+      });
+      const n = res.ok ? ((await res.json()) as Narration) : null;
+      if (n?.text) setComment(n);
+    } catch {
+      // no server: no update
+    } finally {
+      setAsking(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (week == null) return;
+    if (lastComment.current === null || week < lastComment.current) {
+      lastComment.current = week; // first render or a new world: start counting here
+      return;
+    }
+    if (week - lastComment.current >= COMMENT_EVERY_WEEKS) {
+      lastComment.current = week;
+      void askComment();
+    }
+  }, [week, askComment]);
+
+  // Read the update aloud (unless muted), then hide it.
+  useEffect(() => {
+    if (!comment) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const hide = () => { timer = setTimeout(() => setComment(null), COMMENT_HOLD_MS); };
+    let voice: HTMLAudioElement | null = null;
+    if (comment.audio_url && !busy.current.muted) {
+      voice = new Audio(comment.audio_url);
+      voice.addEventListener("ended", hide);
+      voice.play().catch(hide);
+    } else {
+      timer = setTimeout(() => setComment(null), Math.max(COMMENT_HOLD_MS, (comment.text.length / CHARS_PER_S) * 1000));
+    }
+    return () => {
+      clearTimeout(timer);
+      voice?.pause();
+    };
+  }, [comment]);
+
+  const shown = open && intro !== null;
+  useEffect(() => onOpen?.(shown), [shown, onOpen]);
+
   // Autoplay blocked: start the audio, in sync with the captions, on the first interaction.
   useEffect(() => {
     if (!blocked || !playing) return;
@@ -157,8 +229,17 @@ export function Narrator() {
   if (!open) {
     return (
       <div ref={root} className="narrator narrator--idle">
-        <button className="narrator__replay" onClick={replay}><ReplayIcon /> Replay intro</button>
-        <button className="narrator__logo narrator__logo--lg" onClick={replay} aria-label="Replay intro"><WaveIcon /></button>
+        {comment ? (
+          <div className="narrator__comment" role="status" aria-live="polite">
+            <span className="narrator__name">Narrator</span>
+            <span>{comment.text}</span>
+          </div>
+        ) : (
+          <button className="narrator__replay" onClick={() => void askComment()} disabled={asking}>
+            {asking ? "Looking at your game…" : "How am I doing?"}
+          </button>
+        )}
+        <button className="narrator__logo narrator__logo--lg" onClick={replay} aria-label="Replay intro" title="Replay intro"><WaveIcon /></button>
       </div>
     );
   }

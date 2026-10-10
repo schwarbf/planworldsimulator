@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { agentLook, lastRun, startAgent, stopAgent, type AgentInfo, type LastRun, type Play } from "../../harness";
+import { agentLook, getPace, lastRun, setPace, startAgent, stopAgent, type AgentInfo, type LastRun, type Play } from "../../harness";
 import { Card } from "../primitives/Card";
 import { Chip } from "../primitives/Chip";
 import { Icon } from "../primitives/Icon";
@@ -16,6 +16,7 @@ const ENDED: Record<string, string> = {
   error: "failed",
 };
 
+const MAX_PACE = 3; // seconds per tool call at the slow end of the slider
 const W = 220;
 const H = 64;
 const PAD = 6;
@@ -39,6 +40,15 @@ export function AgentPanel({ agent, play, agents, offline, week, onChanged }: Ag
   const [choice, setChoice] = useState("");
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<LastRun | null>(null);
+  const [pace, setPaceState] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!offline) void getPace().then(setPaceState);
+  }, [offline]);
+  const onPace = (seconds: number) => {
+    setPaceState(seconds);
+    void setPace(seconds);
+  };
   const selected = choice || play.agent || agents[0]?.name || "";
   const look = agentLook(agents, playing ? play.agent : selected);
 
@@ -102,6 +112,14 @@ export function AgentPanel({ agent, play, agents, offline, week, onChanged }: Ag
         )}
       </div>
       {!playing && ended && <div className="muted agent__hint" title={ended}>{ended}</div>}
+      {pace !== null && (
+        <label className="agent__speed" style={{ ["--agent" as string]: look.color }} title="Pause before each agent action">
+          Speed
+          <input type="range" min={0} max={MAX_PACE} step={0.25} value={MAX_PACE - pace}
+            onChange={(e) => onPace(MAX_PACE - Number(e.target.value))} aria-label="Agent speed" />
+          <b>{pace === 0 ? "max" : `${pace.toFixed(2).replace(/0$/, "")} s/step`}</b>
+        </label>
+      )}
       <div className="chart">
         <div className="between">
           <span className="caps">Score / experiment</span>

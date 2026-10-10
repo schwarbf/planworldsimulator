@@ -11,6 +11,7 @@ audio and ``audio_error`` says why, so the UI can show the voice as disabled.
 
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -22,7 +23,8 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE_DIR = ROOT / ".narration"
-KINDS = ("intro",)
+KINDS = ("intro", "commentary")
+COMMENT_WORDS = 45
 INTRO_WORDS = 60
 TIMEOUT_S = 60.0
 
@@ -39,6 +41,14 @@ PROMPT = (
     "Explain the setting, the goal and how a turn works. Use short plain sentences, "
     "address the player as 'you', no markdown, lists, code, symbols or arrows. "
     "Reply with the intro text only.\n\nBRIEF:\n"
+)
+
+COMMENT_PROMPT = (
+    "You are the narrator of a strategy game and give a short spoken progress update, "
+    f"at most {COMMENT_WORDS} words. Say what is going well, what is not, and where things "
+    "stand now. Address the player as 'you' (if an agent plays, call it by its name). "
+    "Short plain sentences; no markdown, lists, code, symbols or arrows; do not invent facts. "
+    "Base it only on this game data (JSON). Reply with the update only.\n\nDATA:\n"
 )
 
 log = logging.getLogger("uvicorn.error")
@@ -70,12 +80,21 @@ load_env()
 _lock = threading.Lock()  # one generation at a time, so concurrent requests reuse the cache
 
 
-def narrate(kind: str = "intro") -> dict[str, Any]:
-    """Intro text, its sentences, the audio URL and why there is no audio (if so)."""
+def narrate(kind: str = "intro", context: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Narration text, its sentences, the audio URL and why there is no audio (if so).
+
+    ``intro``: from ``brief.md``, once per world. ``commentary``: a progress update
+    from ``context`` (score, visible state, discoveries, notes, recent actions),
+    once per seed and week.
+    """
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {KINDS}")
+    if kind == "commentary":
+        if not context:
+            raise ValueError("commentary needs the game context")
+        kind = f"commentary-{int(context.get('seed', 0))}-{int(context['score']['week'])}"
     with _lock:
-        text = _text(kind)
+        text = _text(kind, context)
         audio_error = _audio(kind, text)
     if audio_error:
         log.warning("narrator: captions only (%s)", audio_error)
@@ -87,7 +106,8 @@ def narrate(kind: str = "intro") -> dict[str, Any]:
 def audio_path(kind: str) -> Path | None:
     """Cached audio file for ``kind``, if it exists."""
     path = CACHE_DIR / f"{kind}.{AUDIO_FORMAT}"
-    return path if kind in KINDS and path.is_file() else None
+    known = kind in KINDS or re.fullmatch(r"commentary-\d+-\d+", kind)
+    return path if known and path.is_file() else None
 
 
 def split_sentences(text: str) -> list[str]:
@@ -116,20 +136,38 @@ def brief_intro(brief: str, words: int = INTRO_WORDS) -> str:
 
 # ---------- pipeline ----------
 
-def _text(kind: str) -> str:
+def plain_commentary(context: dict[str, Any]) -> str:
+    """Fallback update without Gemini: the numbers every world has."""
+    sc = context["score"]
+    weeks = f" of {context['weeks']}" if context.get("weeks") else ""
+    text = f"Week {sc['week']}{weeks}. Your score is {float(sc['score']):.2f}"
+    if "baseline" in sc:
+        text += f", the baseline is {float(sc['baseline']):.2f}"
+    found = len(context.get("discoveries") or [])
+    return text + f". You found {found} hidden rule{'' if found == 1 else 's'} so far."
+
+
+def _text(kind: str, context: dict[str, Any] | None = None) -> str:
     cached = CACHE_DIR / f"{kind}.txt"
     if cached.is_file():
         return cached.read_text().strip()
-    brief = (ROOT / "brief.md").read_text()
+    commentary = kind.startswith("commentary")
+    if commentary:
+        assert context is not None
+        prompt = COMMENT_PROMPT + json.dumps(context, default=str)[:12000]
+        fallback = plain_commentary(context)
+    else:
+        brief = (ROOT / "brief.md").read_text()
+        prompt, fallback = PROMPT + brief, brief_intro(brief)
     key = api_key("GEMINI_API_KEY")
     if not key:
-        log.warning("narrator: no GEMINI_API_KEY, intro taken from brief.md")
-        return brief_intro(brief)
+        log.warning("narrator: no GEMINI_API_KEY, %s without Gemini", kind)
+        return fallback
     try:
-        text = _gemini(key, PROMPT + brief)
+        text = _gemini(key, prompt)
     except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
-        log.warning("narrator: Gemini failed (%s), intro taken from brief.md", type(e).__name__)
-        return brief_intro(brief)  # not cached: retry on the next open
+        log.warning("narrator: Gemini failed (%s), %s without Gemini", type(e).__name__, kind)
+        return fallback  # not cached: retry on the next request
     CACHE_DIR.mkdir(exist_ok=True)
     cached.write_text(text + "\n")
     return text

@@ -26,6 +26,7 @@ from planworldsimulator_harness.episode import run_episode
 
 DEFAULT_PORT = 8090
 DEFAULT_PACE = 1.0
+MAX_PACE = 5.0
 
 
 @dataclass
@@ -50,10 +51,19 @@ class Runner:
         self.agents_file = agents_file
         self.build = build
         self.runs: dict[str, Run] = {}
+        self.paces: dict[str, float] = {}  # world URL → pace set from the UI slider
         self.last: dict[str, dict[str, Any]] = {}  # world URL → last run outcome
 
     def agents(self) -> dict[str, AgentConfig]:
         return load_agents(self.agents_file)
+
+    def pace_of(self, url: str) -> float:
+        return self.paces.get(url, self.pace)
+
+    def set_pace(self, url: str, seconds: float) -> dict[str, Any]:
+        """Change the pace, also while an agent plays (read before each tool call)."""
+        self.paces[url] = max(0.0, min(MAX_PACE, float(seconds)))
+        return {"world_url": url, "pace": self.paces[url]}
 
     def running(self, url: str) -> Run | None:
         run = self.runs.get(url)
@@ -94,7 +104,7 @@ class Runner:
             "running": run is not None,
             "agent": run.agent.name if run else None,
             "seconds": round(time.monotonic() - run.started, 1) if run else 0.0,
-            "pace": self.pace,
+            "pace": self.pace_of(url),
             "last": self.last.get(url),
         }
 
@@ -109,7 +119,7 @@ class Runner:
                 model,
                 reset=False,
                 finish=False,
-                pace=self.pace,
+                pace=lambda: self.pace_of(url),
             )
             self.last[url] = result.to_dict()
         except asyncio.CancelledError:
@@ -173,6 +183,13 @@ def create_app(runner: Runner) -> FastAPI:
     @app.post("/stop")
     async def post_stop(body: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
         return await runner.stop(_url(body))
+
+    @app.post("/pace")
+    async def post_pace(body: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+        seconds = body.get("seconds")
+        if not isinstance(seconds, int | float):
+            raise HTTPException(400, "body needs {world_url, seconds}")
+        return runner.set_pace(_url(body), seconds)
 
     @app.get("/status")
     async def get_status(world_url: str) -> dict[str, Any]:
