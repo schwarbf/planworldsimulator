@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01CufSB1gckkM4eBKvEDw8KJ",
+  "agent_id": "af02e9b0ddbe12a7b",
+  "subagent_type": "general-purpose",
+  "task_description": "Benchmark Gemini Pro",
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 57714,
+    "cache_read_tokens": 160170,
+    "output_tokens": 402,
+    "api_call_count": 4
+  },
+  "started_at": "2026-10-10T16:14:56.988512+02:00",
+  "completed_at": "2026-10-10T16:15:06.700485+02:00"
+}

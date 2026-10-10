@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01WdJzFPdvNw4TRoTmJdnpjr",
+  "agent_id": "a09d46e253525f168",
+  "subagent_type": "general-purpose",
+  "task_description": "Benchmark Gemini Flash",
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 55242,
+    "cache_read_tokens": 211780,
+    "output_tokens": 69,
+    "api_call_count": 5
+  },
+  "started_at": "2026-10-10T16:14:57.063015+02:00",
+  "completed_at": "2026-10-10T16:15:14.299128+02:00"
+}

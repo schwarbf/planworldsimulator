@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_01Bs1Pm5c92ZythhzmT23cD2",
+  "agent_id": "afab422202988d323",
+  "subagent_type": "general-purpose",
+  "task_description": "Draft Gradium narrator in Figma",
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 77215,
+    "cache_read_tokens": 1224293,
+    "output_tokens": 471,
+    "api_call_count": 14
+  },
+  "started_at": "2026-10-10T16:35:12.118376+02:00",
+  "completed_at": "2026-10-10T16:38:29.287611+02:00"
+}

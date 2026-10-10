@@ -1,0 +1,15 @@
+{
+  "tool_use_id": "toolu_015S7o7fyatv1umK9JcM3ycK",
+  "agent_id": "ab42ba8e18d40fab0",
+  "subagent_type": "general-purpose",
+  "task_description": "Draft agent cursor in Figma",
+  "token_usage": {
+    "input_tokens": 44,
+    "cache_creation_tokens": 138695,
+    "cache_read_tokens": 2287923,
+    "output_tokens": 653,
+    "api_call_count": 22
+  },
+  "started_at": "2026-10-10T16:27:13.388442+02:00",
+  "completed_at": "2026-10-10T16:33:15.167705+02:00"
+}
