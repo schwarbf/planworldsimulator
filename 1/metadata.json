@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K2TJNWR6SJK7FNMZ65487S",
+  "session_id": "4fe34fe7-8886-4590-9116-c41d85c08c5d",
+  "strategy": "manual-commit",
+  "created_at": "2026-10-10T14:17:55.944642Z",
+  "branch": "feat/world-creation-agent",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/backend/src/planworldsimulator_backend/generator/prompts/fill_sim.md",
+    "src/worlds-template/tests/backend/test_api.py",
+    "src/worlds-template/tests/backend/test_no_leak.py",
+    "src/worlds-template/tests/backend/test_playability.py"
+  ],
+  "agent": "Cursor",
+  "model": "cursor-grok-4.6-high",
+  "turn_id": "39a5bc785b38",
+  "compact_transcript_start": 0,
+  "initial_attribution": {
+    "calculated_at": "2026-10-10T14:17:55.937799Z",
+    "agent_lines": 35,
+    "agent_removed": 4,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 35,
+    "total_lines_changed": 39,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    }
+  ]
+}
