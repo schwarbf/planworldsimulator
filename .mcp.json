@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "entire-brain": {
+      "type": "stdio",
+      "command": "entire",
+      "args": [
+        "brain",
+        "mcp"
+      ],
+      "env": {}
+    },
+    "entire-docs": {
+      "type": "http",
+      "url": "https://docs.entire.io/mcp"
+    }
+  }
+}
