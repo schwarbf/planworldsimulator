@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { voice } from "../voice";
 
 /** One entry of the world's event log (`WS /api/events`). */
 interface WorldEvent { seq: number; source: string; kind: string; name: string; args: Record<string, unknown> }
@@ -29,6 +30,8 @@ export function RobotBadge({ color, size = 22 }: { color: string; size?: number 
 }
 
 const NOTE_CHARS = 70;
+const NOTE_GAP_MS = 6000; // pause after a spoken note ends; only the newest note is read, however often the agent writes
+const NOTE_TICK_MS = 1000;
 const clip = (text: string, n: number) => (text.length > n ? `${text.slice(0, n - 1)}…` : text);
 
 /** Visible name of a target: its `data-label` (dock verb or map object), else the raw id. */
@@ -82,7 +85,73 @@ function mapTarget(args: Record<string, unknown>): { id: string; el: Element } |
  * click pulse; `advance` goes to Play; reads show a "reading…" bubble.
  * World-independent: targets are found by `data-target` attributes.
  */
-export function AgentCursor({ look, active, onTarget }: { look: AgentLook; active: boolean; onTarget?: (id: string) => void }) {
+/**
+ * Reads the agent's newest `note()` aloud in the agent's own voice (decision 0006).
+ * Guarded so a busy agent cannot flood it: only the newest unread note, at most one
+ * NOTE_GAP_MS after the last one ended, never over the narrator, not while muted.
+ */
+function useNoteVoice(enabled: boolean, active: boolean) {
+  const [speaking, setSpeaking] = useState(false);
+  const pending = useRef<string | null>(null);
+  const busy = useRef(false);
+  const last = useRef(0);
+  const on = useRef(enabled && active);
+  on.current = enabled && active;
+
+  const speak = useCallback(async () => {
+    const text = pending.current;
+    if (!text || busy.current) return;
+    if (!on.current || voice.muted) { pending.current = null; return; }
+    if (voice.narratorSpeaking || Date.now() - last.current < NOTE_GAP_MS) return; // wait, keep the newest
+    pending.current = null;
+    busy.current = true;
+    last.current = Date.now();
+    try {
+      const res = await fetch("/api/narration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "note", text }),
+      });
+      const n = res.ok ? ((await res.json()) as { audio_url: string | null }) : null;
+      if (n?.audio_url && on.current && !voice.muted) {
+        const clip = new Audio(n.audio_url);
+        setSpeaking(true);
+        await new Promise<void>((done) => {
+          clip.addEventListener("ended", () => done());
+          clip.play().catch(() => done());
+        });
+      }
+    } catch {
+      // no server: stay quiet
+    } finally {
+      last.current = Date.now(); // the pause starts when the clip ends
+      busy.current = false;
+      setSpeaking(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => void speak(), NOTE_TICK_MS);
+    return () => clearInterval(timer);
+  }, [speak]);
+  useEffect(() => {
+    if (!enabled || !active) pending.current = null;
+  }, [enabled, active]);
+
+  const heard = useCallback((text: string) => { pending.current = text; }, []);
+  return { speaking, heard };
+}
+
+export function AgentCursor({ look, active, onTarget, voiceNotes = false }: {
+  look: AgentLook;
+  active: boolean;
+  onTarget?: (id: string) => void;
+  /** Read the agent's notes aloud (toggle in the Agent panel). */
+  voiceNotes?: boolean;
+}) {
+  const notes = useNoteVoice(voiceNotes, active);
+  const heard = useRef(notes.heard);
+  heard.current = notes.heard;
   const [pos, setPos] = useState<[number, number]>(() => [window.innerWidth / 2, window.innerHeight / 2]);
   const [moveMs, setMoveMs] = useState(MOVE_MS);
   const [doing, setDoing] = useState<string | null>(null); // tag above the cursor
@@ -118,7 +187,10 @@ export function AgentCursor({ look, active, onTarget }: { look: AgentLook; activ
 
     const play = async (e: WorldEvent) => {
       setDoing(describe(e));
-      if (e.kind === "note" && typeof e.args.text === "string") setTesting(e.args.text);
+      if (e.kind === "note" && typeof e.args.text === "string") {
+        setTesting(e.args.text);
+        heard.current(e.args.text);
+      }
       if (e.kind === "read" || e.kind === "note") {
         await sleep(queue.current.length > 2 ? READ_MS / 2 : READ_MS);
       } else if (e.kind === "advance") {
@@ -195,9 +267,22 @@ export function AgentCursor({ look, active, onTarget }: { look: AgentLook; activ
       {doing && (
         <span className="acursor__think">
           <span className="acursor__doing"><i className="acursor__dots" />{doing}</span>
-          {testing && <span className="acursor__why">Testing: {clip(testing, NOTE_CHARS)}</span>}
+          {testing && (
+            <span className={`acursor__why${notes.speaking ? " acursor__why--voice" : ""}`}>
+              {notes.speaking && <SpeakingIcon />}Testing: {clip(testing, NOTE_CHARS)}
+            </span>
+          )}
         </span>
       )}
     </div>
+  );
+}
+
+function SpeakingIcon() {
+  return (
+    <svg className="acursor__speaker" width="11" height="11" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-label="speaking">
+      <path d="M2 5.2h2.2L7.4 2.5v9L4.2 8.8H2z" fill="currentColor" />
+      <path d="M9.6 4.8a3 3 0 010 4.4M11.2 3.3a5.2 5.2 0 010 7.4" />
+    </svg>
   );
 }

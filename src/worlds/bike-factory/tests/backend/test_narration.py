@@ -168,3 +168,40 @@ def test_api_key_from_file(tmp_path, monkeypatch):
     assert narration.api_key("NARRATOR_TEST_KEY") == "file-key"
     monkeypatch.setenv("NARRATOR_TEST_KEY", "env-key")
     assert narration.api_key("NARRATOR_TEST_KEY") == "env-key"
+
+
+def test_fallback_intro_explains_the_actions():
+    brief = "# Demo\n\nYou run it.\n\n| Action | Effect |\n|---|---|\n| `order(site, qty)` | Ships qty units. Costs money. |\n| `note(text)` | Record a hypothesis. |\n"
+    text = narration.brief_intro(brief)
+    assert text.startswith("Welcome to Demo.")
+    assert "Order: Ships qty units." in text
+    assert "Note" not in text
+
+
+class TestNoteVoice:
+    def test_note_is_read_in_the_agent_voice_without_gemini(self, client, fake_apis, monkeypatch):
+        with_keys(monkeypatch)
+        voices: list[str] = []
+        real = narration.httpx.post
+
+        def post(url, **kwargs):
+            voices.append(kwargs["json"].get("voice_id", ""))
+            return real(url, **kwargs)
+
+        monkeypatch.setattr(narration.httpx, "post", post)
+        res = client.post("/api/narration", json={"kind": "note", "text": INTRO}).json()
+        assert res["text"] == INTRO
+        assert res["audio_url"].startswith("/api/narration/note-")
+        assert client.get(res["audio_url"]).content == WAV
+        assert fake_apis == [narration.GRADIUM_URL]  # no Gemini call
+        assert voices == [narration.GRADIUM_AGENT_VOICE]
+
+    def test_long_notes_are_cut(self, client, fake_apis, monkeypatch):
+        monkeypatch.delenv("GRADIUM_API_KEY", raising=False)
+        long = " ".join(f"word{k}" for k in range(60))
+        res = client.post("/api/narration", json={"kind": "note", "text": long}).json()
+        assert len(res["text"].split()) == narration.NOTE_WORDS
+        assert res["text"].endswith("…") and res["audio_url"] is None
+
+    def test_empty_note_is_rejected(self, client, fake_apis):
+        assert client.post("/api/narration", json={"kind": "note"}).status_code == 400

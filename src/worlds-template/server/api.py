@@ -27,7 +27,7 @@ from sim.helpers import difficulty_for_level, to_jsonable, world
 
 ROOT = Path(__file__).resolve().parents[1]
 MAX_EVENTS = 500
-CODE_LINES = 4
+CODE_LINES = 30  # agent panel terminal: newest at the bottom, scroll up for older calls
 
 
 class Game:
@@ -343,7 +343,10 @@ async def ws_events(ws: WebSocket) -> None:
 async def post_narration(body: dict[str, Any] | None = Body(None)) -> dict[str, Any]:
     """Narrator text, sentences and audio URL; first call per world runs Gemini + Gradium."""
     kind = (body or {}).get("kind", "intro")
-    context = game.narration_context() if kind == "commentary" else None
+    if kind == "note":
+        context = {"text": (body or {}).get("text")}  # the agent's note, read in its voice
+    else:
+        context = game.narration_context() if kind == "commentary" else None
     return await asyncio.to_thread(_bad_request, narration.narrate, kind, context)
 
 

@@ -160,7 +160,6 @@ function inspectorFor(state: State, site: Site): InspectorModel {
     </svg>
   );
   const isWarehouse = site.type === "warehouse";
-  const canAutomate = state.dock.unlocked >= 4 && site.type !== "supplier";
   return {
     title: site.name,
     level: site.level,
@@ -179,9 +178,6 @@ function inspectorFor(state: State, site: Site): InspectorModel {
     primary: { id: "order", label: "Order", icon: "order", amount: isWarehouse ? 60 : 20, step: 10 },
     actions: [
       { id: "expand", label: `Expand · ${chf(isWarehouse ? 12000 : 8000)}`, sub: "+20% capacity, +8% holding cost", icon: "expand", variant: "soft" },
-      canAutomate
-        ? { id: "automate", label: "Automate · hire agent", sub: "Agent takes over ordering here", icon: "auto", variant: "violet" }
-        : { id: "automate", label: "Automate", sub: site.type === "supplier" ? "Not available for suppliers" : "Locked in this world", icon: "auto", variant: "locked" },
     ],
   };
 }
@@ -220,7 +216,6 @@ export function toControls(state: State, selectedId: string | null): ControlsMod
         { id: "probe", label: "Probe", icon: "probe", key: "Q" },
         { id: "order", label: "Order", icon: "order", key: "W" },
         { id: "expand", label: "Expand", icon: "expand", key: "E" },
-        { id: "automate", label: "Automate", icon: "auto", key: "R" },
       ],
       active: state.dock.active,
       unlocked: state.dock.unlocked,

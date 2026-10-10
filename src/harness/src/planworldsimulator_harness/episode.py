@@ -59,12 +59,14 @@ async def run_episode(
     reset: bool = True,
     finish: bool = True,
     pace: Pace = 0.0,
+    explain: bool = False,
 ) -> EpisodeResult:
     """Play one episode.
 
     ``reset=False`` continues from the current week (seed and difficulty are
     read from the world). ``finish=False`` leaves the remaining weeks unplayed.
     ``pace`` waits that many seconds before each tool call (UI runs only).
+    ``explain`` asks the agent to think aloud in notes (UI runs only).
     """
     async with WorldClient(url) as world:
         if reset:
@@ -83,7 +85,7 @@ async def run_episode(
         runner = build_agent(
             model or build_model(agent), world.mcp_url, agent.settings, pace
         )
-        deps = Deps(budget)
+        deps = Deps(budget, explain=explain)
         started = time.monotonic()
         stopped_by, summary, error = "agent", "", ""
         try:

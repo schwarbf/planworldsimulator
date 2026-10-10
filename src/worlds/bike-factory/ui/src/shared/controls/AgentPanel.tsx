@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { agentLook, getPace, lastRun, setPace, startAgent, stopAgent, type AgentInfo, type LastRun, type Play } from "../../harness";
 import { Card } from "../primitives/Card";
 import { Chip } from "../primitives/Chip";
 import { Icon } from "../primitives/Icon";
 import type { ControlsModel } from "../types";
-import { RobotBadge } from "./AgentCursor";
 
 /** How a run ended (`stopped_by` from the harness), for "Gemini Flash <…>. Your turn." */
 const ENDED: Record<string, string> = {
@@ -18,7 +17,7 @@ const ENDED: Record<string, string> = {
 
 const MAX_PACE = 3; // seconds per tool call at the slow end of the slider
 const W = 220;
-const H = 64;
+const H = 48;
 const PAD = 6;
 
 interface AgentPanelProps {
@@ -32,10 +31,43 @@ interface AgentPanelProps {
   week: number;
   /** After start/stop: refresh the state; `error` when the harness refused. */
   onChanged: (error?: string) => void;
+  /** Read the agent's notes aloud in its own voice. */
+  voiceNotes: boolean;
+  onVoiceNotes: (on: boolean) => void;
+}
+
+/**
+ * The agent's calls like a terminal: newest line at the bottom, older ones scroll
+ * out at the top (scroll up to read them). Sticks to the bottom unless scrolled up.
+ */
+function Terminal({ text }: { text: string }) {
+  const ref = useRef<HTMLPreElement | null>(null);
+  const stick = useRef(true);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const toBottom = () => { if (stick.current) el.scrollTop = el.scrollHeight; };
+    toBottom();
+    const watch = new ResizeObserver(toBottom); // the panel gives it more or less room
+    watch.observe(el);
+    return () => watch.disconnect();
+  }, [text]);
+  return (
+    <pre
+      ref={ref}
+      className="code code--term"
+      onScroll={(e) => {
+        const el = e.currentTarget;
+        stick.current = el.scrollHeight - el.scrollTop - el.clientHeight < 8;
+      }}
+    >
+      {text}
+    </pre>
+  );
 }
 
 /** Agent picker with Start / Stop & take over, experiment score chart, current hypothesis and policy code. */
-export function AgentPanel({ agent, play, agents, offline, week, onChanged }: AgentPanelProps) {
+export function AgentPanel({ agent, play, agents, offline, week, onChanged, voiceNotes, onVoiceNotes }: AgentPanelProps) {
   const playing = play.mode === "agent";
   const [choice, setChoice] = useState("");
   const [busy, setBusy] = useState(false);
@@ -88,7 +120,7 @@ export function AgentPanel({ agent, play, agents, offline, week, onChanged }: Ag
       </div>
       <div className="agentpick" style={{ ["--agent" as string]: look.color }}>
         <label className="agentpick__select">
-          <RobotBadge color={look.color} size={20} />
+          <i className="agentpick__dot" />
           <select
             aria-label="Agent"
             value={playing ? play.agent ?? "" : selected}
@@ -120,6 +152,11 @@ export function AgentPanel({ agent, play, agents, offline, week, onChanged }: Ag
           <b>{pace === 0 ? "max" : `${pace.toFixed(2).replace(/0$/, "")} s/step`}</b>
         </label>
       )}
+      <label className="agent__toggle" style={{ ["--agent" as string]: look.color }} title="Reads the agent's newest note aloud in its own voice">
+        <input type="checkbox" checked={voiceNotes} onChange={(e) => onVoiceNotes(e.target.checked)} />
+        <i className="agent__switch" />
+        Voice notes
+      </label>
       <div className="chart">
         <div className="between">
           <span className="caps">Score / experiment</span>
@@ -137,7 +174,7 @@ export function AgentPanel({ agent, play, agents, offline, week, onChanged }: Ag
         <span className="caps">Now testing</span>
         <span className="agent__now">{agent.now}</span>
       </div>
-      <pre className="code">{agent.code}</pre>
+      <Terminal text={agent.code} />
     </Card>
   );
 }

@@ -203,6 +203,7 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 /* ---------- agent playing (AgentPanel, AgentBanner, AgentCursor; decision 0007) ---------- */
 .agentpick { display: flex; align-items: center; gap: 6px; }
 .agentpick__select { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; padding: 5px 6px; border-radius: var(--r-item); background: var(--soft); }
+.agentpick__dot { width: 9px; height: 9px; flex: none; margin-left: 3px; border-radius: 50%; background: var(--agent, var(--violet)); }
 .agentpick__select select { flex: 1; min-width: 0; border: 0; background: transparent; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink); outline: none; cursor: pointer; }
 .agentpick__select select:disabled { cursor: default; opacity: 1; }
 .agentpick .btn { padding: 8px 10px; font-size: 12px; gap: 6px; white-space: nowrap; color: #fff; }
@@ -212,15 +213,26 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .agent__speed { display: flex; align-items: center; gap: 8px; font-size: 10.5px; color: var(--muted); }
 .agent__speed input { flex: 1; min-width: 0; accent-color: var(--agent, var(--violet)); }
 .agent__speed b { min-width: 52px; text-align: right; color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.agent__toggle { position: relative; display: flex; align-items: center; gap: 7px; margin-top: -4px; font-size: 11px; font-weight: 600; cursor: pointer; }
+.agent__toggle input { position: absolute; opacity: 0; pointer-events: none; }
+.agent__switch { width: 26px; height: 15px; flex: none; border-radius: 99px; background: var(--line); position: relative; transition: background 0.15s; }
+.agent__switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); transition: transform 0.15s; }
+.agent__toggle input:checked + .agent__switch { background: var(--agent, var(--violet)); }
+.agent__toggle input:checked + .agent__switch::after { transform: translateX(11px); }
+.agent__toggle input:focus-visible + .agent__switch { outline: 2px solid var(--agent, var(--violet)); outline-offset: 2px; }
+.acursor__why--voice { color: var(--ink); }
+.acursor__speaker { display: inline; vertical-align: -1px; margin-right: 4px; color: var(--agent); animation: narrator-pulse 1.4s ease-in-out infinite; border-radius: 50%; }
 .agent__hint { font-size: 10.5px; line-height: 1.3; margin-top: -6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Right column ends above the narrator: the full card when it is open, else its small pill.
    While an agent plays the narrator shrinks, so the Agent panel can use the height. */
-.app__right { bottom: 150px; }
-.app--narrator-open .app__right { bottom: 250px; }
+.app__right { bottom: var(--narrator-space, 150px); overflow-y: auto; scrollbar-width: none; }
+.app__right::-webkit-scrollbar { display: none; }
 .app__right > .card { flex: none; }
-.app__right > .card:has(.agentpick) { flex: 0 1 auto; min-height: 0; overflow: hidden; }
+.app__right > .card:has(.agentpick) { flex: 0 1 auto; min-height: auto; } /* only the code block shrinks; if even that is not enough, the column scrolls */
 .app__right > .card:has(.agentpick) > :not(.code) { flex-shrink: 0; }
 .app__right .code { flex: 0 1 auto; min-height: 0; }
+.code--term { overflow-x: hidden; overflow-y: auto; max-height: 132px; scrollbar-width: none; -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 16px); mask-image: linear-gradient(to bottom, transparent 0, #000 16px); }
+.code--term::-webkit-scrollbar { display: none; }
 .agent__now { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } /* long notes must not push the panel onto the narrator */
 
 .frozen > :not(.frozen__lock) { opacity: 0.45; filter: saturate(0.5); pointer-events: none; user-select: none; }

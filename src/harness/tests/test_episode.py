@@ -84,3 +84,27 @@ async def test_limit_stops_run_and_episode_still_scores(world_url):
     assert result.stopped_by == "limit"
     assert result.agent_steps == 0
     assert result.final["done"] is True
+
+
+async def test_think_aloud_prompt_only_when_asked(world_url):
+    plain: list[str] = []
+    await run_episode(
+        world_url,
+        FAKE,
+        seed=7,
+        difficulty="medium",
+        budget=Budget(),
+        model=scripted(plain),
+    )
+    loud: list[str] = []
+    await run_episode(
+        world_url,
+        FAKE,
+        seed=7,
+        difficulty="medium",
+        budget=Budget(),
+        model=scripted(loud),
+        explain=True,
+    )
+    assert "Think aloud" not in plain[0]
+    assert "Think aloud" in loud[0] and "at most 3 times" in loud[0]

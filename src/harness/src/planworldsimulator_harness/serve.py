@@ -120,6 +120,7 @@ class Runner:
                 reset=False,
                 finish=False,
                 pace=lambda: self.pace_of(url),
+                explain=True,
             )
             self.last[url] = result.to_dict()
         except asyncio.CancelledError:

@@ -11,6 +11,7 @@ audio and ``audio_error`` says why, so the UI can show the voice as disabled.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -22,23 +23,29 @@ from typing import Any
 import httpx
 
 ROOT = Path(__file__).resolve().parents[1]
-CACHE_DIR = ROOT / ".narration"
-KINDS = ("intro", "commentary")
+CACHE_DIR = ROOT / ".narration" / "v2"  # bump when the prompts change, so worlds regenerate
+KINDS = ("intro", "commentary", "note")
+NOTE_WORDS = 25  # agent notes read aloud are cut to this
 COMMENT_WORDS = 45
 INTRO_WORDS = 60
+ACTION_WORDS = 50  # second part of the intro: what each action does
 TIMEOUT_S = 60.0
 
 GEMINI_MODEL = "gemini-3.8-flash"
 GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent"
 GRADIUM_URL = "https://api.gradium.ai/api/post/speech/tts"
-GRADIUM_VOICE = "4SZHfMpw-p46Ywgs"  # "Harper": friendly US English flagship voice
+GRADIUM_VOICE = "4SZHfMpw-p46Ywgs"  # "Harper": friendly US English flagship voice (narrator)
+GRADIUM_AGENT_VOICE = "KUpE0JVhjiIzp1Fk"  # "Damon": bright US English voice (the agent's notes)
 AUDIO_FORMAT = "wav"  # plays in every browser
 AUDIO_TYPE = "audio/wav"
 
 PROMPT = (
     "You are the narrator of a strategy game. Rewrite the game brief below as a spoken "
     f"intro of about {INTRO_WORDS} words for a new player. Start with 'Welcome to <world name>.' "
-    "Explain the setting, the goal and how a turn works. Use short plain sentences, "
+    "Explain the setting, the goal and how a turn works. "
+    f"Then add about {ACTION_WORDS} more words that name each action the player can take "
+    "and say in one short sentence what it does (skip internal tools like reading the state). "
+    "Use short plain sentences, "
     "address the player as 'you', no markdown, lists, code, symbols or arrows. "
     "Reply with the intro text only.\n\nBRIEF:\n"
 )
@@ -89,6 +96,16 @@ def narrate(kind: str = "intro", context: dict[str, Any] | None = None) -> dict[
     """
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {KINDS}")
+    if kind == "note":
+        text = clip_words(str((context or {}).get("text") or ""), NOTE_WORDS)
+        if not text:
+            raise ValueError("note needs {text}")
+        kind = "note-" + hashlib.sha1(text.encode()).hexdigest()[:12]
+        with _lock:  # the agent's own words: no Gemini, only its voice
+            audio_error = _audio(kind, text, voice="agent")
+        return {"text": text, "sentences": split_sentences(text),
+                "audio_url": None if audio_error else f"/api/narration/{kind}/audio",
+                "audio_error": audio_error}
     if kind == "commentary":
         if not context:
             raise ValueError("commentary needs the game context")
@@ -106,8 +123,13 @@ def narrate(kind: str = "intro", context: dict[str, Any] | None = None) -> dict[
 def audio_path(kind: str) -> Path | None:
     """Cached audio file for ``kind``, if it exists."""
     path = CACHE_DIR / f"{kind}.{AUDIO_FORMAT}"
-    known = kind in KINDS or re.fullmatch(r"commentary-\d+-\d+", kind)
+    known = kind in KINDS or re.fullmatch(r"commentary-\d+-\d+|note-[0-9a-f]{12}", kind)
     return path if known and path.is_file() else None
+
+
+def clip_words(text: str, words: int) -> str:
+    parts = text.split()
+    return " ".join(parts) if len(parts) <= words else " ".join(parts[:words]).rstrip(",;:") + "…"
 
 
 def split_sentences(text: str) -> list[str]:
@@ -131,7 +153,20 @@ def brief_intro(brief: str, words: int = INTRO_WORDS) -> str:
             break
         out.append(s)
         count += len(s.split())
-    return " ".join(out)
+    return " ".join(out + brief_actions(brief))
+
+
+def brief_actions(brief: str) -> list[str]:
+    """One sentence per action from the brief's action table: '`order(site, qty)` | Ships …'."""
+    out = []
+    for line in brief.splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        m = re.fullmatch(r"`(\w+)\(.*\)`", cells[0]) if len(cells) >= 2 else None
+        if m and m.group(1) not in ("note",):
+            effect = split_sentences(re.sub(r"[`*_]", "", cells[1]))
+            if effect:
+                out.append(f"{m.group(1).capitalize()}: {effect[0].rstrip('.')}.")
+    return out
 
 
 # ---------- pipeline ----------
@@ -168,12 +203,12 @@ def _text(kind: str, context: dict[str, Any] | None = None) -> str:
     except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
         log.warning("narrator: Gemini failed (%s), %s without Gemini", type(e).__name__, kind)
         return fallback  # not cached: retry on the next request
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cached.write_text(text + "\n")
     return text
 
 
-def _audio(kind: str, text: str) -> str | None:
+def _audio(kind: str, text: str, voice: str = "narrator") -> str | None:
     """Make sure the audio is cached; return why not, or None when it is there."""
     if audio_path(kind):
         return None
@@ -181,14 +216,14 @@ def _audio(kind: str, text: str) -> str | None:
     if not key:
         return "no GRADIUM_API_KEY on the world server"
     try:
-        audio = _gradium(key, text)
+        audio = _gradium(key, text, voice)
     except httpx.HTTPStatusError as e:
         return f"Gradium error (HTTP {e.response.status_code})"
     except httpx.HTTPError:
         return "Gradium unreachable"
     if not audio:
         return "Gradium returned no audio"
-    CACHE_DIR.mkdir(exist_ok=True)
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
     (CACHE_DIR / f"{kind}.{AUDIO_FORMAT}").write_bytes(audio)
     return None
 
@@ -204,9 +239,11 @@ def _gemini(key: str, prompt: str) -> str:
     return re.sub(r"\s+", " ", text)
 
 
-def _gradium(key: str, text: str) -> bytes:
+def _gradium(key: str, text: str, voice: str = "narrator") -> bytes:
+    voice_id = (os.environ.get("GRADIUM_AGENT_VOICE_ID") or GRADIUM_AGENT_VOICE if voice == "agent"
+                else os.environ.get("GRADIUM_VOICE_ID") or GRADIUM_VOICE)
     res = httpx.post(GRADIUM_URL, headers={"x-api-key": key}, timeout=TIMEOUT_S,
-                     json={"text": text, "voice_id": os.environ.get("GRADIUM_VOICE_ID") or GRADIUM_VOICE,
+                     json={"text": text, "voice_id": voice_id,
                            "output_format": AUDIO_FORMAT, "only_audio": True})
     res.raise_for_status()
     return res.content
