@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.11.4",
+  "checkpoint_id": "01M4K1T24EZ40DY1JG2PNW0FV3",
+  "strategy": "manual-commit",
+  "branch": "feat/agent-harness",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "src/worlds-template/ui/src/api.ts",
+    "src/worlds-template/ui/src/shared/controls/Queue.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 50,
+    "cache_creation_tokens": 30982,
+    "cache_read_tokens": 5678221,
+    "output_tokens": 16206,
+    "api_call_count": 25
+  }
+}

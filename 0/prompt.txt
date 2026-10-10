@@ -1,0 +1,5 @@
+does one see this queue of actions somewhere, so when I am doing this in the UI - and click a wrong action could I still reverse it from the stack?
+
+---
+
+yes add it and build the UI fix
