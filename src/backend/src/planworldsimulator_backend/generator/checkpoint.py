@@ -5,7 +5,7 @@ import json
 from dataclasses import asdict
 from pathlib import Path
 
-from planworldsimulator_backend.generator import workspace
+from planworldsimulator_backend.generator import models, workspace
 from planworldsimulator_backend.generator.base import GenerationRequest
 from planworldsimulator_backend.generator.gates import GateResult
 
@@ -23,7 +23,7 @@ def fingerprint(request: GenerationRequest, template: Path, settings) -> str:
     generator = Path(__file__).parent
     payload = {
         "request": [request.world_id, request.title, request.prompt, request.seed],
-        "model": [settings.generator_model, settings.generator_variant],
+        "model": [(m := models.resolve(request.model, settings)).opencode, m.variant],
         "template": hashes(template, [p.as_posix() for p in workspace._walk(template)]),
         "generator": hashes(
             generator,

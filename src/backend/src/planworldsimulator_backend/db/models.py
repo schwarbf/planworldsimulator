@@ -1,3 +1,4 @@
+import json
 from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
@@ -22,6 +23,8 @@ class World(Base):
     # queued | generating | ready | failed | exists (the name was taken)
     status: Mapped[str] = mapped_column(String(16), default="queued")
     generation_attempt: Mapped[int] = mapped_column(Integer, default=1)
+    # generator.models id the world is generated with; NULL = the configured default
+    generation_model: Mapped[str | None] = mapped_column(String(64), nullable=True)
     storyline: Mapped[str | None] = mapped_column(Text, nullable=True)
     path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     duplicate_of: Mapped[str | None] = mapped_column(String(32), nullable=True)
@@ -54,6 +57,14 @@ class WorldEvent(Base):
     # started | done | failed
     state: Mapped[str] = mapped_column(String(16))
     message: Mapped[str] = mapped_column(Text, default="")
+
+    @property
+    def kind(self) -> str | None:
+        """For live-log lines (state "trace"): write, edit, read, run, text, ok, bad."""
+        if self.state != "trace" or not self.metrics:
+            return None
+        return json.loads(self.metrics).get("trace")
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow
     )

@@ -418,3 +418,53 @@ def test_gates_run_worlds_without_secrets(tmp_path: Path, monkeypatch) -> None:
     env = gates._env(tmp_path)
     assert not {"GEMINI_API_KEY", "GRADIUM_API_KEY_FILE", "SOME_TOKEN"} & env.keys()
     assert env["PYTHONPATH"] == str(tmp_path) and "PATH" in env
+
+
+def test_live_log_lines_from_opencode_events() -> None:
+    from planworldsimulator_backend.generator.opencode_generator import trace_line
+    from planworldsimulator_backend.generator.opencode_runner import AgentEvent
+
+    write = AgentEvent("tool", tool="write", path="sim/env.py", status="completed")
+    assert trace_line(write) == ("write", "Writing sim/env.py")
+    denied = AgentEvent("tool", tool="edit", path="a.py", status="error", text="no")
+    assert trace_line(denied) == ("bad", "Editing a.py failed: no")
+    assert trace_line(AgentEvent("text", text="  Fixing\n the seed ")) == (
+        "text",
+        "Fixing the seed",
+    )
+    assert trace_line(
+        AgentEvent("text", text="Wrote `design.json` for **Bakery**")
+    ) == (
+        "text",
+        "Wrote design.json for Bakery",
+    )
+    assert trace_line(AgentEvent("tool", tool="read", status="running")) is None
+    assert trace_line(AgentEvent("step_finish")) is None
+
+
+def test_live_log_lines_from_gates() -> None:
+    from planworldsimulator_backend.generator.opencode_generator import gate_line
+
+    assert gate_line(gates.GateResult("backend tests", True)) == (
+        "ok",
+        "backend tests passed",
+    )
+    output = "\n".join(f"FAILED tests/backend/t.py::test_{k} - x" for k in range(5))
+    assert gate_line(gates.GateResult("backend tests", False, output)) == (
+        "bad",
+        "backend tests: test_0, test_1, test_2 and 2 more failed",
+    )
+
+
+def test_slower_models_get_more_time() -> None:
+    from planworldsimulator_backend.config import Settings
+    from planworldsimulator_backend.generator import models
+
+    settings = Settings(generation_deadline_seconds=300)
+    assert models.resolve("gemini-3.5-flash", settings).deadline_seconds == 300
+    pro = models.resolve("gemini-3.1-pro-preview", settings)
+    assert (
+        pro.opencode == "google/gemini-3.1-pro-preview" and pro.deadline_seconds == 1200
+    )
+    fallback = models.resolve("", settings)
+    assert fallback.opencode == settings.generator_model

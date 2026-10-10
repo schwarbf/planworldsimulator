@@ -23,6 +23,32 @@ function Harness({ onCreated }: { onCreated: (w: World) => void }) {
 
 afterEach(() => vi.restoreAllMocks());
 
+const MODELS = [
+  {
+    id: "gemini-3.5-flash",
+    label: "Gemini 3.5 Flash",
+    note: "fast",
+    default: true,
+  },
+  {
+    id: "gemini-3.1-pro-preview",
+    label: "Gemini 3.1 Pro",
+    note: "slowest",
+    default: false,
+  },
+];
+
+/** Answers the model list on its own; every other request gets `create()`. */
+function mockApi(create: () => Response) {
+  return vi
+    .spyOn(globalThis, "fetch")
+    .mockImplementation(async (input) =>
+      String(input).endsWith("/worlds/models")
+        ? new Response(JSON.stringify(MODELS))
+        : create(),
+    );
+}
+
 test("disables Generate until both a name and a prompt are written", async () => {
   render(<Harness onCreated={vi.fn()} />);
   const button = screen.getByRole("button", { name: /generate world/i });
@@ -39,9 +65,9 @@ test("disables Generate until both a name and a prompt are written", async () =>
 });
 
 test("has no difficulty control, and sends name, prompt and seed", async () => {
-  const fetchMock = vi
-    .spyOn(globalThis, "fetch")
-    .mockResolvedValue(new Response(JSON.stringify(world), { status: 201 }));
+  const fetchMock = mockApi(
+    () => new Response(JSON.stringify(world), { status: 201 }),
+  );
   const onCreated = vi.fn();
   render(<Harness onCreated={onCreated} />);
   expect(screen.queryByRole("radio")).not.toBeInTheDocument();
@@ -60,7 +86,12 @@ test("has no difficulty control, and sends name, prompt and seed", async () => {
     "/api/worlds",
     expect.objectContaining({
       method: "POST",
-      body: JSON.stringify({ name: "Bakery", prompt: "A bakery", seed: 42 }),
+      body: JSON.stringify({
+        name: "Bakery",
+        prompt: "A bakery",
+        seed: 42,
+        model: "gemini-3.5-flash",
+      }),
     }),
   );
   expect(onCreated).toHaveBeenCalledWith(world);
@@ -78,8 +109,11 @@ test("choosing a starting point fills the name and the prompt", async () => {
 });
 
 test("shows the server's error when creating fails", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response(JSON.stringify({ detail: "name too short" }), { status: 422 }),
+  mockApi(
+    () =>
+      new Response(JSON.stringify({ detail: "name too short" }), {
+        status: 422,
+      }),
   );
   render(<Harness onCreated={vi.fn()} />);
   await userEvent.type(screen.getByLabelText("World name"), "Bakery");
@@ -95,14 +129,12 @@ test("shows the server's error when creating fails", async () => {
 });
 
 test("a taken name links to the world that has it", async () => {
-  vi.spyOn(globalThis, "fetch").mockResolvedValue(
-    new Response(
-      JSON.stringify({ detail: "A world called “Bakery” already exists." }),
-      {
-        status: 409,
-        headers: { "X-Existing-World": "bakery-abc123" },
-      },
-    ),
+  mockApi(
+    () =>
+      new Response(
+        JSON.stringify({ detail: "A world called “Bakery” already exists." }),
+        { status: 409, headers: { "X-Existing-World": "bakery-abc123" } },
+      ),
   );
   render(<Harness onCreated={vi.fn()} />);
   await userEvent.type(screen.getByLabelText("World name"), "Bakery");
@@ -120,4 +152,27 @@ test("a taken name links to the world that has it", async () => {
     "href",
     "/worlds/bakery-abc123",
   );
+});
+
+test("the chosen generator model is sent with the world", async () => {
+  const fetchMock = mockApi(
+    () => new Response(JSON.stringify(world), { status: 201 }),
+  );
+  render(<Harness onCreated={vi.fn()} />);
+  const picker = await screen.findByLabelText("Generator model");
+  expect(picker).toHaveValue("gemini-3.5-flash");
+  await userEvent.selectOptions(picker, "gemini-3.1-pro-preview");
+  await userEvent.type(screen.getByLabelText("World name"), "Bakery");
+  await userEvent.type(
+    screen.getByLabelText(/describe your benchmark/i),
+    "A bakery",
+  );
+  await userEvent.click(
+    screen.getByRole("button", { name: /generate world/i }),
+  );
+
+  const body = JSON.parse(
+    String(fetchMock.mock.calls.at(-1)?.[1]?.body ?? "{}"),
+  ) as { model?: string };
+  expect(body.model).toBe("gemini-3.1-pro-preview");
 });

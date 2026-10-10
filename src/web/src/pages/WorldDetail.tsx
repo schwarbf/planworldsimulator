@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Link, useParams } from "react-router";
 
 import { api, type World, type WorldEvent } from "../api/client";
@@ -27,6 +33,73 @@ function stepState(key: string, events: WorldEvent[], world: World): StepState {
   return "pending";
 }
 
+/** Icons of the live-log lines (event `kind`). */
+const TRACE_ICON: Record<string, string> = {
+  write: "✎",
+  edit: "✎",
+  read: "◱",
+  run: "▶",
+  text: "“",
+  ok: "✓",
+  bad: "✗",
+};
+const TRACE_TONE: Record<string, string> = {
+  text: "italic text-white/70",
+  ok: "text-good",
+  bad: "text-[#ff9f8a]",
+};
+
+function clock(seconds: number): string {
+  const s = Math.floor(seconds);
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+/** The full live log of one step, shown on hover; follows the newest line. */
+function TracePanel({
+  label,
+  lines,
+  live,
+}: {
+  label: string;
+  lines: WorldEvent[];
+  live: boolean;
+}) {
+  const box = useRef<HTMLDivElement | null>(null);
+  useLayoutEffect(() => {
+    if (box.current) box.current.scrollTop = box.current.scrollHeight;
+  }, [lines.length]);
+  return (
+    <div
+      ref={box}
+      role="log"
+      aria-label={`${label} trace`}
+      className="invisible absolute top-full right-0 left-5 z-10 mt-1 max-h-72 overflow-y-auto rounded-xl bg-ink px-4 py-3 text-white opacity-0 shadow-[0_16px_40px_rgba(27,31,59,0.25)] transition-opacity group-hover:visible group-hover:opacity-100"
+    >
+      <div className="mb-2 flex justify-between font-mono text-[11px] tracking-wide text-white/50 uppercase">
+        <span>
+          {label} · {live ? "live trace" : "trace"}
+        </span>
+        <span>{lines.length} events</span>
+      </div>
+      {lines.map((line) => (
+        <div
+          key={line.id}
+          className={cx(
+            "grid grid-cols-[2.75rem_1rem_1fr] gap-2 py-0.5 text-xs leading-snug",
+            TRACE_TONE[line.kind ?? ""],
+          )}
+        >
+          <span className="font-mono text-[11px] text-white/40 tabular-nums">
+            {clock(line.elapsed_seconds)}
+          </span>
+          <span aria-hidden>{TRACE_ICON[line.kind ?? ""] ?? "·"}</span>
+          <span className="break-words">{line.message}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 const DOT: Record<StepState, string> = {
   pending: "bg-line",
   active: "animate-pulse bg-violet",
@@ -48,8 +121,11 @@ export function WorldDetail() {
   const [connected, setConnected] = useState(true);
   const [now, setNow] = useState(() => Date.now());
   const attempt = world?.generation_attempt ?? 1;
-  const events =
+  const allEvents =
     eventLog.id === id && eventLog.attempt === attempt ? eventLog.events : [];
+  // Live-log lines ("trace") are shown under their step; the rest drives the steps.
+  const events = allEvents.filter((e) => e.state !== "trace");
+  const traces = allEvents.filter((e) => e.state === "trace");
 
   const reload = useCallback(async () => {
     try {
@@ -178,6 +254,7 @@ export function WorldDetail() {
             <p className="text-xs text-muted">
               World {world.id} · Seed #{world.seed} · {world.levels.length}{" "}
               difficulty levels
+              {world.generation_model && ` · ${world.generation_model}`}
             </p>
           </div>
           <StatusChip status={world.status} />
@@ -189,7 +266,7 @@ export function WorldDetail() {
         <Label>Generation · Attempt {attempt}</Label>
         <p className="text-xs text-muted" aria-live="polite">
           {(() => {
-            const last = events.at(-1);
+            const last = allEvents.at(-1);
             if (!last)
               return world.status === "queued"
                 ? "Waiting to start…"
@@ -206,18 +283,51 @@ export function WorldDetail() {
           {STEPS.map((step) => {
             const state = stepState(step.key, events, world);
             const last = [...events].reverse().find((e) => e.step === step.key);
+            const lines = traces.filter((e) => e.step === step.key);
+            const newest = lines.at(-1);
+            const live = state === "active" && newest !== undefined;
             return (
-              <li key={step.key} className="flex items-center gap-3">
-                <span className={cx("size-2.5 rounded-full", DOT[state])} />
-                <span
-                  className={cx(
-                    "text-sm font-semibold",
-                    state === "pending" && "text-muted",
+              <li
+                key={step.key}
+                className="group relative flex flex-col gap-1.5"
+              >
+                <div className="flex items-center gap-3">
+                  <span className={cx("size-2.5 rounded-full", DOT[state])} />
+                  <span
+                    className={cx(
+                      "text-sm font-semibold",
+                      state === "pending" && "text-muted",
+                    )}
+                  >
+                    {step.label}
+                  </span>
+                  <span className="text-xs text-muted">{last?.message}</span>
+                  {!live && lines.length > 0 && (
+                    <span className="font-mono text-[11px] text-muted/80">
+                      {lines.length} ▾
+                    </span>
                   )}
-                >
-                  {step.label}
-                </span>
-                <span className="text-xs text-muted">{last?.message}</span>
+                </div>
+                {live && (
+                  <div className="ml-5 flex w-fit max-w-[calc(100%-1.25rem)] items-center gap-2 rounded-lg bg-sand px-2.5 py-1 text-xs">
+                    <span aria-hidden>
+                      {TRACE_ICON[newest.kind ?? ""] ?? "·"}
+                    </span>
+                    <span
+                      key={newest.id}
+                      className="animate-[fade-in_.35s_ease-out] truncate"
+                      aria-live="polite"
+                    >
+                      {newest.message}
+                    </span>
+                    <span className="shrink-0 font-mono text-[11px] text-muted">
+                      {lines.length} ▾
+                    </span>
+                  </div>
+                )}
+                {lines.length > 0 && (
+                  <TracePanel label={step.label} lines={lines} live={live} />
+                )}
               </li>
             );
           })}

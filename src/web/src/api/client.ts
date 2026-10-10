@@ -9,6 +9,8 @@ export interface World {
   levels: number[];
   status: WorldStatus;
   generation_attempt?: number;
+  /** Generator model id (see `api.listModels`); null for older worlds. */
+  generation_model?: string | null;
   storyline: string | null;
   path: string | null;
   /** With status "exists": the world that already has this name. */
@@ -34,8 +36,11 @@ export interface WorldEvent {
   attempt: number;
   elapsed_seconds: number;
   step: string;
-  state: "started" | "done" | "failed" | "exists";
+  /** "trace": one line of the generator's live log for `step`. */
+  state: "started" | "done" | "failed" | "exists" | "trace";
   message: string;
+  /** Live-log lines only: write, edit, read, run, text, ok, bad. */
+  kind?: string | null;
   created_at: string;
 }
 
@@ -43,6 +48,15 @@ export interface CreateWorld {
   name: string;
   prompt: string;
   seed?: number;
+  model?: string;
+}
+
+/** A model the world generator can use. */
+export interface GeneratorModel {
+  id: string;
+  label: string;
+  note: string;
+  default: boolean;
 }
 
 /** An error answer from the API: `detail` is the readable message. */
@@ -87,6 +101,7 @@ export const api = {
     return request<WorldPage>(`/worlds?${params}`);
   },
   getWorld: (id: string) => request<World>(`/worlds/${id}`),
+  listModels: () => request<GeneratorModel[]>("/worlds/models"),
   listEvents: (id: string, attempt?: number) =>
     request<WorldEvent[]>(
       `/worlds/${id}/events${attempt ? `?attempt=${attempt}` : ""}`,

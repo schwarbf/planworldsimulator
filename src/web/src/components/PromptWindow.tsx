@@ -1,8 +1,8 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { Link } from "react-router";
 
-import { api, ApiError, type World } from "../api/client";
+import { api, ApiError, type GeneratorModel, type World } from "../api/client";
 import { SHOWCASE } from "../data/showcase";
 import { cx } from "./ui";
 
@@ -22,6 +22,25 @@ const GRID = "var(--color-line)";
 export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
   const { name, prompt } = draft;
   const [seed, setSeed] = useState("");
+  const [models, setModels] = useState<GeneratorModel[]>([]);
+  const [model, setModel] = useState("");
+
+  useEffect(() => {
+    let alive = true;
+    api
+      .listModels()
+      .then((list) => {
+        if (!alive || !Array.isArray(list)) return;
+        setModels(list);
+        setModel(
+          (current) => current || (list.find((m) => m.default)?.id ?? ""),
+        );
+      })
+      .catch(() => {}); // no picker: the server uses its default
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [existing, setExisting] = useState<string | null>(null);
@@ -40,6 +59,7 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
         name: name.trim(),
         prompt: prompt.trim(),
         seed: seed === "" ? undefined : Number(seed),
+        model: model || undefined,
       });
       onCreated(world);
     } catch (err) {
@@ -120,7 +140,25 @@ export function PromptWindow({ draft, onDraftChange, onCreated }: Props) {
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-3 lg:ml-auto">
+          <div className="flex flex-wrap items-center gap-3 lg:ml-auto">
+            {models.length > 0 && (
+              <label className="flex items-center gap-2 font-mono text-xs text-muted">
+                MODEL
+                <select
+                  aria-label="Generator model"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  title={models.find((m) => m.id === model)?.note}
+                  className="rounded-md border border-line bg-card px-2 py-1.5 font-sans text-sm text-ink outline-none focus:border-ink"
+                >
+                  {models.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label} · {m.note}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             <label className="flex items-center gap-2 font-mono text-xs text-muted">
               SEED
               <input

@@ -7,3 +7,11 @@
     @apply bg-paper font-sans text-ink antialiased;
   }
 }
+
+/* Generation live log: a new line fades in (WorldDetail). */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+}
