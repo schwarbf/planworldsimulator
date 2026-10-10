@@ -124,11 +124,11 @@ demand = base × price × location × weather × time × day_of_week × events
 | `sim/helpers.py` | add `LEVELS = {1: "easy", 2: "medium", 3: "hard"}` | one mapping from the URL level to the env difficulty |
 | `sim/demand.py` **new** `[base]` | `DemandModel`, shipped factors | shared demand component |
 | `sim/demand_config.py` **new** `[gen]` | factors, parameters, first level | the generator's only demand file |
-| `server/api.py` | `reset` accepts `level`; `/healthz`; serve `ui/dist` at `/`; SSE `/api/events` | level link, play behind the proxy |
-| `ui/vite.config.ts`, `ui/src/api.ts` | `base: "./"`; relative URLs; SSE | works behind `/api/play/<id>/` |
+| `server/api.py` | `reset` accepts `level`; `/healthz`; serve `ui/dist` at `/` | level link, play behind the proxy; the UI polls `/api/state`, so no SSE is needed |
+| `ui/vite.config.ts`, `ui/src/api.ts` | `base: "./"`; relative URLs | works behind `/api/play/<id>/` |
 | `ui/src/App.tsx` | read `?level=` and call reset | level link from the website |
 | `ui/src/shared/controls/Brand.tsx`, `Discoveries.tsx` | level name; found demand factors | Easy / Medium / Hard; demand visible once probed |
-| `ui/package.json`, `ui/src/test-setup.ts`, `tests/frontend/App.test.tsx` | add Vitest, jsdom and Testing Library, and the render test | decision 0003 lists the frontend gate; it does not exist yet |
+| `ui/package.json`, `ui/src/test-setup.ts`, `ui/src/App.test.tsx` | add Vitest, jsdom and Testing Library, and the render test (next to the UI so React resolves) | decision 0003 lists the frontend gate; it does not exist yet |
 | `pixi.toml`, `process-compose.yaml` | tasks `build-ui`, `test-ui`; prod mode runs only the server | no Vite dev server in a played world |
 | `tests/backend/test_env.py`, `test_api.py`, `test_mcp.py` | parametrise over the three levels; reset by level | contract changes |
 | `tests/backend/test_demand.py`, `test_playability.py`, `test_no_leak.py` **new** `[base]` | see Gates | quality gates |
@@ -231,8 +231,8 @@ Browser ─▶ nginx ─ /api/play/<id>/?level=2 ─▶ API  GET /play/<id>/
   shared `node_modules` symlinked in). `server/api.py` serves `ui/dist` at `/`.
   Vite `base: "./"` and `api.ts` use relative URLs (`api/state`), so the UI works
   behind the `/api/play/<id>/` prefix.
-- **Events:** the proxy is plain HTTP, so the UI uses SSE for `/api/events` (the
-  WebSocket stays for direct use).
+- **Events:** the UI polls `/api/state` over plain HTTP, so the proxy needs no WebSocket
+  or SSE support; the event WebSocket stays for direct use.
 - **Level:** `?level=N` is forwarded; the world UI reads it on load and calls
   `POST /api/reset {level}`.
 - **One game per world server:** the shared `Game` in `server/api.py` is kept. Only
@@ -273,7 +273,7 @@ session from a Python script and print its events.
 
 **B. Template: levels, one port, tests (M).** Everything in the table
 "Template changes" except the demand files, in this order: `LEVELS` and `reset`
-by level → `/healthz` and static UI → SSE → UI changes → tests. *Done when:*
+by level → `/healthz` and static UI → UI changes → tests. *Done when:*
 `pixi run test` passes and the built UI works when opened through
 `/api/play/<id>/?level=2`.
 

@@ -70,6 +70,29 @@ class TestEvents:
             assert event["kind"] == "advance"
 
 
+class TestLevels:
+    def test_reset_by_level(self, client):
+        for level, difficulty in enumerate(world().DIFFICULTIES, start=1):
+            client.post("/api/reset", json={"seed": 3, "level": level})
+            assert client.get("/api/state").json()["world"]["difficulty"].lower() == difficulty
+
+    def test_bad_level_is_rejected(self, client):
+        for level in (0, 4, "2", True):
+            assert client.post("/api/reset", json={"level": level}).status_code == 400
+
+    def test_three_levels(self):
+        assert len(world().DIFFICULTIES) == 3
+
+
+class TestHealth:
+    def test_healthz(self, client):
+        assert client.get("/healthz").json() == {"ok": True}
+
+    def test_mcp_route_still_served(self, client):
+        # No MCP handshake here (see test_mcp.py); any non-404 shows the route is wired.
+        assert client.get("/mcp").status_code != 404
+
+
 class TestAgentMode:
     """While the harness plays (mode "agent"), the UI watches but cannot act."""
 

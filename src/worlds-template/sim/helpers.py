@@ -28,6 +28,14 @@ def world() -> type[gym.Env]:
     return _world
 
 
+def difficulty_for_level(level: Any) -> str:
+    """Website level 1, 2, 3 → the env's difficulty name (``DIFFICULTIES[level - 1]``)."""
+    difficulties = world().DIFFICULTIES  # type: ignore[attr-defined]
+    if not isinstance(level, int) or isinstance(level, bool) or not 1 <= level <= len(difficulties):
+        raise ValueError(f"level must be an integer from 1 to {len(difficulties)}")
+    return difficulties[level - 1]
+
+
 def to_jsonable(x: Any) -> Any:
     """Recursively turn numpy arrays/scalars (and tuples) into plain JSON values."""
     if isinstance(x, dict):
