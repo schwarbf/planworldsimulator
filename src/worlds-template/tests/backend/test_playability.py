@@ -33,6 +33,8 @@ def _table() -> str:
         "Mean score over 10 seeds:\n" + "\n".join(rows) + "\n"
         "Wanted: baseline between 0.2 and 0.9 on easy, above 0.02 and below 0.98 on every level, "
         "never better on a harder level, and better than doing nothing. "
+        "A mean of 0.00 means a sensible policy never makes a profit: make revenue clearly "
+        "exceed costs for it (prices, demand, costs, start cash) before anything else. "
         "Tune the score target, costs and prices in rules.py/env.py (not the tests). "
         "Higher levels must be harder for a naive player: switch on more hidden penalties, "
         "demand factors, shocks, lead times or costs with the level in rules.py, so the "

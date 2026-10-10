@@ -38,13 +38,40 @@ def test_secret_terms_are_not_in_the_brief():
     assert not [t for t in _secret_terms() if t in brief]
 
 
+def _paths(value, term: str, path: str = "") -> list[str]:
+    """Where in a JSON value `term` appears (in a key or a string)."""
+    found = []
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if term in str(key).lower():
+                found.append(f"{path}.{key}")
+            found += _paths(item, term, f"{path}.{key}")
+    elif isinstance(value, list):
+        for k, item in enumerate(value):
+            found += _paths(item, term, f"{path}[{k}]")
+    elif term in str(value).lower():
+        found.append(f"{path} = {str(value)[:60]!r}")
+    return found
+
+
 def test_secret_terms_never_reach_observations_or_state(game):
     terms = _secret_terms()
     done = False
     while not done:
-        seen = json.dumps([game.observe(), game.state(), game.score()]).lower()
-        leaked = [t for t in terms if t in seen]
-        assert not leaked, f"leaked: {leaked}"
+        outputs = {"observe": game.observe(), "state": game.state(), "score": game.score()}
+        leaks = [
+            f"{name}{where}"
+            for name, value in outputs.items()
+            for term in terms
+            for where in _paths(json.loads(json.dumps(value, default=str)), term)
+        ]
+        assert not leaks, (
+            "Hidden rule names from secret.md reach what the player sees: "
+            + "; ".join(leaks[:4])
+            + ". Hints shown as '?' in discoveries.hidden must be vague, in plain words "
+            "(for example 'Something about the gate queue'), never the rule's internal "
+            "name from secret.md; keep internal names out of observe, state and score."
+        )
         done = game.advance(1)["done"]
 
 
