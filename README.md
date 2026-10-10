@@ -22,7 +22,9 @@ just up      # build, start in the background, wait until healthy
 just down    # stop (database and generated worlds are kept)
 ```
 
-Open http://localhost:8080. Other commands: `just build`, `just logs [service]`,
+Open http://localhost:8480 (API docs on http://localhost:8400/docs). If another program uses
+those ports, `just up` says so; set `PLANWORLDSIMULATOR_WEB_PORT` and
+`PLANWORLDSIMULATOR_API_PORT` in `.env` to change them. Other commands: `just build`, `just logs [service]`,
 `just ps`, `just reset` (also deletes the database volume) and `just dev` (live
 reload, site on http://localhost:5173). Copy `.env.example` to `.env` to change
 defaults.
