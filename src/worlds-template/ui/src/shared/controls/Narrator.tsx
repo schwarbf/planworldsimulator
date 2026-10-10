@@ -1,8 +1,8 @@
 // Voice narrator (decision 0006): spoken intro with captions, bottom right.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-/** `POST /api/narration` reply; `audio_url` is null when the server has no audio (no keys). */
-interface Narration { text: string; sentences: string[]; audio_url: string | null }
+/** `POST /api/narration` reply; without audio, `audio_url` is null and `audio_error` says why. */
+interface Narration { text: string; sentences: string[]; audio_url: string | null; audio_error?: string | null }
 
 const TICK_MS = 100;
 const CHARS_PER_S = 15; // caption pace without audio (about 150 words per minute)
@@ -25,6 +25,7 @@ export function Narrator() {
   const [blocked, setBlocked] = useState(false);
   const [duration, setDuration] = useState<number | null>(null);
   const [open, setOpen] = useState(true);
+  const [expanded, setExpanded] = useState(false); // hover shows the whole intro
   const audio = useRef<HTMLAudioElement | null>(null);
   const tRef = useRef(0);
   tRef.current = t;
@@ -171,42 +172,55 @@ export function Narrator() {
   const progress = Math.min(1, t / total);
   const hasAudio = intro.audio_url !== null;
   const audible = hasAudio && playing && !muted && !blocked;
-  const status = blocked ? "tap for sound" : muted ? "muted · captions stay on" : hasAudio ? "powered by Gradium" : "captions only";
+  const offline = `Voice off: ${intro.audio_error ?? "no Gradium connection"}`;
+  const status = !hasAudio ? "No Gradium connection" : blocked ? "tap for sound" : muted ? "muted · captions stay on" : "powered by Gradium";
 
   return (
-    <div ref={root} className="narrator card" role="region" aria-label="Narrator">
+    <div ref={root} className="narrator card" role="region" aria-label="Narrator"
+      onMouseEnter={() => setExpanded(true)} onMouseLeave={() => setExpanded(false)}>
       <div className="between">
         <span className="row">
           <span className="narrator__logo"><WaveIcon /></span>
           <span className="insp__head">
             <span className="narrator__name">Narrator · Gradium</span>
-            <span className="muted">{status}</span>
+            <span className={`muted${hasAudio ? "" : " narrator__offline"}`} title={hasAudio ? undefined : offline}>{status}</span>
           </span>
         </span>
         {blocked ? (
           <button className="narrator__ctl narrator__ctl--pulse" onClick={() => startAudio(tRef.current)} aria-label="Play sound"><SpeakerIcon /></button>
         ) : (
-          <span className={`narrator__chip${muted ? " narrator__chip--muted" : ""}`}>{muted ? "muted" : <><i /> intro</>}</span>
+          <span className={`narrator__chip${muted || !hasAudio ? " narrator__chip--muted" : ""}`}>{!hasAudio ? "text only" : muted ? "muted" : <><i /> intro</>}</span>
         )}
       </div>
-      <p className="narrator__caption" aria-live="polite">
-        <span key={idx} className="narrator__now">{intro.sentences[idx]}</span>
-        {idx < intro.sentences.length - 1 && <span className="narrator__next"> {intro.sentences[idx + 1]}</span>}
-      </p>
+      {expanded ? (
+        <p className="narrator__caption narrator__caption--full">
+          {intro.sentences.map((sentence, k) => (
+            <span key={k} className={k === idx ? "narrator__now" : k < idx ? undefined : "narrator__next"}>{k > 0 && " "}{sentence}</span>
+          ))}
+        </p>
+      ) : (
+        <p className="narrator__caption" aria-live="polite">
+          <span key={idx} className="narrator__now">{intro.sentences[idx]}</span>
+          {idx < intro.sentences.length - 1 && <span className="narrator__next"> {intro.sentences[idx + 1]}</span>}
+        </p>
+      )}
       <div className="row">
         <button className="narrator__ctl narrator__ctl--ink" onClick={togglePlay} aria-label={playing ? "Pause" : "Play"}>
           {playing ? <PauseIcon /> : <PlayIcon />}
         </button>
-        {hasAudio && (
+        {hasAudio ? (
           <button className={`narrator__ctl${muted ? " narrator__ctl--coral" : ""}`} onClick={toggleMute} aria-label={muted ? "Unmute" : "Mute"}>
             <SpeakerIcon off={muted} />
           </button>
+        ) : (
+          <button className="narrator__ctl" disabled title={offline} aria-label={offline}><SpeakerIcon off /></button>
         )}
         <button className="narrator__ctl" onClick={replay} aria-label="Replay intro"><ReplayIcon /></button>
-        {muted || !hasAudio ? (
+        {muted ? (
           <div className="narrator__dots" />
         ) : (
-          <div className={`narrator__wave${audible ? " narrator__wave--live" : ""}`} aria-hidden>
+          <div className={`narrator__wave${audible ? " narrator__wave--live" : ""}${hasAudio ? "" : " narrator__wave--off"}`}
+            title={hasAudio ? undefined : offline} aria-hidden>
             {BARS.map((h, k) => (
               <i key={k} className={k / BARS.length < progress ? "on" : undefined} style={{ height: `${Math.round(h * 100)}%`, animationDelay: `${(k % 7) * -0.13}s` }} />
             ))}

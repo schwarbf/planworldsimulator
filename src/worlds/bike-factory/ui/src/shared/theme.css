@@ -183,6 +183,11 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 .narrator__dots { flex: 1; height: 0; border-top: 2px dotted var(--line); }
 .narrator__caption { margin: 0; font-size: 12px; font-weight: 500; line-height: 16px; height: 48px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 .narrator__next { color: var(--muted); }
+.narrator__caption--full { height: auto; max-height: 240px; overflow-y: auto; display: block; -webkit-line-clamp: unset; scrollbar-width: thin; }
+.narrator__caption--full span:not(.narrator__now):not(.narrator__next) { color: var(--ink); opacity: 0.7; }
+.narrator__offline { color: #c47f00; }
+.narrator__ctl:disabled { opacity: 0.45; cursor: not-allowed; }
+.narrator__wave--off i, .narrator__wave--off i.on { background: var(--line); }
 .narrator__now { animation: narrator-in 0.35s ease-out; }
 @keyframes narrator-in { from { opacity: 0; } }
 .narrator__ctl { width: 26px; height: 26px; flex: none; border-radius: 50%; background: var(--soft); color: var(--ink); display: grid; place-items: center; }

@@ -231,3 +231,6 @@ src/web/dist/
 
 # Agent harness benchmark results
 src/harness/src/planworldsimulator_harness/benchmarks/results/
+
+# Claude Code agent worktrees
+.claude/worktrees/

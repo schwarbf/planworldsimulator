@@ -3,11 +3,15 @@
 Gemini rewrites the brief into a short spoken intro; Gradium text-to-speech turns
 it into audio. Both are cached in ``.narration/`` in the world folder, so each world
 calls each API once. Keys (``GEMINI_API_KEY``, ``GRADIUM_API_KEY``) stay on the
-server. Without keys the intro is the start of ``brief.md`` and there is no audio.
+server; they come from the environment (``GEMINI_API_KEY`` or ``GEMINI_API_KEY_FILE``,
+a path to a file holding the key; same for Gradium) or the world's gitignored ``.env``.
+Without Gemini the intro is the start of ``brief.md``; without Gradium there is no
+audio and ``audio_error`` says why, so the UI can show the voice as disabled.
 """
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import threading
@@ -37,18 +41,47 @@ PROMPT = (
     "Reply with the intro text only.\n\nBRIEF:\n"
 )
 
+log = logging.getLogger("uvicorn.error")
+
+
+def load_env(path: Path = ROOT / ".env") -> None:
+    """Read ``KEY=VALUE`` lines from the world's ``.env``; real env vars win."""
+    if not path.is_file():
+        return
+    for line in path.read_text().splitlines():
+        key, sep, value = line.strip().partition("=")
+        if sep and key and not key.startswith("#"):
+            os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
+
+
+def api_key(name: str) -> str:
+    """``$NAME``, else the contents of the file at ``$NAME_FILE`` (``~`` allowed), else ""."""
+    key = os.environ.get(name, "").strip()
+    if key:
+        return key
+    path = os.environ.get(f"{name}_FILE", "").strip()
+    if path and Path(path).expanduser().is_file():
+        return Path(path).expanduser().read_text().strip()
+    return ""
+
+
+load_env()
+
 _lock = threading.Lock()  # one generation at a time, so concurrent requests reuse the cache
 
 
 def narrate(kind: str = "intro") -> dict[str, Any]:
-    """Intro text, its sentences and the audio URL (None without audio)."""
+    """Intro text, its sentences, the audio URL and why there is no audio (if so)."""
     if kind not in KINDS:
         raise ValueError(f"kind must be one of {KINDS}")
     with _lock:
         text = _text(kind)
-        has_audio = _audio(kind, text)
+        audio_error = _audio(kind, text)
+    if audio_error:
+        log.warning("narrator: captions only (%s)", audio_error)
     return {"text": text, "sentences": split_sentences(text),
-            "audio_url": f"/api/narration/{kind}/audio" if has_audio else None}
+            "audio_url": None if audio_error else f"/api/narration/{kind}/audio",
+            "audio_error": audio_error}
 
 
 def audio_path(kind: str) -> Path | None:
@@ -88,33 +121,38 @@ def _text(kind: str) -> str:
     if cached.is_file():
         return cached.read_text().strip()
     brief = (ROOT / "brief.md").read_text()
-    key = os.environ.get("GEMINI_API_KEY", "").strip()
+    key = api_key("GEMINI_API_KEY")
     if not key:
+        log.warning("narrator: no GEMINI_API_KEY, intro taken from brief.md")
         return brief_intro(brief)
     try:
         text = _gemini(key, PROMPT + brief)
-    except (httpx.HTTPError, KeyError, IndexError, ValueError):
+    except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
+        log.warning("narrator: Gemini failed (%s), intro taken from brief.md", type(e).__name__)
         return brief_intro(brief)  # not cached: retry on the next open
     CACHE_DIR.mkdir(exist_ok=True)
     cached.write_text(text + "\n")
     return text
 
 
-def _audio(kind: str, text: str) -> bool:
+def _audio(kind: str, text: str) -> str | None:
+    """Make sure the audio is cached; return why not, or None when it is there."""
     if audio_path(kind):
-        return True
-    key = os.environ.get("GRADIUM_API_KEY", "").strip()
+        return None
+    key = api_key("GRADIUM_API_KEY")
     if not key:
-        return False
+        return "no GRADIUM_API_KEY on the world server"
     try:
         audio = _gradium(key, text)
+    except httpx.HTTPStatusError as e:
+        return f"Gradium error (HTTP {e.response.status_code})"
     except httpx.HTTPError:
-        return False
+        return "Gradium unreachable"
     if not audio:
-        return False
+        return "Gradium returned no audio"
     CACHE_DIR.mkdir(exist_ok=True)
     (CACHE_DIR / f"{kind}.{AUDIO_FORMAT}").write_bytes(audio)
-    return True
+    return None
 
 
 def _gemini(key: str, prompt: str) -> str:

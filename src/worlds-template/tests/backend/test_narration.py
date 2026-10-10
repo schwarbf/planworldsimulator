@@ -90,3 +90,52 @@ class TestNarration:
         with_keys(monkeypatch)
         text = client.post("/api/narration", json={"kind": "intro"}).text
         assert "gemini-test" not in text and "gradium-test" not in text
+
+    def test_no_gradium_key_says_why_and_keeps_gemini_text(self, client, fake_apis, monkeypatch):
+        with_keys(monkeypatch)
+        monkeypatch.delenv("GRADIUM_API_KEY")
+        res = client.post("/api/narration", json={"kind": "intro"}).json()
+        assert res["text"] == INTRO
+        assert res["audio_url"] is None
+        assert "GRADIUM_API_KEY" in res["audio_error"]
+
+    def test_gradium_down_says_unreachable(self, client, fake_apis, monkeypatch):
+        with_keys(monkeypatch)
+        real = narration.httpx.post
+
+        def gradium_down(url, **kwargs):
+            if url == narration.GRADIUM_URL:
+                raise httpx.ConnectError("offline")
+            return real(url, **kwargs)
+
+        monkeypatch.setattr(narration.httpx, "post", gradium_down)
+        res = client.post("/api/narration", json={"kind": "intro"}).json()
+        assert res["text"] == INTRO
+        assert res["audio_error"] == "Gradium unreachable"
+
+    def test_audio_ok_has_no_error(self, client, fake_apis, monkeypatch):
+        with_keys(monkeypatch)
+        assert client.post("/api/narration", json={"kind": "intro"}).json()["audio_error"] is None
+
+
+def test_load_env_reads_dotenv_without_overriding(tmp_path, monkeypatch):
+    env = tmp_path / ".env"
+    env.write_text("# comment\nNARRATOR_TEST_A=from-file\nNARRATOR_TEST_B='quoted'\n")
+    monkeypatch.setenv("NARRATOR_TEST_A", "from-env")
+    monkeypatch.delenv("NARRATOR_TEST_B", raising=False)
+    narration.load_env(env)
+    import os
+
+    assert os.environ["NARRATOR_TEST_A"] == "from-env"
+    assert os.environ["NARRATOR_TEST_B"] == "quoted"
+    monkeypatch.delenv("NARRATOR_TEST_B")
+
+
+def test_api_key_from_file(tmp_path, monkeypatch):
+    keyfile = tmp_path / "key.txt"
+    keyfile.write_text("file-key\n")
+    monkeypatch.delenv("NARRATOR_TEST_KEY", raising=False)
+    monkeypatch.setenv("NARRATOR_TEST_KEY_FILE", str(keyfile))
+    assert narration.api_key("NARRATOR_TEST_KEY") == "file-key"
+    monkeypatch.setenv("NARRATOR_TEST_KEY", "env-key")
+    assert narration.api_key("NARRATOR_TEST_KEY") == "env-key"
