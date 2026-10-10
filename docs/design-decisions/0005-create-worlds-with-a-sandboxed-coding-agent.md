@@ -59,31 +59,38 @@ management) and supports Gemini. Wrapping it in PydanticAI would give two loops
 and no benefit. PydanticAI stays where decision 0001 put it: the **playing**
 agent, which is a different job.
 
-How the backend uses OpenCode:
+How the backend uses OpenCode (verified in the spike with opencode 1.18.35 and
+`google/gemini-3.8-flash`):
 
-1. For each generation, spawn `opencode serve --port <free>` with the world
-   folder as working directory and the Gemini key in its environment. A
-   generated `opencode.json` in the world folder sets the provider, the model
-   (`PLANWORLDSIMULATOR_GENERATOR_MODEL`), the `world-builder` agent prompt and
-   permissions: edit only allow-listed paths, bash only `pixi run test*`,
-   `pixi run tsc` and read-only commands.
-2. Talk to it over its HTTP API with `httpx` (create session, send prompt, read
-   the event stream). This is what the OpenCode SDK wraps; the official SDK is
-   TypeScript, so a Python backend calling the API directly avoids a Node
-   sidecar. Fallback if the API is awkward: a ~50-line Node script using
-   `@opencode-ai/sdk` that prints JSON lines for the backend to read.
-3. **One OpenCode session per track.** `design` runs in a main session. `fill` then
+1. Each prompt is one subprocess: `opencode run --format json --variant minimal --dir
+   <world> [-s <session>] "<prompt>"`. Stdout is one JSON object per line and streams
+   live (`step_start`, `tool_use` with `tool` and `state.status`, `text`, `step_finish`
+   with `reason` and `tokens`). No `opencode serve`, HTTP client or SDK is needed;
+   `-s` continues a session, and parallel tracks are parallel subprocesses.
+2. A generated `opencode.json` in the world folder sets the model, `share: disabled`
+   and permissions: `external_directory: deny`, `bash`, `webfetch`, `task` and
+   `skill` denied, and `edit` denied except for the allow-listed files. **Patterns are
+   matched against the absolute path without its leading slash**, so the config writes
+   `private/tmp/.../<world>/brief.md`, not `brief.md`.
+3. Environment: `GOOGLE_GENERATIVE_AI_API_KEY` (from `GEMINI_API_KEY`),
+   `OPENCODE_DISABLE_EXTERNAL_SKILLS=1`, `OPENCODE_DISABLE_CLAUDE_CODE=1`,
+   `OPENCODE_DISABLE_AUTOUPDATE=1`. Without these the agent loads the user's global
+   skills and wanders outside the folder. Use the normal `HOME`: a fresh one costs
+   about 50 s on the first run.
+4. **One OpenCode session per track.** `design` runs in a main session. `fill` then
    runs two sessions in parallel, `sim` and `ui`, each seeded with `design.md`. Failed
    test rounds send one `fix` prompt (the failing output) to the session that owns the
    failing file. Each session keeps its context. The session ids are stored so a retry
    can resume.
-4. Map OpenCode events (file written, tool call, bash result) to
+5. Map OpenCode events (file written, tool call, bash result) to
    `GenerationEvent`s. That is the live detail in the website's progress list.
-5. Stop the server when the run ends; enforce a wall-clock timeout and a token
-   cap.
+6. Kill the subprocess at the run's deadline.
 
-A spike in Step A below validates that the HTTP API and event stream behave as
-described before we build on them. I have not run OpenCode yet.
+**Spike result (step A):** works headless with Gemini 3.8 Flash. A one-line edit took
+37 s: each model turn takes 3–14 s, so a world is affordable only with few turns. The
+prompts therefore carry all context (design, contracts, reference files) so the agent
+does not explore, and ask for each file in one `write` call. This is why the 5-minute
+budget is tight and why `fill` runs in two parallel tracks.
 
 ### Three difficulty levels
 
@@ -265,11 +272,8 @@ by `GET /worlds/<id>/thumbnail`; featured worlds keep their static images.
 
 Sizes are rough: S under an hour, M a few hours, L most of a day.
 
-**A. Spike (S).** Install OpenCode locally with the Gemini key. Verify: provider
-config, `opencode serve` HTTP API, event stream, permissions, one prompt that
-edits `brief.md` in a copy of the template. Decide go or fallback (PydanticAI
-loop with tools `read`, `write`, `run_tests`). *Done when:* I can drive one
-session from a Python script and print its events.
+**A. Spike (S), done.** OpenCode runs headless with Gemini 3.8 Flash; see the spike
+result above. Go; the PydanticAI fallback is not needed.
 
 **B. Template: levels, one port, tests (M).** Everything in the table
 "Template changes" except the demand files, in this order: `LEVELS` and `reset`
@@ -307,7 +311,7 @@ levels, demand config). The agent reads it as the example. Point
 generator/__init__.py          Generator protocol, GenerationRequest, GenerationEvent
 generator/fake.py              FakeGenerator (kept for tests and key-less runs)
 generator/opencode_generator.py  runs steps 1–8 in order
-generator/opencode_client.py   spawn `opencode serve`, session, prompt, event stream
+generator/opencode_runner.py   spawn `opencode run`, parse the JSON event lines
 generator/exists.py            step 1 (slug check)
 generator/gates.py             run pixi tests, parse the report, checksum guard
 generator/prompts/             design.md, fill.md, fix.md, polish.md
@@ -383,7 +387,6 @@ J and K. Cut line for the demo: A–K.
 ## Open questions
 
 - Exact Gemini model ID and its speed: it decides whether 5 minutes is enough.
-- Whether OpenCode's event stream is detailed enough (decided by the spike).
 - Whether the budget table holds once measured (step K).
 - Whether the Gemini critique in `polish` catches real layout problems; if not, replace it with fixed geometric checks (overlap, bounds).
 
