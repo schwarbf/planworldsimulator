@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     world_python: Path | None = None
     # Example world the agent may read; copied into `reference/` and removed at the end.
     reference_dir: Path | None = Path("src/worlds/bike-factory")
+    # fake: hands out ports only; process: runs each world's server. auto follows
+    # `generator` (a real generator needs real servers).
+    launcher: str = "auto"
     # Pause between fake generation steps, so progress is visible in the UI.
     step_delay_seconds: float = 1.0
     # Public use: anyone can generate and play, so keep it bounded.

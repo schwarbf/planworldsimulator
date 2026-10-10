@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from sqlalchemy import func, select
 
 from planworldsimulator_backend.db.models import World
+from planworldsimulator_backend.launcher import ProcessLauncher, WorldUnavailable
 
 router = APIRouter(prefix="/play", tags=["play"])
 
@@ -55,7 +56,10 @@ async def _ensure_running(request: Request, world_id: str, first_hit: bool) -> W
                     detail="Too many worlds are running. Try again in a few minutes.",
                     headers={"Retry-After": "120"},
                 )
-            world.port = await state.launcher.start(world.id, world.path)
+            try:
+                world.port = await state.launcher.start(world.id, world.path)
+            except WorldUnavailable as exc:
+                raise HTTPException(status_code=503, detail=str(exc)) from exc
             world.running = True
         if first_hit:
             world.play_count += 1
@@ -91,6 +95,15 @@ async def play(
             },
         )
     except httpx.HTTPError:
+        launcher = request.app.state.launcher
+        if isinstance(launcher, ProcessLauncher):
+            # The world's server died: start it again on the next request.
+            await launcher.stop(world.id)
+            async with request.app.state.sessions() as session:
+                row = await session.get(World, world.id)
+                if row is not None:
+                    row.running, row.port = False, None
+                    await session.commit()
         return _placeholder(world, level)
 
     return Response(
