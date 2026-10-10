@@ -3,3 +3,5 @@ The quality gates failed for this world. Fix the problems in YOUR files only ($f
 $failures
 
 First read, in ONE turn and in parallel, every failing test file named above and your files that the failures point at, so you understand what is checked. Then write the corrected files completely, in as few turns as possible. Fix the root cause (for example: use the seed to draw values, tune constants so the scores land in the wanted range), not the symptom. Keep `design.md` and the contract. $extra
+
+The generated `ui/src/WorldState.ts` and design.json are read-only. Preserve their state/action contract. $state_contract

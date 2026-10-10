@@ -26,7 +26,7 @@ from planworldsimulator_backend.schemas import (
 
 router = APIRouter(prefix="/worlds", tags=["worlds"])
 
-TERMINAL = {"ready", "failed"}
+TERMINAL = {"ready", "failed", "exists"}
 
 
 def _slug(name: str) -> str:
@@ -40,6 +40,7 @@ def _request(world: World) -> GenerationRequest:
         title=world.title,
         prompt=world.prompt,
         seed=world.seed,
+        attempt=world.generation_attempt,
     )
 
 
@@ -69,46 +70,47 @@ async def create_world(
     if token is None:
         token = secrets.token_urlsafe(24)
 
-    owner = await name_owner(state.sessions, body.name)
-    if owner is not None:
-        raise HTTPException(
-            status_code=409,
-            detail=f"A world called “{body.name}” already exists.",
-            headers={"X-Existing-World": owner},
-        )
+    async with state.generation_lock:
+        owner = await name_owner(state.sessions, body.name)
+        if owner is not None:
+            raise HTTPException(
+                status_code=409,
+                detail=f"A world called “{body.name}” already exists.",
+                headers={"X-Existing-World": owner},
+            )
 
-    world = World(
-        id=f"{_slug(body.name)}-{secrets.token_hex(3)}",
-        title=body.name,
-        prompt=body.prompt.strip(),
-        seed=body.seed if body.seed is not None else secrets.randbelow(10_000),
-        status="queued",
-        creator_hash=hash_token(token),
-    )
-    async with state.sessions() as session:
-        busy = await session.scalar(
-            select(func.count())
-            .select_from(World)
-            .where(World.status.in_(("queued", "generating")))
+        world = World(
+            id=f"{_slug(body.name)}-{secrets.token_hex(3)}",
+            title=body.name,
+            prompt=body.prompt.strip(),
+            seed=body.seed if body.seed is not None else secrets.randbelow(10_000),
+            status="queued",
+            creator_hash=hash_token(token),
         )
-        # Turned away for capacity? That must not use up the visitor's allowance.
-        if (busy or 0) >= settings.max_generating:
-            raise HTTPException(
-                status_code=503,
-                detail="Too many worlds are being generated right now. "
-                "Try again in a minute.",
-                headers={"Retry-After": "60"},
+        async with state.sessions() as session:
+            busy = await session.scalar(
+                select(func.count())
+                .select_from(World)
+                .where(World.status.in_(("queued", "generating")))
             )
-        wait = state.create_limiter.hit(client_ip(request))
-        if wait is not None:
-            raise HTTPException(
-                status_code=429,
-                detail="You are generating worlds too fast. Try again later.",
-                headers={"Retry-After": str(wait)},
-            )
-        session.add(world)
-        await session.commit()
-    state.runner.submit(_request(world))
+            # Turned away for capacity? That must not use up the visitor's allowance.
+            if (busy or 0) >= settings.max_generating:
+                raise HTTPException(
+                    status_code=503,
+                    detail="Too many worlds are being generated right now. "
+                    "Try again in a minute.",
+                    headers={"Retry-After": "60"},
+                )
+            wait = state.create_limiter.hit(client_ip(request))
+            if wait is not None:
+                raise HTTPException(
+                    status_code=429,
+                    detail="You are generating worlds too fast. Try again later.",
+                    headers={"Retry-After": str(wait)},
+                )
+            session.add(world)
+            await session.commit()
+        state.runner.submit(_request(world))
 
     if new_token:
         response.set_cookie(
@@ -159,30 +161,49 @@ async def get_world(world_id: str, request: Request) -> WorldOut:
 
 
 @router.get("/{world_id}/events", response_model=list[EventOut])
-async def list_events(world_id: str, request: Request) -> list[WorldEvent]:
-    await _get_world(request, world_id)
+async def list_events(
+    world_id: str, request: Request, attempt: int | None = Query(default=None, ge=1)
+) -> list[WorldEvent]:
+    world = await _get_world(request, world_id)
     async with request.app.state.sessions() as session:
         result = await session.scalars(
             select(WorldEvent)
-            .where(WorldEvent.world_id == world_id)
+            .where(
+                WorldEvent.world_id == world_id,
+                WorldEvent.attempt == (attempt or world.generation_attempt),
+            )
             .order_by(WorldEvent.id)
         )
         return list(result)
 
 
 @router.get("/{world_id}/stream")
-async def stream_events(world_id: str, request: Request) -> StreamingResponse:
-    await _get_world(request, world_id)
+async def stream_events(
+    world_id: str,
+    request: Request,
+    attempt: int | None = Query(default=None, ge=1),
+    after: int = Query(default=0, ge=0),
+) -> StreamingResponse:
+    initial = await _get_world(request, world_id)
+    selected_attempt = attempt or initial.generation_attempt
+    try:
+        after = max(after, int(request.headers.get("last-event-id", "0")))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid Last-Event-ID") from None
     sessions = request.app.state.sessions
 
     async def gen() -> AsyncIterator[str]:
-        last_id = 0
+        last_id = after
         while True:
             async with sessions() as session:
                 events = list(
                     await session.scalars(
                         select(WorldEvent)
-                        .where(WorldEvent.world_id == world_id, WorldEvent.id > last_id)
+                        .where(
+                            WorldEvent.world_id == world_id,
+                            WorldEvent.attempt == selected_attempt,
+                            WorldEvent.id > last_id,
+                        )
                         .order_by(WorldEvent.id)
                     )
                 )
@@ -190,8 +211,12 @@ async def stream_events(world_id: str, request: Request) -> StreamingResponse:
             for event in events:
                 last_id = event.id
                 payload = EventOut.model_validate(event).model_dump(mode="json")
-                yield f"event: step\ndata: {json.dumps(payload)}\n\n"
-            if world is None or (world.status in TERMINAL and not events):
+                yield f"id: {event.id}\nevent: step\ndata: {json.dumps(payload)}\n\n"
+            if (
+                world is None
+                or world.generation_attempt != selected_attempt
+                or (world.status in TERMINAL and not events)
+            ):
                 status = world.status if world else "failed"
                 yield f"event: done\ndata: {json.dumps({'status': status})}\n\n"
                 return
@@ -214,10 +239,38 @@ async def retry_world(world_id: str, request: Request) -> WorldOut:
         raise HTTPException(status_code=403, detail="Only the creator can retry")
     if world.status != "failed":
         raise HTTPException(status_code=409, detail="Only failed worlds can be retried")
-    async with request.app.state.sessions() as session:
-        world = await session.get(World, world_id)
-        assert world is not None
-        world.status = "queued"
-        await session.commit()
-    request.app.state.runner.submit(_request(world))
+    state = request.app.state
+    async with state.generation_lock:
+        async with state.sessions() as session:
+            world = await session.get(World, world_id)
+            assert world is not None
+            if world.status != "failed":
+                raise HTTPException(
+                    status_code=409, detail="Only failed worlds can be retried"
+                )
+            busy = await session.scalar(
+                select(func.count())
+                .select_from(World)
+                .where(World.status.in_(("queued", "generating")))
+            )
+            if (busy or 0) >= state.settings.max_generating:
+                raise HTTPException(
+                    status_code=503,
+                    detail=(
+                        "Too many worlds are being generated right now. "
+                        "Try again in a minute."
+                    ),
+                    headers={"Retry-After": "60"},
+                )
+            wait = state.create_limiter.hit(client_ip(request))
+            if wait is not None:
+                raise HTTPException(
+                    status_code=429,
+                    detail="You are generating worlds too fast. Try again later.",
+                    headers={"Retry-After": str(wait)},
+                )
+            world.status = "queued"
+            world.generation_attempt += 1
+            await session.commit()
+        state.runner.submit(_request(world))
     return _out(world, me)

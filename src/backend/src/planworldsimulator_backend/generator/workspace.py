@@ -5,7 +5,8 @@ import shutil
 from pathlib import Path
 
 # Files the generator writes ([gen], decision 0003), by the owning agent track.
-DESIGN_FILES = ("design.md",)
+DESIGN_FILES = ("design.json",)
+CONTRACT_FILES = frozenset({"design.md", "ui/src/WorldState.ts"})
 SIM_FILES = (
     "brief.md",
     "secret.md",
@@ -16,7 +17,7 @@ SIM_FILES = (
     "tests/backend/test_rules.py",
 )
 UI_FILES = ("ui/src/World.tsx",)
-GEN_FILES = frozenset(DESIGN_FILES + SIM_FILES + UI_FILES)
+GEN_FILES = frozenset(DESIGN_FILES + SIM_FILES + UI_FILES) | CONTRACT_FILES
 
 # Never copied or checksummed: build output, caches and what the generator adds.
 SKIP_DIRS = {

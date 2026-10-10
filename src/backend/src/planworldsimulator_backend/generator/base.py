@@ -6,7 +6,8 @@ STEPS = (
     "check_exists",
     "copy_template",
     "design",
-    "fill",
+    "sim",
+    "ui",
     "tests",
     "smoke",
     "publish",
@@ -23,6 +24,8 @@ class GenerationEvent:
     storyline: str | None = None
     path: str | None = None
     duplicate_of: str | None = None  # with state "exists": the world that has the name
+    elapsed_seconds: float = 0
+    metrics: dict | None = None
 
 
 @dataclass(frozen=True)
@@ -31,6 +34,7 @@ class GenerationRequest:
     title: str
     prompt: str
     seed: int
+    attempt: int = 1
 
 
 class Generator(Protocol):

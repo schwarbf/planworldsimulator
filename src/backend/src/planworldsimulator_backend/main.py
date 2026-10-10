@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import shutil
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -26,6 +28,36 @@ from planworldsimulator_backend.reaper import reap_loop
 from planworldsimulator_backend.runner import GenerationRunner
 from planworldsimulator_backend.worldproc import resolve_world_python
 
+log = logging.getLogger("uvicorn.error")  # shown in the container log
+
+
+def real_generation(settings: Settings) -> bool:
+    """Whether worlds are built by the real agent (and played from real servers).
+
+    `auto` needs a Gemini key, the OpenCode binary and the shared world interpreter;
+    otherwise the site still works with the fake generator.
+    """
+    if settings.generator == "opencode":
+        return True
+    if settings.generator != "auto":
+        return False
+    missing = []
+    if not settings.gemini_api_key:
+        missing.append("GEMINI_API_KEY")
+    if shutil.which(settings.opencode_bin) is None:
+        missing.append(f"the {settings.opencode_bin} command")
+    try:
+        resolve_world_python(settings.template_dir, settings.world_python)
+    except RuntimeError:
+        missing.append("the world environment")
+    if missing:
+        log.warning(
+            "Generating fake worlds: %s not found. See README, Generate real worlds.",
+            ", ".join(missing),
+        )
+        return False
+    return True
+
 
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or Settings()
@@ -38,7 +70,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         sessions = make_session_factory(engine)
         settings.worlds_dir.mkdir(parents=True, exist_ok=True)
         generator: Generator
-        if settings.generator == "opencode":
+        real = real_generation(settings)
+        log.info("world generation: %s", "OpenCode agent" if real else "fake")
+        if real:
             generator = OpenCodeGenerator(
                 settings, lambda title, own: name_owner(sessions, title, own)
             )
@@ -49,9 +83,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         app.state.settings = settings
         app.state.sessions = sessions
         app.state.runner = GenerationRunner(sessions, generator)
+        await app.state.runner.recover_interrupted()
+        app.state.generation_lock = asyncio.Lock()
         launcher: Launcher
         use_processes = settings.launcher == "process" or (
-            settings.launcher == "auto" and settings.generator == "opencode"
+            settings.launcher == "auto" and real
         )
         if use_processes:
             launcher = ProcessLauncher(

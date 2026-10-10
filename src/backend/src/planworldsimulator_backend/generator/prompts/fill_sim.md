@@ -36,3 +36,9 @@ $demand_api
 ## Current placeholder files to replace
 
 $placeholders
+
+## Generated shared state contract (read-only)
+
+$state_contract
+
+The state must satisfy every declared field, enum, array item type and nullability on every difficulty, including after advance and completion. Action argument names and limits must match design.json exactly.

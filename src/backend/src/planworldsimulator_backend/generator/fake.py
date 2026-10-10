@@ -54,7 +54,7 @@ class FakeGenerator:
         )
         yield GenerationEvent("design", "done", "Storyline ready", storyline)
 
-        yield GenerationEvent("fill", "started", "Filling the template")
+        yield GenerationEvent("sim", "started", "Filling the template")
         await asyncio.sleep(self.delay)
         (world_dir / "world.json").write_text(
             json.dumps(
@@ -69,7 +69,10 @@ class FakeGenerator:
                 indent=2,
             )
         )
-        yield GenerationEvent("fill", "done", "Wrote world.json")
+        yield GenerationEvent("sim", "done", "Wrote world.json")
+
+        yield GenerationEvent("ui", "started", "Writing the world view")
+        yield GenerationEvent("ui", "done", "World view ready")
 
         for step, started, done in (
             ("tests", "Running tests", "All checks passed"),

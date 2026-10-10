@@ -8,6 +8,8 @@ export interface World {
   seed: number;
   levels: number[];
   status: WorldStatus;
+  generation_attempt?: number;
+  duplicate_of?: string | null;
   storyline: string | null;
   path: string | null;
   /** With status "exists": the world that already has this name. */
@@ -29,6 +31,8 @@ export interface WorldPage {
 
 export interface WorldEvent {
   id: number;
+  attempt: number;
+  elapsed_seconds: number;
   step: string;
   state: "started" | "done" | "failed" | "exists";
   message: string;
@@ -83,7 +87,10 @@ export const api = {
     return request<WorldPage>(`/worlds?${params}`);
   },
   getWorld: (id: string) => request<World>(`/worlds/${id}`),
-  listEvents: (id: string) => request<WorldEvent[]>(`/worlds/${id}/events`),
+  listEvents: (id: string, attempt?: number) =>
+    request<WorldEvent[]>(
+      `/worlds/${id}/events${attempt ? `?attempt=${attempt}` : ""}`,
+    ),
   createWorld: (body: CreateWorld) =>
     request<World>("/worlds", { method: "POST", body: JSON.stringify(body) }),
   retryWorld: (id: string) =>

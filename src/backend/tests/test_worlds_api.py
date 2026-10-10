@@ -283,3 +283,55 @@ async def test_being_turned_away_for_capacity_costs_no_allowance(
         await set_status(client, second.json()["id"], "ready")
         third = await client.post("/worlds", json={"name": "Third", "prompt": PROMPT})
         assert third.status_code == 429
+
+
+async def test_retry_has_new_attempt_and_current_events_only(client):
+    world = await create(client)
+    await wait(client)
+    first = (await client.get(f"/worlds/{world['id']}/events")).json()
+    await set_status(client, world["id"], "failed")
+    retried = (await client.post(f"/worlds/{world['id']}/retry")).json()
+    assert retried["generation_attempt"] == 2
+    await wait(client)
+    current = (await client.get(f"/worlds/{world['id']}/events")).json()
+    assert all(e["attempt"] == 2 for e in current)
+    assert {e["id"] for e in current}.isdisjoint(e["id"] for e in first)
+    assert "metrics" not in current[0]
+
+
+async def test_stream_resumes_from_last_event_id(client):
+    world = await create(client)
+    await wait(client)
+    events = (await client.get(f"/worlds/{world['id']}/events")).json()
+    cursor = events[-2]["id"]
+    response = await client.get(
+        f"/worlds/{world['id']}/stream", headers={"Last-Event-ID": str(cursor)}
+    )
+    assert f"id: {events[-1]['id']}\n" in response.text
+    assert f"id: {cursor}\n" not in response.text
+    assert "event: done" in response.text
+
+
+async def test_retry_respects_capacity(make_client, monkeypatch):
+    async with make_client(max_generating=1) as client:
+        world = await create(client, "Retry")
+        await wait(client)
+        await set_status(client, world["id"], "failed")
+        monkeypatch.setattr(app_of(client).state.runner, "submit", lambda _r: None)
+        await create(client, "Busy")
+        response = await client.post(f"/worlds/{world['id']}/retry")
+        assert response.status_code == 503
+        current = (await client.get(f"/worlds/{world['id']}")).json()
+        assert current["status"] == "failed"
+        assert current["generation_attempt"] == 1
+
+
+async def test_startup_recovers_interrupted_generation(make_client, monkeypatch):
+    async with make_client() as client:
+        monkeypatch.setattr(app_of(client).state.runner, "submit", lambda _r: None)
+        world = await create(client)
+    async with make_client() as client:
+        recovered = (await client.get(f"/worlds/{world['id']}")).json()
+        assert recovered["status"] == "failed"
+        events = (await client.get(f"/worlds/{world['id']}/events")).json()
+        assert "interrupted" in events[-1]["message"]

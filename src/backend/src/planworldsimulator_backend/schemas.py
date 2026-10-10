@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -28,6 +28,7 @@ class WorldOut(BaseModel):
     seed: int
     levels: list[int] = list(LEVELS)
     status: str
+    generation_attempt: int
     storyline: str | None
     path: str | None
     duplicate_of: str | None = None
@@ -49,7 +50,14 @@ class EventOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    attempt: int
+    elapsed_seconds: float
     step: str
     state: str
     message: str
     created_at: datetime
+
+    @field_validator("created_at")
+    @classmethod
+    def _utc_timestamp(cls, value: datetime) -> datetime:
+        return value.replace(tzinfo=UTC) if value.tzinfo is None else value

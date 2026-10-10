@@ -21,6 +21,7 @@ class World(Base):
     seed: Mapped[int] = mapped_column(Integer)
     # queued | generating | ready | failed | exists (the name was taken)
     status: Mapped[str] = mapped_column(String(16), default="queued")
+    generation_attempt: Mapped[int] = mapped_column(Integer, default=1)
     storyline: Mapped[str | None] = mapped_column(Text, nullable=True)
     path: Mapped[str | None] = mapped_column(String(500), nullable=True)
     duplicate_of: Mapped[str | None] = mapped_column(String(32), nullable=True)
@@ -46,6 +47,9 @@ class WorldEvent(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     world_id: Mapped[str] = mapped_column(ForeignKey("worlds.id"), index=True)
+    attempt: Mapped[int] = mapped_column(Integer, default=1)
+    elapsed_seconds: Mapped[float] = mapped_column(default=0.0)
+    metrics: Mapped[str | None] = mapped_column(Text, nullable=True)
     step: Mapped[str] = mapped_column(String(32))
     # started | done | failed
     state: Mapped[str] = mapped_column(String(16))

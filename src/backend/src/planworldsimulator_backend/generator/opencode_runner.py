@@ -10,6 +10,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from planworldsimulator_backend.generator.processes import kill_group, reap
+
 log = logging.getLogger(__name__)
 
 # Without these the agent loads the user's global skills and wanders outside the folder.
@@ -138,6 +140,7 @@ async def run_agent(
     try:
         process = await asyncio.create_subprocess_exec(
             *command,
+            start_new_session=True,
             cwd=cwd,
             env=config.env(),
             stdin=asyncio.subprocess.DEVNULL,
@@ -162,10 +165,10 @@ async def run_agent(
             if event is None:
                 continue
             if event.kind == "tool":
-                result.tool_calls += 1
+                result.tool_calls += int(event.status in ("completed", "error"))
                 if result.tool_calls > max_tool_calls:
                     result.too_many_calls = True
-                    process.kill()
+                    kill_group(process)
             elif event.kind == "text":
                 texts.append(event.text)
             elif event.kind == "step_finish":
@@ -179,27 +182,29 @@ async def run_agent(
     reader = asyncio.create_task(read_stdout())
     stderr = asyncio.create_task(process.stderr.read()) if process.stderr else None
     try:
-        await asyncio.wait_for(asyncio.shield(reader), timeout)
-        await process.wait()
+        async with asyncio.timeout(timeout):
+            await reader
+            await process.wait()
     except TimeoutError:
         result.timed_out = True
-        process.kill()
-    except asyncio.CancelledError:
-        process.kill()
-        raise
     finally:
-        with contextlib.suppress(Exception):
-            await asyncio.wait_for(process.wait(), 5)
+        await reap(process)
         reader.cancel()
+        if stderr is not None and not stderr.done():
+            stderr.cancel()
+        await asyncio.gather(
+            reader, *([stderr] if stderr else []), return_exceptions=True
+        )
         result.seconds = time.monotonic() - started
         result.text = "".join(texts)
 
-    if stderr is not None and stderr.done() and not result.error:
+    if stderr is not None and not stderr.cancelled() and not result.error:
         result.error = (
             stderr.result().decode(errors="replace")[-300:]
             if process.returncode
             else ""
         )
+
     result.ok = (
         process.returncode == 0
         and stop_reason == "stop"

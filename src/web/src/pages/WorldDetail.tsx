@@ -6,26 +6,24 @@ import { PlayLevels } from "../components/PlayLevels";
 import { Button, Card, cx, Label, StatusChip } from "../components/ui";
 
 const STEPS = [
-  { key: "check_exists", label: "Check the name" },
-  { key: "copy_template", label: "Copy template" },
+  { key: "check_exists", label: "Name" },
+  { key: "copy_template", label: "Preparation" },
   { key: "design", label: "Design" },
-  { key: "fill", label: "Write simulator and world view" },
-  { key: "tests", label: "Tests" },
+  { key: "sim", label: "Simulator" },
+  { key: "ui", label: "World view" },
+  { key: "tests", label: "Validation" },
+  { key: "polish", label: "Look" },
   { key: "smoke", label: "Build and boot" },
-  { key: "publish", label: "Publish" },
+  { key: "publish", label: "Publication" },
 ];
 
 type StepState = "pending" | "active" | "done" | "failed";
 
 function stepState(key: string, events: WorldEvent[], world: World): StepState {
-  const mine = events.filter((e) => e.step === key);
-  if (mine.some((e) => e.state === "done")) return "done";
-  if (mine.some((e) => e.state === "exists")) return "failed";
-  if (mine.length > 0) {
-    return world.status === "failed" || mine.some((e) => e.state === "failed")
-      ? "failed"
-      : "active";
-  }
+  const last = events.filter((e) => e.step === key).at(-1);
+  if (last?.state === "done") return "done";
+  if (last?.state === "failed" || last?.state === "exists") return "failed";
+  if (last) return world.status === "failed" ? "failed" : "active";
   return "pending";
 }
 
@@ -39,8 +37,19 @@ const DOT: Record<StepState, string> = {
 export function WorldDetail() {
   const { id = "" } = useParams();
   const [world, setWorld] = useState<World | null>(null);
-  const [events, setEvents] = useState<WorldEvent[]>([]);
+  const [eventLog, setEventLog] = useState<{
+    id: string;
+    attempt: number;
+    events: WorldEvent[];
+  }>({ id: "", attempt: 0, events: [] });
   const [missing, setMissing] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const [connected, setConnected] = useState(true);
+  const [now, setNow] = useState(() => Date.now());
+  const attempt = world?.generation_attempt ?? 1;
+  const events =
+    eventLog.id === id && eventLog.attempt === attempt ? eventLog.events : [];
 
   const reload = useCallback(async () => {
     try {
@@ -51,27 +60,92 @@ export function WorldDetail() {
   }, [id]);
 
   useEffect(() => {
-    const first = setTimeout(reload, 0);
-    const source = new EventSource(`/api/worlds/${id}/stream`);
+    let cancelled = false;
+    void api
+      .getWorld(id)
+      .then((value) => {
+        if (!cancelled) {
+          setWorld(value);
+          setMissing(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setMissing(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const loaded = world?.id === id;
+  useEffect(() => {
+    if (!loaded) return;
+    let cancelled = false;
+    const source = new EventSource(
+      `/api/worlds/${id}/stream?attempt=${attempt}`,
+    );
+    function merge(incoming: WorldEvent[]) {
+      if (cancelled) return;
+      setEventLog((log) => {
+        const current =
+          log.id === id && log.attempt === attempt ? log.events : [];
+        const byId = new Map(current.map((event) => [event.id, event]));
+        for (const event of incoming) {
+          if (event.attempt === attempt) byId.set(event.id, event);
+        }
+        return {
+          id,
+          attempt,
+          events: [...byId.values()].sort((a, b) => a.id - b.id),
+        };
+      });
+    }
+    // Restore history even when the stream reconnects from Last-Event-ID.
+    void api
+      .listEvents(id, attempt)
+      .then((history) => {
+        if (!cancelled) merge(history);
+      })
+      .catch(() => {});
+    source.onopen = () => setConnected(true);
+    source.onerror = () => setConnected(false);
     source.addEventListener("step", (message) => {
       const event = JSON.parse((message as MessageEvent).data) as WorldEvent;
-      setEvents((current) =>
-        current.some((e) => e.id === event.id) ? current : [...current, event],
-      );
-      void reload();
+      merge([event]);
+      if (
+        (event.step === "design" && event.state === "done") ||
+        (event.step === "check_exists" && event.state === "started")
+      )
+        void reload();
     });
     source.addEventListener("done", () => {
       source.close();
+      setConnected(true);
       void reload();
     });
+    const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => {
-      clearTimeout(first);
+      cancelled = true;
       source.close();
+      clearInterval(timer);
     };
-  }, [id, reload]);
+  }, [id, attempt, loaded, reload]);
 
-  async function act(action: (id: string) => Promise<World>) {
-    setWorld(await action(id));
+  async function retry() {
+    setRetrying(true);
+    setActionError(null);
+    try {
+      const next = await api.retryWorld(id);
+      setWorld(next);
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Could not retry. Try again shortly.",
+      );
+    } finally {
+      setRetrying(false);
+    }
   }
 
   if (missing) {
@@ -112,7 +186,22 @@ export function WorldDetail() {
       </Card>
 
       <Card className="flex flex-col gap-4 p-6">
-        <Label>Generation</Label>
+        <Label>Generation · Attempt {attempt}</Label>
+        <p className="text-xs text-muted" aria-live="polite">
+          {(() => {
+            const last = events.at(-1);
+            if (!last)
+              return world.status === "queued"
+                ? "Waiting to start…"
+                : "Loading progress…";
+            const live =
+              world.status === "generating"
+                ? Math.max(0, (now - Date.parse(last.created_at)) / 1000)
+                : 0;
+            return `${Math.floor(last.elapsed_seconds + live)}s elapsed`;
+          })()}
+          {!connected && " · Reconnecting to progress…"}
+        </p>
         <ol className="flex flex-col gap-3">
           {STEPS.map((step) => {
             const state = stepState(step.key, events, world);
@@ -153,13 +242,23 @@ export function WorldDetail() {
                 ?.message ?? "Generation failed"}
             </p>
             {world.mine && (
-              <Button variant="dark" onClick={() => act(api.retryWorld)}>
-                Retry
+              <Button
+                variant="dark"
+                disabled={retrying}
+                onClick={() => void retry()}
+              >
+                {retrying ? "Retrying…" : "Retry"}
               </Button>
             )}
           </div>
         )}
       </Card>
+
+      {actionError && (
+        <p role="alert" className="text-sm text-bad">
+          {actionError}
+        </p>
+      )}
 
       {world.storyline && (
         <Card className="flex flex-col gap-2 p-6">

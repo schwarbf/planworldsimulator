@@ -4,7 +4,18 @@ World name: $title
 Request: $description
 Seed for inspiration only: $seed
 
-Write exactly one file, `design.md`, in a single `write` call. Do not read or run anything else; everything you need is below. Be concrete and short (at most 130 lines). Use these sections, with exactly these `##` headings:
+Write exactly one file, `design.json`, in a single `write` call. Do not read or run anything else. Produce JSON matching the schema below. Call `write` with BOTH arguments: `filePath: "$design_path"` and `content: "<the complete JSON as a string>"`. Never omit filePath. The pipeline validates it and derives design.md, the TypeScript State type, and mockState. Those derived files are read-only.
+
+## JSON schema
+$spec_schema
+
+## Base state fields
+These are supplied by the pipeline; state_fields describes ONLY additional world fields.
+$base_state
+
+Include a complete state_sample matching base fields plus state_fields. All object properties are required; nullable fields accept null. Arrays require an explicit items type even if the sample array is empty. Declare enum values for world-specific categorical strings when needed. state_sample.weeks must equal weeks. Each action argument includes its primitive type and explicit limits. levels must contain easy, medium, hard, with site/action IDs and rules. Each site has a tile [i,j] within the visual grid. Keep descriptions concise.
+
+Follow this design guidance, encoded into the corresponding JSON fields:
 
 ## Storyline
 3 to 5 sentences: who the player is, what they run, what the goal is and what makes it hard. Plain text, no markdown.

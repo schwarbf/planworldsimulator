@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Lemonade",
+    "prompt": "Run lemonade stands in a park. Plan stock, staffing and prices across changing weather.",
+    "seed": 101
+  },
+  {
+    "name": "Bakery",
+    "prompt": "Manage a bakery and its market stall. Plan flour deliveries, baking capacity and product prices.",
+    "seed": 202
+  },
+  {
+    "name": "Bike Factory",
+    "prompt": "Run a bicycle factory with assembly workshops and retail shops. Balance component orders, production and demand.",
+    "seed": 303
+  },
+  {
+    "name": "Harbor",
+    "prompt": "Manage a coastal shipping operation. Plan cargo, vessel capacity and deliveries between ports under changing weather.",
+    "seed": 404
+  },
+  {
+    "name": "Power Grid",
+    "prompt": "Manage a small power grid with generation sites and customers. Plan capacity, maintenance and prices through demand shocks.",
+    "seed": 505
+  },
+  {
+    "name": "Cold Chain",
+    "prompt": "Manage a fresh-food cold chain from warehouses to shops. Balance refrigeration investment, stock spoilage, delayed deliveries and changing demand.",
+    "seed": 606
+  }
+]

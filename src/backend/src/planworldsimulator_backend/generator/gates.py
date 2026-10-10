@@ -1,7 +1,6 @@
 """The quality gates a generated world must pass before it goes live."""
 
 import asyncio
-import contextlib
 import os
 import time
 from dataclasses import asdict, dataclass
@@ -10,6 +9,7 @@ from pathlib import Path
 import httpx
 
 from planworldsimulator_backend import worldproc
+from planworldsimulator_backend.generator.processes import reap
 
 TAIL = 2500  # characters of output kept per gate
 
@@ -57,6 +57,7 @@ async def _run(
     try:
         process = await asyncio.create_subprocess_exec(
             *command,
+            start_new_session=True,
             cwd=cwd,
             env=env,
             stdin=asyncio.subprocess.DEVNULL,
@@ -69,10 +70,9 @@ async def _run(
         out, _ = await asyncio.wait_for(process.communicate(), timeout)
         ok = process.returncode == 0
     except TimeoutError:
-        process.kill()
-        with contextlib.suppress(Exception):
-            await process.wait()
         out, ok = f"timed out after {timeout:.0f}s".encode(), False
+    finally:
+        await reap(process)
     text = out.decode(errors="replace")
     return GateResult(name, ok, text[-TAIL:], time.monotonic() - started, track)
 
@@ -161,45 +161,54 @@ async def smoke(
     process = await worldproc.start_world(world_dir, python, port)
     base = f"http://127.0.0.1:{port}"
     try:
-        await worldproc.wait_healthy(port, process, timeout)
-        async with httpx.AsyncClient(timeout=10) as http:
-            page = await http.get(f"{base}/")
-            if page.status_code != 200 or '<div id="root"' not in page.text:
-                raise RuntimeError(
-                    f"GET / returned {page.status_code} without the app (UI built?)"
-                )
-            for level in range(1, levels + 1):
-                reset = await http.post(
-                    f"{base}/api/reset", json={"level": level, "seed": 1}
-                )
-                reset.raise_for_status()
-                state = await http.get(f"{base}/api/state")
-                state.raise_for_status()
-                if "week" not in state.json():
-                    raise RuntimeError("/api/state has no week")
-                (await http.post(f"{base}/api/advance")).raise_for_status()
-            initialize = await http.post(
-                f"{base}/mcp",
-                headers={"Accept": "application/json, text/event-stream"},
-                json={
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": "initialize",
-                    "params": {
-                        "protocolVersion": "2025-03-26",
-                        "capabilities": {},
-                        "clientInfo": {"name": "smoke", "version": "0"},
-                    },
-                },
-            )
-            if initialize.status_code != 200:
-                raise RuntimeError(f"MCP initialize returned {initialize.status_code}")
-        return GateResult(
-            "smoke", True, f"booted on :{port}", time.monotonic() - started, "sim"
-        )
+        async with asyncio.timeout(timeout):
+            return await _smoke_requests(base, port, process, levels, timeout, started)
     except Exception as exc:
         return GateResult(
-            "smoke", False, str(exc)[-TAIL:], time.monotonic() - started, "sim"
+            "smoke",
+            False,
+            str(exc) or "Smoke check timed out",
+            time.monotonic() - started,
+            "sim",
         )
     finally:
         await worldproc.stop_world(process)
+
+
+async def _smoke_requests(base, port, process, levels, timeout, started):
+    await worldproc.wait_healthy(port, process, timeout)
+    async with httpx.AsyncClient(timeout=10) as http:
+        page = await http.get(f"{base}/")
+        if page.status_code != 200 or '<div id="root"' not in page.text:
+            raise RuntimeError(
+                f"GET / returned {page.status_code} without the app (UI built?)"
+            )
+        for level in range(1, levels + 1):
+            reset = await http.post(
+                f"{base}/api/reset", json={"level": level, "seed": 1}
+            )
+            reset.raise_for_status()
+            state = await http.get(f"{base}/api/state")
+            state.raise_for_status()
+            if "week" not in state.json():
+                raise RuntimeError("/api/state has no week")
+            (await http.post(f"{base}/api/advance")).raise_for_status()
+        initialize = await http.post(
+            f"{base}/mcp",
+            headers={"Accept": "application/json, text/event-stream"},
+            json={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-03-26",
+                    "capabilities": {},
+                    "clientInfo": {"name": "smoke", "version": "0"},
+                },
+            },
+        )
+        if initialize.status_code != 200:
+            raise RuntimeError(f"MCP initialize returned {initialize.status_code}")
+    return GateResult(
+        "smoke", True, f"booted on :{port}", time.monotonic() - started, "sim"
+    )
