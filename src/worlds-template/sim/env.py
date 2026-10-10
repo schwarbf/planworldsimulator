@@ -14,7 +14,7 @@ import numpy as np
 from gymnasium import spaces
 
 from sim import rules as R
-from sim.helpers import obs_to_json, register_world
+from sim.helpers import calibrated_target, obs_to_json, register_world
 
 
 class ExampleEnv(gym.Env):
@@ -76,13 +76,21 @@ class ExampleEnv(gym.Env):
     def observe(self, site: str | None = None) -> dict[str, Any]:
         return obs_to_json(self._obs(), self.site_ids)
 
+    def result(self) -> float:
+        """Raw outcome (here profit); ``score()`` is this divided by the calibrated target."""
+        assert self.w is not None
+        return self.w.cash - R.START_CASH
+
+    def target(self) -> float:
+        """The profit that scores 1.0; derived from the baseline, never hand-tuned."""
+        return calibrated_target(type(self))
+
     def score(self) -> dict[str, Any]:
         w = self.w
         assert w is not None
         profit = w.cash - R.START_CASH
-        return {"score": round(float(np.clip(profit / R.TARGET, 0, 1)), 4), "profit": round(profit),
-                "week": min(w.week + 1, R.WEEKS), "done": w.week >= R.WEEKS,
-                "formula": f"profit vs CHF {R.TARGET:,.0f}"}
+        return {"score": round(float(np.clip(profit / self.target(), 0, 1)), 4), "profit": round(profit),
+                "week": min(w.week + 1, R.WEEKS), "done": w.week >= R.WEEKS, "formula": f"profit vs CHF {self.target():,.0f}"}
 
     def ui_state(self, ctx: dict[str, Any]) -> dict[str, Any]:
         """Same shape as `mockState` in ui/src/World.tsx."""
@@ -97,7 +105,7 @@ class ExampleEnv(gym.Env):
             "capacity": int(w.capacity),
             "demand": int(w.demand),
             "profit": sc["profit"],
-            "target": R.TARGET,
+            "target": round(self.target()),
             "story": ctx.get("story"),
             "discoveries": w.model.discoveries(w.found),
             "agent": ctx.get("agent", {}),

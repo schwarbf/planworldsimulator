@@ -15,7 +15,6 @@ from sim.demand import DemandModel, Factor
 WEEKS = 12
 MAX_INVEST = 10
 START_CASH = 1000.0
-TARGET = 3500.0
 BIG = 1e9
 PRICE, INVEST_COST = 10.0, 50.0
 

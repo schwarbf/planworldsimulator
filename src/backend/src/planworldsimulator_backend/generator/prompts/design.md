@@ -25,7 +25,7 @@ Which of these shipped demand factors the world uses and with what parameters, a
 A table with rows Easy (level 1), Medium (level 2), Hard (level 3) and the columns sites, actions, hidden rules active, demand factors active, other changes (lead times, shocks, fog). Hard is an expert mode: many interacting factors, delayed effects, the agent sees only sales and demand, never the formula.
 
 ## Scoring
-The goal in one sentence, the score formula (0 to 1) and the naive baseline policy. The baseline must score about 0.4 to 0.6 on Easy and do worse on Hard.
+The goal in one sentence, what the raw result is (for example profit) and the naive baseline policy (one sensible action repeated every week). The score is calibrated automatically so the baseline scores about 0.5 on Easy; the baseline must do clearly worse on Hard.
 
 ## UI state
 The JSON that the server returns at `/api/state` and the web view reads, as one JSON example in a ```json block. Start from the base fields below and add the fields the view needs (per-site stats, resources, targets). Keep it flat and small. All numbers must be plain numbers.

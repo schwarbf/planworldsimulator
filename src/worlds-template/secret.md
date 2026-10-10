@@ -8,5 +8,5 @@
 
 ## Scoring
 
-- Score = profit / CHF 3,500, clipped to 0–1.
+- Score = profit / target, clipped to 0–1, where the target is calibrated so the naive baseline scores about 0.5 on easy (`calibrated_target`).
 - Baseline: invest 1 every week.
